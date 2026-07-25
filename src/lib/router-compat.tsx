@@ -77,14 +77,18 @@ export function useLocation() {
 /** Mirrors the `[params, setParams]` tuple shape used by the store pages. */
 export function useSearchParams(): [
   URLSearchParams,
-  (next: Record<string, string>) => void,
+  (next: Record<string, string> | URLSearchParams) => void,
 ] {
   const searchStr = useRouterState({ select: (s) => s.location.searchStr });
   const navigate = useTanstackNavigate();
   const params = new URLSearchParams(searchStr ?? "");
 
-  const setSearchParams = (next: Record<string, string>) => {
-    navigate({ to: ".", search: next as never });
+  const setSearchParams = (next: Record<string, string> | URLSearchParams) => {
+    const search =
+      next instanceof URLSearchParams
+        ? Object.fromEntries(next.entries())
+        : next;
+    navigate({ to: ".", search: search as never });
   };
 
   return [params, setSearchParams];
