@@ -80,21 +80,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Ropa de Youtumundial — Tienda online de ropa" },
+      { title: "Ropa de" },
       {
         name: "description",
         content:
           "Tienda online de Ropa de Youtumundial: hoodies, camisetas, joggers y accesorios con envío rápido.",
       },
       { name: "author", content: "Ropa de Youtumundial" },
-      { property: "og:title", content: "Ropa de Youtumundial — Tienda online" },
+      { property: "og:title", content: "Ropa de" },
       {
         property: "og:description",
-        content: "Hoodies, camisetas, joggers y accesorios de Youtumundial.",
+        content: "Tienda online de Ropa de Youtumundial: hoodies, camisetas, joggers y accesorios con envío rápido.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Ropa de" },
+      { name: "twitter:description", content: "Tienda online de Ropa de Youtumundial: hoodies, camisetas, joggers y accesorios con envío rápido." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/852589bc-75d0-4a1d-b3da-5f16ecd5dd55/id-preview-40081b99--03dc2b4b-2805-4ec5-823c-7419dedbca7e.lovable.app-1785000378091.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/852589bc-75d0-4a1d-b3da-5f16ecd5dd55/id-preview-40081b99--03dc2b4b-2805-4ec5-823c-7419dedbca7e.lovable.app-1785000378091.png" },
     ],
     links: [
       {
