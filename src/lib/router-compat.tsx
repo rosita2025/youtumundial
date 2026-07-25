@@ -38,7 +38,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
     ? Object.fromEntries(new URLSearchParams(search).entries())
     : undefined;
 
-  const LooseLink = TanstackLink as unknown as React.ComponentType<
+  const LooseLink = TanstackLink as unknown as ComponentType<
     Record<string, unknown>
   >;
 
