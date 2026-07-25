@@ -33,15 +33,14 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
     ? Object.fromEntries(new URLSearchParams(search).entries())
     : undefined;
 
+  const LooseLink = TanstackLink as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
+
   return (
-    <TanstackLink
-      ref={ref}
-      to={pathname as never}
-      search={searchObj as never}
-      {...(rest as never)}
-    >
+    <LooseLink ref={ref} to={pathname} search={searchObj} {...rest}>
       {children}
-    </TanstackLink>
+    </LooseLink>
   );
 });
 
