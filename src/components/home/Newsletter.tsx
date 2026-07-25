@@ -24,7 +24,7 @@ export function Newsletter() {
       <div className="container-wide py-16 md:py-24">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="font-heading text-3xl md:text-4xl font-medium">
-            Join the Evergreen Community
+            Join the Youtumundial Community
           </h2>
           <p className="mt-4 text-primary-foreground/80 text-lg">
             Subscribe to receive exclusive offers, early access to new collections, 

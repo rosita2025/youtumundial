@@ -33,7 +33,7 @@ export function Footer() {
           {/* Brand & Newsletter */}
           <div className="lg:col-span-2">
             <Link to="/" className="font-heading text-2xl font-semibold">
-              Evergreen
+              Youtumundial
             </Link>
             <p className="mt-4 text-muted-foreground max-w-sm">
               Thoughtfully designed essentials made from sustainable materials. 
@@ -114,7 +114,7 @@ export function Footer() {
         {/* Bottom section */}
         <div className="mt-16 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Evergreen. All rights reserved.
+            © {new Date().getFullYear()} Youtumundial. All rights reserved.
           </p>
 
           {/* Social Links */}

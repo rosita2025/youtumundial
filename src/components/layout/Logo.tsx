@@ -32,10 +32,10 @@ export function Logo() {
       {/* Brand Name - Hidden on mobile, visible on desktop */}
       <div className="hidden sm:flex flex-col leading-none">
         <span className="font-heading text-xl md:text-2xl font-semibold tracking-tight text-foreground">
-          Evergreen
+          Youtumundial
         </span>
         <span className="text-[10px] md:text-xs tracking-[0.2em] uppercase text-muted-foreground">
-          Lifestyle
+          Ropa Oficial
         </span>
       </div>
     </Link>
