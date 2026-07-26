@@ -2,6 +2,7 @@ import { countryFlags } from "@/lib/reviews/reviews";
 import { useReviewSummary } from "@/lib/reviews/use-reviews";
 import { StarRating } from "@/components/product/StarRating";
 import { BadgeCheck } from "lucide-react";
+import { ReviewForm } from "@/components/product/ReviewForm";
 
 const dateFormatter = new Intl.DateTimeFormat("es-ES", {
   day: "numeric",
@@ -12,7 +13,17 @@ const dateFormatter = new Intl.DateTimeFormat("es-ES", {
 export function ProductReviews({ slug }: { slug: string }) {
   const { reviews, total, average, distribution } = useReviewSummary(slug);
 
-  if (!total) return null;
+  if (!total) {
+    return (
+      <section className="mt-20 border-t border-border pt-12" id="resenas">
+        <h2 className="heading-section mb-4">Reseñas de clientes</h2>
+        <p className="mb-6 text-sm text-muted-foreground">
+          Todavía no hay reseñas de este producto. Si ya lo compraste, sé la primera persona en opinar.
+        </p>
+        <ReviewForm slug={slug} />
+      </section>
+    );
+  }
 
   return (
     <section className="mt-20 border-t border-border pt-12" id="resenas">
@@ -72,8 +83,12 @@ export function ProductReviews({ slug }: { slug: string }) {
             </li>
 
           ))}
-        </ul>
-      </div>
+          </ul>
+
+          <div className="mt-8">
+            <ReviewForm slug={slug} />
+          </div>
+        </div>
     </section>
   );
 }
