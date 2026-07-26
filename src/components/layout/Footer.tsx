@@ -120,27 +120,25 @@ export function Footer() {
           {/* Social Links */}
           <div className="flex items-center gap-4">
             <a
-              href="#"
+              href="https://www.instagram.com/youtumundialshop/?hl=es"
+              target="_blank"
+              rel="noopener noreferrer"
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Instagram"
+              aria-label="Instagram de Youtumundial"
             >
               <Instagram size={20} />
             </a>
             <a
-              href="#"
+              href="https://web.facebook.com/youtumundial"
+              target="_blank"
+              rel="noopener noreferrer"
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Twitter"
-            >
-              <Twitter size={20} />
-            </a>
-            <a
-              href="#"
-              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Facebook"
+              aria-label="Facebook de Youtumundial"
             >
               <Facebook size={20} />
             </a>
           </div>
+
         </div>
       </div>
     </footer>
