@@ -90,11 +90,20 @@ const Checkout = () => {
       }
     }
 
+    if (method === 'card') {
+      const mpLink = buildMercadoPagoLink();
+      if (mpLink) {
+        window.location.href = mpLink;
+        return;
+      }
+    }
+
     const wooUrl = buildWooCheckoutUrl(cart, method);
     if (wooUrl) {
       window.location.href = wooUrl;
       return;
     }
+
 
     toast.error('El pago aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(
