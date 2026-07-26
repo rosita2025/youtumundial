@@ -1,0 +1,283 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import {
+  parseReviewsInput,
+  mergeReviews,
+  serializeReviewsFile,
+  type ParseResult,
+  type ReviewsBySlug,
+} from "@/lib/reviews/import-1688";
+import existingFile from "@/lib/reviews/reviews-1688.json";
+import { getProducts } from "@/lib/data/data-provider";
+
+export const Route = createFileRoute("/admin/resenas")({
+  component: AdminReviewsPage,
+  head: () => ({
+    meta: [
+      { title: "Importar reseñas 1688 | Panel Youtumundial" },
+      { name: "robots", content: "noindex, nofollow" },
+      { name: "description", content: "Panel interno para importar y deduplicar reseñas de 1688 por slug de producto." },
+    ],
+  }),
+});
+
+const existingReviews = ((existingFile as { reviews?: ReviewsBySlug }).reviews ?? {}) as ReviewsBySlug;
+
+const PLANTILLA_CSV = `slug,author,country,rating,date,title,body,size,photos
+polo-oversize-algodon-premium,Carlos M.,PE,5,2026-06-18,Excelente tela,"Llegó en 9 días, la tela es gruesa y no transparenta.",M,
+polo-oversize-algodon-premium,Ana L.,PE,4,2026-06-02,Igual a las fotos,"El color es idéntico al de la página.",S,`;
+
+function countReviews(map: ReviewsBySlug) {
+  return Object.values(map).reduce((sum, list) => sum + (list?.length ?? 0), 0);
+}
+
+function AdminReviewsPage() {
+  const [rawText, setRawText] = useState("");
+  const [filename, setFilename] = useState("");
+  const [parsed, setParsed] = useState<ParseResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [catalogSlugs, setCatalogSlugs] = useState<string[] | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    getProducts()
+      .then((products) => setCatalogSlugs(products.map((p) => p.slug)))
+      .catch(() => setCatalogSlugs([]));
+  }, []);
+
+  const result = useMemo(() => {
+    if (!parsed) return null;
+    return mergeReviews(existingReviews, parsed.bySlug);
+  }, [parsed]);
+
+  const unknownSlugs = useMemo(() => {
+    if (!parsed || !catalogSlugs) return [];
+    return parsed.slugs.filter((s) => !catalogSlugs.includes(s));
+  }, [parsed, catalogSlugs]);
+
+  function analyze(text: string, name: string) {
+    setError(null);
+    if (!text.trim()) {
+      setParsed(null);
+      return;
+    }
+    try {
+      const res = parseReviewsInput(text, name);
+      setParsed(res);
+      if (res.slugs.length === 0) {
+        setError("No se encontró ninguna reseña válida. Cada fila necesita al menos `slug` y el texto de la reseña.");
+      }
+    } catch (e) {
+      setParsed(null);
+      setError(e instanceof Error ? `No se pudo leer el archivo: ${e.message}` : "No se pudo leer el archivo.");
+    }
+  }
+
+  async function handleFile(file: File) {
+    const text = await file.text();
+    setFilename(file.name);
+    setRawText(text);
+    analyze(text, file.name);
+  }
+
+  function download() {
+    if (!result) return;
+    const blob = new Blob([serializeReviewsFile(result.merged)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "reviews-1688.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Archivo descargado", { description: "Mandámelo y lo dejo publicado en la tienda." });
+  }
+
+  async function copy() {
+    if (!result) return;
+    await navigator.clipboard.writeText(serializeReviewsFile(result.merged));
+    toast.success("JSON copiado al portapapeles");
+  }
+
+  function reset() {
+    setRawText("");
+    setFilename("");
+    setParsed(null);
+    setError(null);
+    if (fileInput.current) fileInput.current.value = "";
+  }
+
+  return (
+    <main className="container mx-auto max-w-4xl px-4 py-12">
+      <header className="mb-8">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">Panel interno</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Importar reseñas de 1688</h1>
+        <p className="mt-3 max-w-2xl text-muted-foreground">
+          Subí el CSV o JSON exportado de 1688 / SUP Dropshipping. Las reseñas se agrupan por{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">slug</code> de producto y se eliminan
+          automáticamente las repetidas (mismo autor y mismo texto), tanto dentro del archivo como contra las
+          que ya están cargadas.
+        </p>
+      </header>
+
+      <section className="rounded-xl border bg-card p-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".csv,.json,.txt"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleFile(file);
+            }}
+          />
+          <Button onClick={() => fileInput.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" />
+            Subir CSV o JSON
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setFilename("plantilla.csv");
+              setRawText(PLANTILLA_CSV);
+              analyze(PLANTILLA_CSV, "plantilla.csv");
+            }}
+          >
+            <FileJson className="mr-2 h-4 w-4" />
+            Cargar plantilla de ejemplo
+          </Button>
+          {(rawText || parsed) && (
+            <Button variant="ghost" onClick={reset}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Limpiar
+            </Button>
+          )}
+          {filename && <span className="text-sm text-muted-foreground">{filename}</span>}
+        </div>
+
+        <div className="mt-5">
+          <label htmlFor="pegar" className="mb-2 block text-sm font-medium">
+            …o pegá el contenido acá
+          </label>
+          <Textarea
+            id="pegar"
+            value={rawText}
+            rows={8}
+            placeholder={"slug,author,rating,date,title,body,size\npolo-oversize,Ana L.,5,2026-06-02,Muy bueno,Tela gruesa y buen calce,M"}
+            className="font-mono text-xs"
+            onChange={(e) => {
+              setRawText(e.target.value);
+              analyze(e.target.value, filename);
+            }}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            Columnas aceptadas en español, inglés o chino: slug · author/用户 · country · rating/评分 ·
+            date/日期 · title · body/评价内容 · size/尺码 · photos/图片 (URLs separadas por <code>|</code>).
+          </p>
+        </div>
+      </section>
+
+      {error && (
+        <div className="mt-6 flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <p>{error}</p>
+        </div>
+      )}
+
+      {parsed && result && parsed.slugs.length > 0 && (
+        <section className="mt-8 space-y-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <Stat label="Filas leídas" value={parsed.rows} />
+            <Stat label="Reseñas nuevas" value={result.added} highlight />
+            <Stat label="Duplicadas (omitidas)" value={result.duplicates + parsed.duplicatesInFile} />
+            <Stat label="Sin slug o texto" value={parsed.skipped} />
+          </div>
+
+          {unknownSlugs.length > 0 && (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <div>
+                <p className="font-medium">Estos slugs no coinciden con ningún producto del catálogo:</p>
+                <p className="mt-1 font-mono text-xs">{unknownSlugs.join(", ")}</p>
+                <p className="mt-1 text-muted-foreground">
+                  Igual se guardan; se mostrarán cuando exista un producto con ese slug.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="overflow-hidden rounded-xl border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-left">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Producto (slug)</th>
+                  <th className="px-4 py-3 font-medium">En el archivo</th>
+                  <th className="px-4 py-3 font-medium">Total tras importar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {parsed.slugs.map((slug) => (
+                  <tr key={slug} className="border-t">
+                    <td className="px-4 py-3 font-mono text-xs">{slug}</td>
+                    <td className="px-4 py-3">{parsed.bySlug[slug].length}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant="secondary">{result.merged[slug]?.length ?? 0}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="rounded-xl border bg-card p-6">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div className="flex-1">
+                <p className="font-medium">
+                  Resultado: {countReviews(result.merged)} reseñas en {Object.keys(result.merged).length} productos
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Descargá el archivo <code className="rounded bg-muted px-1 py-0.5 text-xs">reviews-1688.json</code>{" "}
+                  y reemplazá <code className="rounded bg-muted px-1 py-0.5 text-xs">src/lib/reviews/reviews-1688.json</code>{" "}
+                  (o pasámelo y lo subo yo). Ahí quedan publicadas en las fichas de producto.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Button onClick={download}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Descargar reviews-1688.json
+                  </Button>
+                  <Button variant="outline" onClick={copy}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copiar JSON
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <details className="rounded-xl border bg-card p-6">
+            <summary className="cursor-pointer text-sm font-medium">Ver JSON generado</summary>
+            <pre className="mt-4 max-h-96 overflow-auto rounded-lg bg-muted p-4 text-xs">
+              {serializeReviewsFile(result.merged)}
+            </pre>
+          </details>
+        </section>
+      )}
+    </main>
+  );
+}
+
+function Stat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={`mt-1 text-2xl font-semibold ${highlight ? "text-primary" : ""}`}>{value}</p>
+    </div>
+  );
+}
