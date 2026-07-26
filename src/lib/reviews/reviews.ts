@@ -1,15 +1,16 @@
 // Reseñas importadas (estilo 1688 / proveedor), traducidas al español.
 //
-// CÓMO AGREGAR RESEÑAS REALES DE 1688:
-// 1. Copiá el texto de la reseña del proveedor y traducilo al español.
-// 2. Agregá una entrada en `reviewOverrides` usando el SLUG del producto:
-//      "mi-producto-slug": [
-//        { author: "Carlos M.", country: "PE", rating: 5, date: "2026-06-14",
-//          title: "Tal cual la foto", body: "...", size: "M", verified: true,
-//          photos: ["https://..."] },
-//      ]
-// 3. Si un producto no tiene entrada propia, se le asignan reseñas del pool
-//    genérico de abajo (siempre las mismas para el mismo producto).
+// DOS FORMAS DE CARGARLAS:
+// A) AUTOMÁTICA — exportás/copiás las reseñas de 1688 a un JSON o CSV y corrés:
+//      node scripts/import-1688-reviews.mjs data/1688-reviews.csv
+//    Eso escribe src/lib/reviews/reviews-1688.json y la tienda las toma sola.
+// B) MANUAL — editás directamente reviews-1688.json (clave = slug del producto)
+//    o agregás una entrada en `reviewOverrides` de abajo.
+//
+// Si un producto no tiene reseñas propias, se le asignan reseñas del pool
+// genérico (siempre las mismas para el mismo producto).
+
+import imported from "./reviews-1688.json";
 
 export interface Review {
   author: string;
@@ -28,10 +29,19 @@ export const countryFlags: Record<string, string> = {
   US: "🇺🇸",
   CA: "🇨🇦",
   GB: "🇬🇧",
+  CN: "🇨🇳",
+  ES: "🇪🇸",
+  MX: "🇲🇽",
+  CL: "🇨🇱",
+  AR: "🇦🇷",
 };
 
-/** Reseñas específicas por producto (slug → reseñas). Editá acá las de 1688. */
+/** Reseñas importadas desde 1688 / SUP (generadas por el script o a mano). */
+const importedReviews = (imported as { reviews?: Record<string, Review[]> }).reviews ?? {};
+
+/** Reseñas específicas por producto escritas a mano (tienen prioridad). */
 export const reviewOverrides: Record<string, Review[]> = {};
+
 
 /** Pool genérico usado cuando el producto todavía no tiene reseñas propias. */
 const reviewPool: Review[] = [
