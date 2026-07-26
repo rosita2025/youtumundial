@@ -17,6 +17,9 @@ import {
 } from '@/lib/checkout/order';
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck } from 'lucide-react';
 import { toast } from 'sonner';
+import { StripeCartCheckout } from '@/components/StripeCartCheckout';
+import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
+
 
 const methods: { id: PaymentMethod; title: string; description: string; icon: typeof CreditCard }[] = [
   {
