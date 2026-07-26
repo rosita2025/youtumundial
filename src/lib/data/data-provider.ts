@@ -7,14 +7,24 @@
 
 import { Product, Collection, FilterOptions, SortOption } from './types';
 import { dummyProducts, dummyCollections } from './dummy-data';
+import { mapSupCatalog, SupRawProduct } from '../suppliers/sup';
+import supCatalog from '../suppliers/sup-catalog.json';
 
 let catalogCache: Product[] | null = null;
 
-/** Catálogo de la tienda. */
+/**
+ * Catálogo de la tienda.
+ * Si hay productos importados de SUP Dropshipping (sup-catalog.json) se usan
+ * esos; si no, se muestra el catálogo demo.
+ */
 async function getCatalog(): Promise<Product[]> {
-  if (!catalogCache) catalogCache = dummyProducts;
+  if (!catalogCache) {
+    const imported = mapSupCatalog(supCatalog as SupRawProduct[]);
+    catalogCache = imported.length > 0 ? imported : dummyProducts;
+  }
   return catalogCache;
 }
+
 
 /**
  * Get all products with optional filtering and sorting
