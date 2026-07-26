@@ -68,8 +68,25 @@ function parseRating(lines: string[]): number {
   return 5;
 }
 
-/** Convierte el texto pegado del modal de 1688 en filas de reseñas. */
-export function parsePasted1688Reviews(text: string, slug: string): PastedReviewRow[] {
+/** Si pegan HTML (por ejemplo "Copy element" del inspector), lo pasa a texto plano. */
+function htmlToText(input: string): string {
+  if (!/<\/?[a-z][\s\S]*>/i.test(input)) return input;
+  return input
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(div|p|li|tr|section|span)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+/** Convierte el texto (o HTML) pegado del modal de 1688 en filas de reseñas. */
+export function parsePasted1688Reviews(input: string, slug: string): PastedReviewRow[] {
+  const text = htmlToText(input);
   const lines = text
     .split(/\r?\n/)
     .map((l) => l.trim())
