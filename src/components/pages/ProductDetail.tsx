@@ -105,7 +105,16 @@ const ProductDetail = () => {
               <h1 className="font-heading text-3xl md:text-4xl font-medium">
                 {product.title}
               </h1>
+              {reviewSummary.total > 0 && (
+                <a href="#resenas" className="mt-2 inline-flex items-center gap-2 text-sm">
+                  <StarRating rating={reviewSummary.average} size={15} />
+                  <span className="text-muted-foreground underline-offset-4 hover:underline">
+                    {reviewSummary.average.toFixed(1)} · {reviewSummary.total} reseñas
+                  </span>
+                </a>
+              )}
               <div className="flex items-center gap-3 mt-2">
+
                 <span className="text-2xl font-medium">
                   {formatPrice(product.price)}
                 </span>
