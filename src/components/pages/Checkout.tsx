@@ -24,10 +24,11 @@ import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 const methods: { id: PaymentMethod; title: string; description: string; icon: typeof CreditCard }[] = [
   {
     id: 'card',
-    title: 'Tarjeta (Mercado Pago)',
-    description: 'Visa, Mastercard y Amex de Perú, EE.UU., Canadá y Reino Unido. Pago en cuotas disponible.',
+    title: 'Tarjeta de crédito o débito',
+    description: 'Visa, Mastercard y Amex de Perú, EE.UU., Canadá y Reino Unido. Pago seguro en la misma página.',
     icon: CreditCard,
   },
+
   {
     id: 'paypal',
     title: 'PayPal',
