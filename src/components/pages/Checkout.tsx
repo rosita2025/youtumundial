@@ -48,6 +48,8 @@ const Checkout = () => {
   const { cart } = useCart();
   const navigate = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>('card');
+  const [showStripe, setShowStripe] = useState(false);
+
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
 
