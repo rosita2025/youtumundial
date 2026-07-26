@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2, Link2, Loader2, Rocket } from "lucide-react";
+import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2, Link2, Loader2, Rocket, ClipboardPaste } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
 import { scrape1688Reviews } from "@/lib/reviews/scrape-1688.functions";
 import existingFile from "@/lib/reviews/reviews-1688.json";
 import { getProducts } from "@/lib/data/data-provider";
+import { parsePasted1688Reviews } from "@/lib/reviews/paste-1688";
 import { readLocalReviews, writeLocalReviews, clearLocalReviews } from "@/lib/reviews/local-store";
 
 
@@ -51,6 +52,8 @@ function AdminReviewsPage() {
   const [url, setUrl] = useState("");
   const [urlSlug, setUrlSlug] = useState("");
   const [scraping, setScraping] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [pasteSlug, setPasteSlug] = useState("");
   const [localReviews, setLocalReviews] = useState<ReviewsBySlug>({});
   const [published, setPublished] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -162,6 +165,33 @@ function AdminReviewsPage() {
     }
   }
 
+  function importFromPaste() {
+    setError(null);
+    const rows = parsePasted1688Reviews(pasteText, pasteSlug.trim());
+    if (rows.length === 0) {
+      setError(
+        "No pude reconocer reseñas en ese texto. Copiá el contenido del panel \"View reviews\" de 1688 (nombre, fecha y comentario de cada una).",
+      );
+      return;
+    }
+    const text = JSON.stringify(rows, null, 2);
+    setFilename(`1688-${pasteSlug.trim()}.json`);
+    setRawText(text);
+    analyze(text, "pegado.json");
+
+    const parsedNow = parseReviewsInput(text, "pegado.json");
+    const mergedNow = mergeReviews(
+      { ...existingReviews, ...(readLocalReviews() as ReviewsBySlug) },
+      parsedNow.bySlug,
+    );
+    writeLocalReviews(mergedNow.merged);
+    setLocalReviews(mergedNow.merged);
+    setPublished(countReviews(mergedNow.merged));
+    toast.success(`${rows.length} reseñas reales importadas y publicadas`, {
+      description: `→ /products/${pasteSlug.trim()}`,
+    });
+  }
+
   function publish() {
     if (!result) return;
     writeLocalReviews(result.merged);
@@ -243,6 +273,36 @@ function AdminReviewsPage() {
         </p>
       </section>
 
+
+      <section className="mb-6 rounded-xl border bg-card p-6">
+        <h2 className="flex items-center gap-2 text-lg font-medium">
+          <ClipboardPaste className="h-4 w-4" />
+          Pegar reseñas copiadas de 1688 (fiel al original)
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          En 1688 abrí <strong>View reviews</strong>, seleccioná y copiá el texto del panel (nombre, fecha y
+          comentario de cada reseña) y pegalo acá. Se importan tal cual aparecen, sin inventar nada.
+        </p>
+        <Textarea
+          value={pasteText}
+          onChange={(e) => setPasteText(e.target.value)}
+          rows={8}
+          className="mt-4 font-mono text-xs"
+          placeholder={"Purchase anonymously\n35 days ago\nAlready purchased:1Box Color/ivory/size/m\nThe lower circumference is a bit warped..."}
+        />
+        <div className="mt-3 grid gap-3 sm:grid-cols-[240px_auto]">
+          <Input
+            list="catalogo-slugs"
+            value={pasteSlug}
+            onChange={(e) => setPasteSlug(e.target.value)}
+            placeholder="slug del producto"
+          />
+          <Button onClick={importFromPaste} disabled={!pasteText.trim() || !pasteSlug.trim()}>
+            <ClipboardPaste className="mr-2 h-4 w-4" />
+            Importar y publicar
+          </Button>
+        </div>
+      </section>
 
       <section className="rounded-xl border bg-card p-6">
         <div className="flex flex-wrap items-center gap-3">

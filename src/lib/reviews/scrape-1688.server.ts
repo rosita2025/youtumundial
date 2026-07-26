@@ -39,6 +39,7 @@ const REVIEW_SCHEMA = {
           rating: { type: "number" },
           date: { type: "string" },
           body: { type: "string" },
+          bodyOriginal: { type: "string" },
           size: { type: "string" },
           photos: { type: "array", items: { type: "string" } },
         },
@@ -54,7 +55,9 @@ const EXTRACTION_PROMPT = [
   "Para cada reseña devuelve: nombre del comprador (author), puntaje de 1 a 5 (rating),",
   "fecha (date, formato YYYY-MM-DD), texto del comentario (body), talla o variante (size)",
   "y URLs de fotos del comprador (photos).",
-  "Traduce el texto del comentario y el nombre del producto al español neutro, conservando el sentido original.",
+  "Devuelve además bodyOriginal: el texto EXACTO del comentario tal como aparece en la página, sin traducir ni editar.",
+  "Traduce solo el campo body al español neutro, conservando el sentido original.",
+  "PROHIBIDO inventar, resumir o completar reseñas: si un dato no está visible, dejalo vacío.",
   "Si la página no muestra reseñas, devuelve una lista vacía.",
 ].join(" ");
 
@@ -87,6 +90,21 @@ function firecrawlRequest(): { url: string; headers: Record<string, string> } {
   };
 }
 
+const normalizeForMatch = (value: string) =>
+  value.toLowerCase().replace(/\s+/g, " ").replace(/[^\p{L}\p{N} ]/gu, "");
+
+/** Verifica que un fragmento del comentario exista realmente en la página leída. */
+function isGrounded(text: string, pageText: string): boolean {
+  const normalized = normalizeForMatch(text);
+  if (normalized.length < 8) return false;
+  const snippet = normalized.slice(0, 40);
+  if (pageText.includes(snippet)) return true;
+  const words = normalized.split(" ").filter((w) => w.length > 3);
+  if (words.length === 0) return false;
+  const hits = words.filter((w) => pageText.includes(w)).length;
+  return hits / words.length >= 0.8;
+}
+
 const normalizeDate = (value: unknown): string => {
   const raw = String(value ?? "").trim();
   const match = raw.match(/(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})/);
@@ -110,7 +128,7 @@ export async function scrapeReviewsFrom1688(
       url,
       onlyMainContent: false,
       waitFor: 4000,
-      formats: [{ type: "json", schema: REVIEW_SCHEMA, prompt: EXTRACTION_PROMPT }],
+      formats: ["markdown", { type: "json", schema: REVIEW_SCHEMA, prompt: EXTRACTION_PROMPT }],
     }),
   });
 
@@ -121,16 +139,28 @@ export async function scrapeReviewsFrom1688(
   }
 
   const payload = (await response.json()) as {
+    markdown?: string;
     json?: { productTitle?: string; reviews?: Record<string, unknown>[] };
-    data?: { json?: { productTitle?: string; reviews?: Record<string, unknown>[] } };
+    data?: { markdown?: string; json?: { productTitle?: string; reviews?: Record<string, unknown>[] } };
   };
   const extracted = payload.json ?? payload.data?.json ?? {};
+  const pageText = normalizeForMatch(payload.markdown ?? payload.data?.markdown ?? "");
   const reviews = Array.isArray(extracted.reviews) ? extracted.reviews : [];
 
+  let discarded = 0;
   const rows: ScrapedReviewRow[] = reviews
     .map((r) => {
       const body = String(r.body ?? "").trim();
       if (!body) return null;
+
+      // Anti-invención: la reseña solo se acepta si su texto original
+      // aparece de verdad en el HTML leído. Así no se cuelan reseñas
+      // generadas por el modelo que no existen en 1688.
+      const original = String(r.bodyOriginal ?? "").trim();
+      if (pageText && !isGrounded(original || body, pageText)) {
+        discarded += 1;
+        return null;
+      }
       const rating = Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5)));
       const photos = Array.isArray(r.photos) ? r.photos.map(String).filter(Boolean) : [];
       const size = String(r.size ?? "").trim();
@@ -155,7 +185,11 @@ export async function scrapeReviewsFrom1688(
     sourceUrl: url,
     notice:
       rows.length === 0
-        ? "1688 no mostró reseñas en el HTML público de esa URL (normalmente quedan detrás del login). Probá pegando el HTML de la página ya abierta con tu sesión, o usá el export de SUP."
-        : undefined,
+        ? discarded > 0
+          ? "Las reseñas que devolvió el lector no coinciden con el contenido real de la página (1688 las carga dentro de un panel con JavaScript), así que las descarté para no publicar reseñas inventadas. Abrí \"View reviews\" en 1688, copiá el texto del panel y pegalo en \"Pegar reseñas copiadas de 1688\"."
+          : "1688 no mostró reseñas en el HTML público de esa URL (normalmente quedan detrás del login). Probá pegando el HTML de la página ya abierta con tu sesión, o usá el export de SUP."
+        : discarded > 0
+          ? `Se descartaron ${discarded} reseñas que no coincidían con el texto real de la página.`
+          : undefined,
   };
 }
