@@ -1,3 +1,4 @@
+import { reviewFingerprint, isNearDuplicate } from "./fingerprint";
 // Reseñas importadas (estilo 1688 / proveedor), traducidas al español.
 //
 // DOS FORMAS DE CARGARLAS:
@@ -167,8 +168,9 @@ export function getProductReviews(
   for (const list of [reviewOverrides[slug], extra?.[slug], importedReviews[slug]]) {
     for (const r of list ?? []) {
       if (r.published === false) continue;
-      const key = `${r.author.toLowerCase()}|${r.body.trim().toLowerCase().slice(0, 60)}`;
-      if (seen.has(key)) continue;
+      // Anti-duplicados estricto: hash del contenido + similitud de texto.
+      const key = reviewFingerprint(r);
+      if (seen.has(key) || isNearDuplicate(r, merged)) continue;
       seen.add(key);
       merged.push(r);
     }
