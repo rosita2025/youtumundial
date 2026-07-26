@@ -162,10 +162,18 @@ export function getProductReviews(
 ): Review[] {
   // 1) reseñas escritas a mano, 2) publicadas desde el panel, 3) importadas
   //    de 1688, 4) pool genérico
-  const custom = (reviewOverrides[slug] ?? extra?.[slug] ?? importedReviews[slug])?.filter(
-    (r) => r.published !== false,
-  );
-  if (custom?.length) return [...custom].sort((a, b) => b.date.localeCompare(a.date));
+  const merged: Review[] = [];
+  const seen = new Set<string>();
+  for (const list of [reviewOverrides[slug], extra?.[slug], importedReviews[slug]]) {
+    for (const r of list ?? []) {
+      if (r.published === false) continue;
+      const key = `${r.author.toLowerCase()}|${r.body.trim().toLowerCase().slice(0, 60)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(r);
+    }
+  }
+  if (merged.length) return merged.sort((a, b) => b.date.localeCompare(a.date));
 
 
 
