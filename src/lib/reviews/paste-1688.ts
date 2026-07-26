@@ -33,7 +33,7 @@ const NOISE = [
 ];
 
 const PURCHASE_LINE = /^already purchased|^已购买|^购买/i;
-const BADGES = /\b(PLUS|专业买家|回头客|Shanghai|Beijing|Guangdong|Zhejiang|Jiangsu|Fujian|Shandong)\b/g;
+const BADGES = /(专业买家|回头客|匿名购买)|\b(PLUS|Shanghai|Beijing|Guangdong|Zhejiang|Jiangsu|Fujian|Shandong)\b/g;
 
 function cleanAuthor(line: string): string {
   const cleaned = line.replace(BADGES, "").replace(/\s{2,}/g, " ").trim();
