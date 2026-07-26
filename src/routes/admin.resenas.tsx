@@ -161,16 +161,18 @@ function AdminReviewsPage() {
     if (fileInput.current) fileInput.current.value = "";
   }
 
-  async function importFromUrl() {
+  async function importFromUrl(all = true) {
     setScraping(true);
     setError(null);
     try {
       const cookieValue = cookie.trim();
       if (cookieValue) sessionStorage.setItem("1688_cookie", cookieValue);
       else sessionStorage.removeItem("1688_cookie");
-      const res = await scrape({
-        data: { url: url.trim(), slug: urlSlug.trim(), cookie: cookieValue, limit: maxReviews },
-      });
+      const payload = {
+        data: { url: url.trim(), slug: urlSlug.trim(), cookie: cookieValue, limit: all ? 200 : maxReviews },
+      };
+      const res = all ? await syncAll(payload) : await scrape(payload);
+
       if (res.rows.length === 0) {
         setError(res.notice ?? "No se encontraron reseñas en esa URL.");
         logImport({
