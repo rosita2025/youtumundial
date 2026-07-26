@@ -58,7 +58,29 @@ function AdminReviewsPage() {
   const [localReviews, setLocalReviews] = useState<ReviewsBySlug>({});
   const [published, setPublished] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
+  const pasteFileInput = useRef<HTMLInputElement>(null);
   const scrape = useServerFn(scrape1688Reviews);
+
+  const previewPasteCount = useMemo(
+    () => (pasteText.trim() ? parsePasted1688Reviews(pasteText, pasteSlug.trim() || "preview").length : 0),
+    [pasteText, pasteSlug],
+  );
+
+  async function loadPasteFile(file: File) {
+    try {
+      const text = await file.text();
+      setPasteText(text);
+      const found = parsePasted1688Reviews(text, pasteSlug.trim() || "preview").length;
+      toast.success(`Archivo cargado: ${file.name}`, {
+        description: found
+          ? `${found} reseñas detectadas. Elegí el slug y tocá "Importar y publicar".`
+          : "No detecté reseñas todavía; probá guardando la página con el panel de reseñas abierto.",
+      });
+    } catch {
+      toast.error("No pude leer ese archivo.");
+    }
+  }
+
 
   useEffect(() => {
     setCookie(sessionStorage.getItem("1688_cookie") ?? "");
