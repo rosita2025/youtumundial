@@ -12,7 +12,7 @@ import { Product, ProductVariant } from '@/lib/data/types';
 import { formatPrice, calculateDiscount } from '@/lib/utils/format';
 import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
-import { getReviewSummary } from '@/lib/reviews/reviews';
+import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { Minus, Plus, Truck, RotateCcw, Shield } from 'lucide-react';
 
 const ProductDetail = () => {
@@ -83,7 +83,7 @@ const ProductDetail = () => {
     ? calculateDiscount(product.price, product.compareAtPrice)
     : 0;
 
-  const reviewSummary = getReviewSummary(product.slug);
+  const reviewSummary = useReviewSummary(product.slug);
 
   return (
     <Layout>
