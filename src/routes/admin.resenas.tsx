@@ -58,7 +58,29 @@ function AdminReviewsPage() {
   const [localReviews, setLocalReviews] = useState<ReviewsBySlug>({});
   const [published, setPublished] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
+  const pasteFileInput = useRef<HTMLInputElement>(null);
   const scrape = useServerFn(scrape1688Reviews);
+
+  const previewPasteCount = useMemo(
+    () => (pasteText.trim() ? parsePasted1688Reviews(pasteText, pasteSlug.trim() || "preview").length : 0),
+    [pasteText, pasteSlug],
+  );
+
+  async function loadPasteFile(file: File) {
+    try {
+      const text = await file.text();
+      setPasteText(text);
+      const found = parsePasted1688Reviews(text, pasteSlug.trim() || "preview").length;
+      toast.success(`Archivo cargado: ${file.name}`, {
+        description: found
+          ? `${found} reseñas detectadas. Elegí el slug y tocá "Importar y publicar".`
+          : "No detecté reseñas todavía; probá guardando la página con el panel de reseñas abierto.",
+      });
+    } catch {
+      toast.error("No pude leer ese archivo.");
+    }
+  }
+
 
   useEffect(() => {
     setCookie(sessionStorage.getItem("1688_cookie") ?? "");
@@ -319,20 +341,43 @@ function AdminReviewsPage() {
       <section className="mb-6 rounded-xl border bg-card p-6">
         <h2 className="flex items-center gap-2 text-lg font-medium">
           <ClipboardPaste className="h-4 w-4" />
-          Pegar reseñas copiadas de 1688 (fiel al original)
+          Pegar o subir el HTML del panel “View reviews” (fiel al original)
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          En 1688 abrí <strong>View reviews</strong>, seleccioná y copiá el texto del panel (nombre, fecha y
-          comentario de cada reseña) y pegalo acá. Se importan tal cual aparecen, sin inventar nada.
+          En 1688 abrí <strong>View reviews</strong> y: (a) copiá el texto del panel, (b) clic derecho →
+          <em> Inspeccionar</em> → <em>Copy element</em> para pegar el HTML, o (c) guardá la página
+          (Ctrl+S) y subí el archivo <code>.html</code> acá. Se importan tal cual aparecen, sin inventar nada.
         </p>
+        <input
+          ref={pasteFileInput}
+          type="file"
+          accept=".html,.htm,.txt,.json,.md"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void loadPasteFile(file);
+            e.target.value = "";
+          }}
+        />
         <Textarea
           value={pasteText}
           onChange={(e) => setPasteText(e.target.value)}
+          onDrop={(e) => {
+            const file = e.dataTransfer.files?.[0];
+            if (file) {
+              e.preventDefault();
+              void loadPasteFile(file);
+            }
+          }}
           rows={8}
           className="mt-4 font-mono text-xs"
-          placeholder={"Purchase anonymously\n35 days ago\nAlready purchased:1Box Color/ivory/size/m\nThe lower circumference is a bit warped..."}
+          placeholder={"Arrastrá acá el .html guardado, o pegá:\n<div class=\"offer-review-item\">…</div>\n\nPurchase anonymously\n35 days ago\nAlready purchased:1Box Color/ivory/size/m\nThe lower circumference is a bit warped..."}
         />
-        <div className="mt-3 grid gap-3 sm:grid-cols-[240px_auto]">
+        <div className="mt-3 grid gap-3 sm:grid-cols-[auto_240px_auto]">
+          <Button variant="outline" onClick={() => pasteFileInput.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" />
+            Subir archivo HTML
+          </Button>
           <Input
             list="catalogo-slugs"
             value={pasteSlug}
@@ -344,7 +389,14 @@ function AdminReviewsPage() {
             Importar y publicar
           </Button>
         </div>
+        {pasteText.trim() && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {pasteText.length.toLocaleString()} caracteres cargados ·{" "}
+            {previewPasteCount} reseñas detectadas
+          </p>
+        )}
       </section>
+
 
       <section className="rounded-xl border bg-card p-6">
         <div className="flex flex-wrap items-center gap-3">
