@@ -1,7 +1,7 @@
 import { Link } from '@/lib/router-compat';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Instagram, Twitter, Facebook } from 'lucide-react';
+import { Instagram, Facebook } from 'lucide-react';
 
 const footerLinks = {
   shop: [
