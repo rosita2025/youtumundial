@@ -21,6 +21,8 @@ import { getProducts } from "@/lib/data/data-provider";
 import { parsePasted1688Reviews } from "@/lib/reviews/paste-1688";
 import { readLocalReviews, writeLocalReviews, clearLocalReviews } from "@/lib/reviews/local-store";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
+import { ImportHistory } from "@/components/admin/ImportHistory";
+import { logImport } from "@/lib/reviews/import-log";
 
 
 
@@ -56,6 +58,7 @@ function AdminReviewsPage() {
   const [scraping, setScraping] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [pasteSlug, setPasteSlug] = useState("");
+  const [pasteOrigin, setPasteOrigin] = useState("");
   const [cookie, setCookie] = useState("");
   const [localReviews, setLocalReviews] = useState<ReviewsBySlug>({});
   const [published, setPublished] = useState(0);
@@ -72,6 +75,7 @@ function AdminReviewsPage() {
     try {
       const text = await file.text();
       setPasteText(text);
+      setPasteOrigin(file.name);
       const found = parsePasted1688Reviews(text, pasteSlug.trim() || "preview").length;
       toast.success(`Archivo cargado: ${file.name}`, {
         description: found
@@ -168,6 +172,16 @@ function AdminReviewsPage() {
       });
       if (res.rows.length === 0) {
         setError(res.notice ?? "No se encontraron reseñas en esa URL.");
+        logImport({
+          source: "url",
+          origin: url.trim(),
+          slug: urlSlug.trim(),
+          found: 0,
+          published: 0,
+          duplicates: 0,
+          status: "error",
+          message: res.notice ?? "Sin reseñas en la página",
+        });
         return;
       }
       const text = JSON.stringify(res.rows, null, 2);
@@ -186,11 +200,33 @@ function AdminReviewsPage() {
       setLocalReviews(mergedNow.merged);
       setPublished(countReviews(mergedNow.merged));
 
+      logImport({
+        source: "url",
+        origin: res.productTitle ? `${res.productTitle} · ${url.trim()}` : url.trim(),
+        slug: urlSlug.trim(),
+        found: res.rows.length,
+        published: mergedNow.added,
+        duplicates: mergedNow.duplicates,
+        status: mergedNow.added === 0 ? "parcial" : "ok",
+        message: mergedNow.added === 0 ? "Todas ya estaban cargadas" : undefined,
+      });
+
       toast.success(`${res.rows.length} reseñas leídas y publicadas`, {
         description: `${res.productTitle || url} → /products/${urlSlug.trim()}`,
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo leer esa URL de 1688.");
+      const message = e instanceof Error ? e.message : "No se pudo leer esa URL de 1688.";
+      logImport({
+        source: "url",
+        origin: url.trim(),
+        slug: urlSlug.trim(),
+        found: 0,
+        published: 0,
+        duplicates: 0,
+        status: "error",
+        message,
+      });
+      setError(message);
     } finally {
       setScraping(false);
     }
@@ -203,6 +239,16 @@ function AdminReviewsPage() {
       setError(
         "No pude reconocer reseñas en ese texto. Copiá el contenido del panel \"View reviews\" de 1688 (nombre, fecha y comentario de cada una).",
       );
+      logImport({
+        source: pasteOrigin ? "archivo" : "pegado",
+        origin: pasteOrigin || `Texto pegado (${pasteText.trim().length} caracteres)`,
+        slug: pasteSlug.trim(),
+        found: 0,
+        published: 0,
+        duplicates: 0,
+        status: "error",
+        message: "No se reconocieron reseñas en el contenido",
+      });
       return;
     }
     const text = JSON.stringify(rows, null, 2);
@@ -218,6 +264,16 @@ function AdminReviewsPage() {
     writeLocalReviews(mergedNow.merged);
     setLocalReviews(mergedNow.merged);
     setPublished(countReviews(mergedNow.merged));
+    logImport({
+      source: pasteOrigin ? "archivo" : "pegado",
+      origin: pasteOrigin || `Texto pegado (${pasteText.trim().length} caracteres)`,
+      slug: pasteSlug.trim(),
+      found: rows.length,
+      published: mergedNow.added,
+      duplicates: mergedNow.duplicates,
+      status: mergedNow.added === 0 ? "parcial" : "ok",
+      message: mergedNow.added === 0 ? "Todas ya estaban cargadas" : undefined,
+    });
     toast.success(`${rows.length} reseñas reales importadas y publicadas`, {
       description: `→ /products/${pasteSlug.trim()}`,
     });
@@ -225,6 +281,16 @@ function AdminReviewsPage() {
 
   function publish() {
     if (!result) return;
+    logImport({
+      source: "archivo",
+      origin: filename || "Archivo CSV/JSON",
+      slug: parsed?.slugs.join(", ") ?? "",
+      found: parsed?.rows ?? 0,
+      published: result.added,
+      duplicates: result.duplicates,
+      status: result.added === 0 ? "parcial" : "ok",
+      message: result.added === 0 ? "Todas ya estaban cargadas" : undefined,
+    });
     writeLocalReviews(result.merged);
     setLocalReviews(result.merged);
     setPublished(countReviews(result.merged));
@@ -266,6 +332,8 @@ function AdminReviewsPage() {
           </Button>
         </div>
       )}
+
+      <ImportHistory />
 
       <ReviewsTable />
 
@@ -366,7 +434,10 @@ function AdminReviewsPage() {
         />
         <Textarea
           value={pasteText}
-          onChange={(e) => setPasteText(e.target.value)}
+          onChange={(e) => {
+            setPasteText(e.target.value);
+            setPasteOrigin("");
+          }}
           onDrop={(e) => {
             const file = e.dataTransfer.files?.[0];
             if (file) {
