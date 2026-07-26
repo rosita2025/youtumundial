@@ -22,6 +22,8 @@ export interface Review {
   size?: string;
   verified?: boolean;
   photos?: string[];
+  /** false = oculta en la tienda (borrador del panel). Por defecto se publica. */
+  published?: boolean;
 }
 
 export const countryFlags: Record<string, string> = {
@@ -160,7 +162,9 @@ export function getProductReviews(
 ): Review[] {
   // 1) reseñas escritas a mano, 2) publicadas desde el panel, 3) importadas
   //    de 1688, 4) pool genérico
-  const custom = reviewOverrides[slug] ?? extra?.[slug] ?? importedReviews[slug];
+  const custom = (reviewOverrides[slug] ?? extra?.[slug] ?? importedReviews[slug])?.filter(
+    (r) => r.published !== false,
+  );
   if (custom?.length) return [...custom].sort((a, b) => b.date.localeCompare(a.date));
 
 
