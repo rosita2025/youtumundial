@@ -43,11 +43,20 @@ export function buildWooCheckoutUrl(cart: Cart, method: PaymentMethod): string |
   return `${base}/checkout/?${params.toString()}`;
 }
 
+/**
+ * Link de pago de Mercado Pago (Checkout Pro).
+ * Provisional hasta tener backend: usa el link fijo del panel de MP.
+ */
+export function buildMercadoPagoLink(): string | null {
+  return checkoutConfig.mercadoPagoLink || null;
+}
+
 /** Link de PayPal.me con el monto exacto en USD. */
 export function buildPaypalLink(total: number): string | null {
   if (!checkoutConfig.paypalMe) return null;
   return `https://paypal.me/${checkoutConfig.paypalMe}/${total.toFixed(2)}USD`;
 }
+
 
 /** Mensaje de WhatsApp con el detalle del pedido para pagos Yape/Plin. */
 export function buildWhatsappOrderLink(
