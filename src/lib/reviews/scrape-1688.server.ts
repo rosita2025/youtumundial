@@ -115,10 +115,26 @@ const normalizeDate = (value: unknown): string => {
   return new Date().toISOString().slice(0, 10);
 };
 
+/** Limpia la cadena de cookies pegada por el usuario (una línea tipo "a=1; b=2"). */
+function sanitizeCookie(raw?: string): string {
+  if (!raw) return "";
+  return raw
+    .replace(/^\s*cookie\s*:\s*/i, "")
+    .split(/[\n\r]+/)
+    .join("; ")
+    .split(";")
+    .map((c) => c.trim())
+    .filter((c) => /^[^=\s]+=/.test(c))
+    .join("; ")
+    .slice(0, 8000);
+}
+
 export async function scrapeReviewsFrom1688(
   url: string,
   slug: string,
+  cookie?: string,
 ): Promise<ScrapeReviewsResult> {
+  const cookieHeader = sanitizeCookie(cookie);
   const { url: endpoint, headers } = firecrawlRequest();
 
   const response = await fetch(endpoint, {
@@ -127,7 +143,10 @@ export async function scrapeReviewsFrom1688(
     body: JSON.stringify({
       url,
       onlyMainContent: false,
-      waitFor: 4000,
+      waitFor: cookieHeader ? 8000 : 4000,
+      // Con las cookies de la sesión del usuario, 1688 sirve las reseñas
+      // que normalmente esconde detrás del login.
+      ...(cookieHeader ? { headers: { Cookie: cookieHeader } } : {}),
       formats: ["markdown", { type: "json", schema: REVIEW_SCHEMA, prompt: EXTRACTION_PROMPT }],
     }),
   });
@@ -185,7 +204,9 @@ export async function scrapeReviewsFrom1688(
     sourceUrl: url,
     notice:
       rows.length === 0
-        ? discarded > 0
+        ? cookieHeader
+          ? "Ni con tu sesión aparecieron reseñas en el HTML de esa URL: 1688 las carga dentro del panel \"View reviews\" por JavaScript. Copiá el texto de ese panel y pegalo en \"Pegar reseñas copiadas de 1688\"."
+          : discarded > 0
           ? "Las reseñas que devolvió el lector no coinciden con el contenido real de la página (1688 las carga dentro de un panel con JavaScript), así que las descarté para no publicar reseñas inventadas. Abrí \"View reviews\" en 1688, copiá el texto del panel y pegalo en \"Pegar reseñas copiadas de 1688\"."
           : "1688 no mostró reseñas en el HTML público de esa URL (normalmente quedan detrás del login). Probá pegando el HTML de la página ya abierta con tu sesión, o usá el export de SUP."
         : discarded > 0
