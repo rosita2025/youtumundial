@@ -5,25 +5,25 @@ import { Instagram, Twitter, Facebook } from 'lucide-react';
 
 const footerLinks = {
   shop: [
-    { label: 'All Products', href: '/products' },
-    { label: "Men's Collection", href: '/collections/mens' },
-    { label: "Women's Collection", href: '/collections/womens' },
-    { label: 'New Arrivals', href: '/collections/new-arrivals' },
-    { label: 'Sale', href: '/collections/sale' },
+    { label: 'Todos los productos', href: '/products' },
+    { label: 'Colección hombre', href: '/collections/mens' },
+    { label: 'Colección mujer', href: '/collections/womens' },
+    { label: 'Nuevos ingresos', href: '/collections/new-arrivals' },
+    { label: 'Ofertas', href: '/collections/sale' },
   ],
   help: [
-    { label: 'Contact Us', href: '#' },
-    { label: 'Shipping & Returns', href: '#' },
-    { label: 'FAQ', href: '#' },
-    { label: 'Size Guide', href: '#' },
+    { label: 'Contacto', href: '/contact' },
+    { label: 'Envíos y devoluciones', href: '/shipping' },
+    { label: 'Términos y condiciones', href: '/terms' },
+    { label: 'Política de privacidad', href: '/privacy' },
   ],
   company: [
-    { label: 'About Us', href: '#' },
-    { label: 'Sustainability', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Press', href: '#' },
+    { label: 'Sobre nosotros', href: '/about' },
+    { label: 'Aviso legal', href: '/disclaimer' },
+    { label: 'Buscar productos', href: '/search' },
   ],
 };
+
 
 export function Footer() {
   return (
@@ -61,7 +61,7 @@ export function Footer() {
 
           {/* Shop Links */}
           <div>
-            <h4 className="font-medium mb-4">Shop</h4>
+            <h4 className="font-medium mb-4">Tienda</h4>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
                 <li key={link.label}>
@@ -78,7 +78,7 @@ export function Footer() {
 
           {/* Help Links */}
           <div>
-            <h4 className="font-medium mb-4">Help</h4>
+            <h4 className="font-medium mb-4">Ayuda</h4>
             <ul className="space-y-3">
               {footerLinks.help.map((link) => (
                 <li key={link.label}>
@@ -95,7 +95,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-medium mb-4">Company</h4>
+            <h4 className="font-medium mb-4">Empresa</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
