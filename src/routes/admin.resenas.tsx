@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2, Link2, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -13,8 +15,10 @@ import {
   type ParseResult,
   type ReviewsBySlug,
 } from "@/lib/reviews/import-1688";
+import { scrape1688Reviews } from "@/lib/reviews/scrape-1688.functions";
 import existingFile from "@/lib/reviews/reviews-1688.json";
 import { getProducts } from "@/lib/data/data-provider";
+
 
 export const Route = createFileRoute("/admin/resenas")({
   component: AdminReviewsPage,
@@ -43,13 +47,18 @@ function AdminReviewsPage() {
   const [parsed, setParsed] = useState<ParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [catalogSlugs, setCatalogSlugs] = useState<string[] | null>(null);
+  const [url, setUrl] = useState("");
+  const [urlSlug, setUrlSlug] = useState("");
+  const [scraping, setScraping] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const scrape = useServerFn(scrape1688Reviews);
 
   useEffect(() => {
     getProducts()
       .then((products) => setCatalogSlugs(products.map((p) => p.slug)))
       .catch(() => setCatalogSlugs([]));
   }, []);
+
 
   const result = useMemo(() => {
     if (!parsed) return null;
@@ -112,18 +121,80 @@ function AdminReviewsPage() {
     if (fileInput.current) fileInput.current.value = "";
   }
 
+  async function importFromUrl() {
+    setScraping(true);
+    setError(null);
+    try {
+      const res = await scrape({ data: { url: url.trim(), slug: urlSlug.trim() } });
+      if (res.rows.length === 0) {
+        setError(res.notice ?? "No se encontraron reseñas en esa URL.");
+        return;
+      }
+      const text = JSON.stringify(res.rows, null, 2);
+      setFilename(`1688-${urlSlug.trim()}.json`);
+      setRawText(text);
+      analyze(text, "url.json");
+      toast.success(`${res.rows.length} reseñas leídas de 1688`, {
+        description: res.productTitle || url,
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo leer esa URL de 1688.");
+    } finally {
+      setScraping(false);
+    }
+  }
+
   return (
     <main className="container mx-auto max-w-4xl px-4 py-12">
       <header className="mb-8">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Panel interno</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Importar reseñas de 1688</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Subí el CSV o JSON exportado de 1688 / SUP Dropshipping. Las reseñas se agrupan por{" "}
+          Pegá la URL del producto en 1688 y traé las reseñas automáticamente, o subí el CSV/JSON exportado de
+          1688 / SUP Dropshipping. Las reseñas se agrupan por{" "}
           <code className="rounded bg-muted px-1 py-0.5 text-xs">slug</code> de producto y se eliminan
           automáticamente las repetidas (mismo autor y mismo texto), tanto dentro del archivo como contra las
           que ya están cargadas.
         </p>
       </header>
+
+      <section className="mb-6 rounded-xl border bg-card p-6">
+        <h2 className="flex items-center gap-2 text-lg font-medium">
+          <Link2 className="h-4 w-4" />
+          Importar desde una URL de 1688
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Solo trae reseñas: nombre del comprador, comentario (traducido al español), puntaje, fecha y fotos.
+          Los productos y envíos siguen viniendo de SUP Dropshipping.
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_240px_auto]">
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://detail.1688.com/offer/123456789.html"
+          />
+          <Input
+            list="catalogo-slugs"
+            value={urlSlug}
+            onChange={(e) => setUrlSlug(e.target.value)}
+            placeholder="slug del producto"
+          />
+          <datalist id="catalogo-slugs">
+            {(catalogSlugs ?? []).map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
+          <Button onClick={() => void importFromUrl()} disabled={scraping || !url.trim() || !urlSlug.trim()}>
+            {scraping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link2 className="mr-2 h-4 w-4" />}
+            {scraping ? "Leyendo…" : "Traer reseñas"}
+          </Button>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Ojo: 1688 esconde muchas reseñas detrás del login. Si no aparece ninguna, abrí el producto con tu
+          sesión, copiá el HTML y pegalo abajo, o usá el export de SUP.
+        </p>
+      </section>
+
 
       <section className="rounded-xl border bg-card p-6">
         <div className="flex flex-wrap items-center gap-3">
