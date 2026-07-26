@@ -9,7 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
 import { checkoutConfig, shippingCountries } from '@/lib/checkout/config';
 import {
-  buildMercadoPagoLink,
+  
   buildPaypalLink,
   buildWhatsappOrderLink,
   getTotals,
