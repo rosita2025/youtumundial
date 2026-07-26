@@ -133,6 +133,7 @@ export async function scrapeReviewsFrom1688(
   url: string,
   slug: string,
   cookie?: string,
+  limit = 20,
 ): Promise<ScrapeReviewsResult> {
   const cookieHeader = sanitizeCookie(cookie);
   const { url: endpoint, headers } = firecrawlRequest();
@@ -196,7 +197,8 @@ export async function scrapeReviewsFrom1688(
       };
       return row;
     })
-    .filter((r): r is ScrapedReviewRow => r !== null);
+    .filter((r): r is ScrapedReviewRow => r !== null)
+    .slice(0, Math.max(1, limit));
 
   return {
     rows,
