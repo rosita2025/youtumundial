@@ -265,6 +265,9 @@ function AdminReviewsPage() {
         </div>
       )}
 
+      <ReviewsTable />
+
+
       <section className="mb-6 rounded-xl border bg-card p-6">
         <h2 className="flex items-center gap-2 text-lg font-medium">
           <Link2 className="h-4 w-4" />
