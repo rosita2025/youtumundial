@@ -188,8 +188,12 @@ const ProductDetail = () => {
                 <Shield size={18} className="text-muted-foreground" />
                 <span>2-year warranty included</span>
               </div>
-            </div>
-          </div>
+        </div>
+
+        {/* Reseñas */}
+        <ProductReviews slug={product.slug} />
+
+
         </div>
 
         {/* Related Products */}
