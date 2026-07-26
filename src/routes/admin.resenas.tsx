@@ -20,6 +20,8 @@ import existingFile from "@/lib/reviews/reviews-1688.json";
 import { getProducts } from "@/lib/data/data-provider";
 import { parsePasted1688Reviews } from "@/lib/reviews/paste-1688";
 import { readLocalReviews, writeLocalReviews, clearLocalReviews } from "@/lib/reviews/local-store";
+import { ReviewsTable } from "@/components/admin/ReviewsTable";
+
 
 
 export const Route = createFileRoute("/admin/resenas")({
@@ -264,6 +266,9 @@ function AdminReviewsPage() {
           </Button>
         </div>
       )}
+
+      <ReviewsTable />
+
 
       <section className="mb-6 rounded-xl border bg-card p-6">
         <h2 className="flex items-center gap-2 text-lg font-medium">
