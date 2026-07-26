@@ -1,4 +1,5 @@
-import { getReviewSummary, countryFlags } from "@/lib/reviews/reviews";
+import { countryFlags } from "@/lib/reviews/reviews";
+import { useReviewSummary } from "@/lib/reviews/use-reviews";
 import { StarRating } from "@/components/product/StarRating";
 import { BadgeCheck } from "lucide-react";
 
@@ -9,7 +10,7 @@ const dateFormatter = new Intl.DateTimeFormat("es-ES", {
 });
 
 export function ProductReviews({ slug }: { slug: string }) {
-  const { reviews, total, average, distribution } = getReviewSummary(slug);
+  const { reviews, total, average, distribution } = useReviewSummary(slug);
 
   if (!total) return null;
 

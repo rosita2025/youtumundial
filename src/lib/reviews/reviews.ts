@@ -154,9 +154,13 @@ function hash(slug: string): number {
   return h;
 }
 
-export function getProductReviews(slug: string): Review[] {
-  // 1) reseñas escritas a mano, 2) reseñas importadas de 1688, 3) pool genérico
-  const custom = reviewOverrides[slug] ?? importedReviews[slug];
+export function getProductReviews(
+  slug: string,
+  extra?: Record<string, Review[]>
+): Review[] {
+  // 1) reseñas escritas a mano, 2) publicadas desde el panel, 3) importadas
+  //    de 1688, 4) pool genérico
+  const custom = reviewOverrides[slug] ?? extra?.[slug] ?? importedReviews[slug];
   if (custom?.length) return [...custom].sort((a, b) => b.date.localeCompare(a.date));
 
 
@@ -169,8 +173,8 @@ export function getProductReviews(slug: string): Review[] {
   return picked.sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export function getReviewSummary(slug: string) {
-  const reviews = getProductReviews(slug);
+export function getReviewSummary(slug: string, extra?: Record<string, Review[]>) {
+  const reviews = getProductReviews(slug, extra);
   const total = reviews.length;
   const average = total ? reviews.reduce((s, r) => s + r.rating, 0) / total : 0;
   const distribution = [5, 4, 3, 2, 1].map((star) => ({
