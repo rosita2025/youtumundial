@@ -23,6 +23,7 @@ const ProductDetail = () => {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const reviewSummary = useReviewSummary(product?.slug ?? slug ?? '');
 
   useEffect(() => {
     async function loadData() {
@@ -82,8 +83,6 @@ const ProductDetail = () => {
   const discount = product.compareAtPrice
     ? calculateDiscount(product.price, product.compareAtPrice)
     : 0;
-
-  const reviewSummary = useReviewSummary(product.slug);
 
   return (
     <Layout>
