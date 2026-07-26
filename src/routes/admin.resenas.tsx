@@ -54,12 +54,14 @@ function AdminReviewsPage() {
   const [scraping, setScraping] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [pasteSlug, setPasteSlug] = useState("");
+  const [cookie, setCookie] = useState("");
   const [localReviews, setLocalReviews] = useState<ReviewsBySlug>({});
   const [published, setPublished] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
   const scrape = useServerFn(scrape1688Reviews);
 
   useEffect(() => {
+    setCookie(sessionStorage.getItem("1688_cookie") ?? "");
     const local = readLocalReviews() as ReviewsBySlug;
     setLocalReviews(local);
     setPublished(countReviews(local));
@@ -134,7 +136,12 @@ function AdminReviewsPage() {
     setScraping(true);
     setError(null);
     try {
-      const res = await scrape({ data: { url: url.trim(), slug: urlSlug.trim() } });
+      const cookieValue = cookie.trim();
+      if (cookieValue) sessionStorage.setItem("1688_cookie", cookieValue);
+      else sessionStorage.removeItem("1688_cookie");
+      const res = await scrape({
+        data: { url: url.trim(), slug: urlSlug.trim(), cookie: cookieValue },
+      });
       if (res.rows.length === 0) {
         setError(res.notice ?? "No se encontraron reseñas en esa URL.");
         return;
@@ -266,6 +273,41 @@ function AdminReviewsPage() {
             {scraping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link2 className="mr-2 h-4 w-4" />}
             {scraping ? "Leyendo…" : "Traer reseñas"}
           </Button>
+        </div>
+        <div className="mt-4 rounded-lg border border-dashed p-4">
+          <label className="text-sm font-medium">
+            Cookies de tu sesión de 1688 <span className="text-muted-foreground">(opcional)</span>
+          </label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Con tu login abierto en 1688: F12 → pestaña <strong>Network</strong> → clic en cualquier
+            petición a 1688 → <strong>Request Headers</strong> → copiá el valor completo de{" "}
+            <code className="rounded bg-muted px-1">cookie</code> y pegalo acá. Se guarda solo en esta
+            pestaña del navegador (se borra al cerrarla) y se usa únicamente para leer las reseñas
+            autenticadas.
+          </p>
+          <Textarea
+            value={cookie}
+            onChange={(e) => setCookie(e.target.value)}
+            rows={3}
+            className="mt-3 font-mono text-xs"
+            placeholder="cna=...; _tb_token_=...; cookie2=...; login=true"
+          />
+          {cookie.trim() && (
+            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+              <span>{cookie.split(";").filter((c) => c.includes("=")).length} cookies detectadas</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setCookie("");
+                  sessionStorage.removeItem("1688_cookie");
+                  toast.success("Cookies borradas de este navegador");
+                }}
+              >
+                Borrar
+              </Button>
+            </div>
+          )}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           Ojo: 1688 esconde muchas reseñas detrás del login. Si no aparece ninguna, abrí el producto con tu
