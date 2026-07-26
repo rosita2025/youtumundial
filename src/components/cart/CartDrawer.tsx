@@ -129,10 +129,11 @@ export function CartDrawer() {
                   Shipping and taxes calculated at checkout
                 </p>
                 <Button className="w-full" size="lg" asChild>
-                  <Link to="/cart" onClick={closeCart}>
-                    View Cart & Checkout
+                  <Link to="/checkout" onClick={closeCart}>
+                    Ir al checkout
                   </Link>
                 </Button>
+
                 <button
                   onClick={closeCart}
                   className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
