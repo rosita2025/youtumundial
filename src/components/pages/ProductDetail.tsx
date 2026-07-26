@@ -10,6 +10,9 @@ import { useCart } from '@/context/CartContext';
 import { getProduct, getRelatedProducts } from '@/lib/data/data-provider';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { formatPrice, calculateDiscount } from '@/lib/utils/format';
+import { ProductReviews } from '@/components/product/ProductReviews';
+import { StarRating } from '@/components/product/StarRating';
+import { getReviewSummary } from '@/lib/reviews/reviews';
 import { Minus, Plus, Truck, RotateCcw, Shield } from 'lucide-react';
 
 const ProductDetail = () => {
@@ -80,6 +83,8 @@ const ProductDetail = () => {
     ? calculateDiscount(product.price, product.compareAtPrice)
     : 0;
 
+  const reviewSummary = getReviewSummary(product.slug);
+
   return (
     <Layout>
       <div className="container-wide py-8 md:py-12">
@@ -100,7 +105,16 @@ const ProductDetail = () => {
               <h1 className="font-heading text-3xl md:text-4xl font-medium">
                 {product.title}
               </h1>
+              {reviewSummary.total > 0 && (
+                <a href="#resenas" className="mt-2 inline-flex items-center gap-2 text-sm">
+                  <StarRating rating={reviewSummary.average} size={15} />
+                  <span className="text-muted-foreground underline-offset-4 hover:underline">
+                    {reviewSummary.average.toFixed(1)} · {reviewSummary.total} reseñas
+                  </span>
+                </a>
+              )}
               <div className="flex items-center gap-3 mt-2">
+
                 <span className="text-2xl font-medium">
                   {formatPrice(product.price)}
                 </span>
@@ -177,6 +191,10 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Reseñas */}
+        <ProductReviews slug={product.slug} />
+
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
