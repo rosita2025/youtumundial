@@ -173,7 +173,7 @@ export function parseReviewsInput(text: string, filename = ""): ParseResult {
           (list ?? []).map((r) => ({ ...r, slug })),
         );
       } else {
-        rows = ((obj.rows ?? obj.data ?? obj.items ?? []) as RawRow[]) ?? [];
+        rows = (obj.rows ?? obj.data ?? obj.items ?? []) as RawRow[];
       }
     }
   } else {
