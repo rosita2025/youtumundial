@@ -83,6 +83,8 @@ const ProductDetail = () => {
     ? calculateDiscount(product.price, product.compareAtPrice)
     : 0;
 
+  const reviewSummary = getReviewSummary(product.slug);
+
   return (
     <Layout>
       <div className="container-wide py-8 md:py-12">
