@@ -47,13 +47,18 @@ function AdminReviewsPage() {
   const [parsed, setParsed] = useState<ParseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [catalogSlugs, setCatalogSlugs] = useState<string[] | null>(null);
+  const [url, setUrl] = useState("");
+  const [urlSlug, setUrlSlug] = useState("");
+  const [scraping, setScraping] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const scrape = useServerFn(scrape1688Reviews);
 
   useEffect(() => {
     getProducts()
       .then((products) => setCatalogSlugs(products.map((p) => p.slug)))
       .catch(() => setCatalogSlugs([]));
   }, []);
+
 
   const result = useMemo(() => {
     if (!parsed) return null;
