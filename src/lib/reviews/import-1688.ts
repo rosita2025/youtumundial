@@ -7,6 +7,7 @@
  */
 
 import type { Review } from "./reviews";
+import { reviewFingerprint, similarity, NEAR_DUPLICATE_THRESHOLD } from "./fingerprint";
 
 export type ReviewsBySlug = Record<string, Review[]>;
 
@@ -138,16 +139,23 @@ function toReview(row: RawRow): { slug: string; review: Review } | null {
 /* Deduplicación                                                       */
 /* ------------------------------------------------------------------ */
 
-/** Clave de identidad de una reseña: autor + texto normalizado. */
+/**
+ * Clave de identidad de una reseña: hash del contenido normalizado.
+ * Ignora fecha, tildes, mayúsculas, puntuación, emojis y números, así que la
+ * misma reseña con cambios mínimos sigue dando la misma clave.
+ */
 export function reviewKey(review: Review): string {
-  const norm = (s: string) =>
-    s
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  return `${norm(review.author)}::${norm(review.body)}`;
+  return reviewFingerprint(review);
+}
+
+/** ¿`review` ya está representada en `existing` (hash igual o texto casi igual)? */
+export function findDuplicate(review: Review, existing: Review[]): Review | null {
+  const fp = reviewFingerprint(review);
+  for (const other of existing) {
+    if (reviewFingerprint(other) === fp) return other;
+    if (similarity(review.body ?? "", other.body ?? "") >= NEAR_DUPLICATE_THRESHOLD) return other;
+  }
+  return null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -192,12 +200,13 @@ export function parseReviewsInput(text: string, filename = ""): ParseResult {
       continue;
     }
     const key = `${parsed.slug}::${reviewKey(parsed.review)}`;
-    if (seen.has(key)) {
+    const bucket = (bySlug[parsed.slug] ||= []);
+    if (seen.has(key) || findDuplicate(parsed.review, bucket)) {
       duplicatesInFile++;
       continue;
     }
     seen.add(key);
-    (bySlug[parsed.slug] ||= []).push(parsed.review);
+    bucket.push(parsed.review);
   }
 
   for (const slug of Object.keys(bySlug)) {
@@ -226,7 +235,7 @@ export function mergeReviews(existing: ReviewsBySlug, incoming: ReviewsBySlug): 
     const keys = new Set(current.map(reviewKey));
     for (const review of list) {
       const key = reviewKey(review);
-      if (keys.has(key)) {
+      if (keys.has(key) || findDuplicate(review, current)) {
         duplicates++;
         continue;
       }
