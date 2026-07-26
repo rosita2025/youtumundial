@@ -16,6 +16,7 @@ import {
   type ReviewsBySlug,
 } from "@/lib/reviews/import-1688";
 import { scrape1688Reviews } from "@/lib/reviews/scrape-1688.functions";
+import { sync1688Reviews } from "@/lib/reviews/sync-1688.functions";
 import existingFile from "@/lib/reviews/reviews-1688.json";
 import { getProducts } from "@/lib/data/data-provider";
 import { parsePasted1688Reviews } from "@/lib/reviews/paste-1688";
@@ -66,6 +67,9 @@ function AdminReviewsPage() {
   const fileInput = useRef<HTMLInputElement>(null);
   const pasteFileInput = useRef<HTMLInputElement>(null);
   const scrape = useServerFn(scrape1688Reviews);
+  const syncAll = useServerFn(sync1688Reviews);
+  const [autoSync, setAutoSync] = useState(true);
+  const lastSynced = useRef("");
 
   const previewPasteCount = useMemo(
     () => (pasteText.trim() ? parsePasted1688Reviews(pasteText, pasteSlug.trim() || "preview").length : 0),
@@ -99,6 +103,23 @@ function AdminReviewsPage() {
       .catch(() => setCatalogSlugs([]));
   }, []);
 
+
+  // Sincronización automática: al pegar una URL válida de 1688 (con slug elegido)
+  // se traen todas las reseñas disponibles sin tocar ningún botón.
+  useEffect(() => {
+    if (!autoSync) return;
+    const u = url.trim();
+    const s = urlSlug.trim();
+    if (!/^https?:\/\/.*1688\./i.test(u) || !s) return;
+    const key = `${u}|${s}`;
+    if (lastSynced.current === key || scraping) return;
+    const t = setTimeout(() => {
+      lastSynced.current = key;
+      void importFromUrl(true);
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url, urlSlug, autoSync]);
 
   const result = useMemo(() => {
     if (!parsed) return null;
@@ -376,11 +397,20 @@ function AdminReviewsPage() {
               <option key={s} value={s} />
             ))}
           </datalist>
-          <Button onClick={() => void importFromUrl()} disabled={scraping || !url.trim() || !urlSlug.trim()}>
+          <Button onClick={() => void importFromUrl(true)} disabled={scraping || !url.trim() || !urlSlug.trim()}>
             {scraping ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link2 className="mr-2 h-4 w-4" />}
-            {scraping ? "Leyendo…" : "Traer reseñas"}
+            {scraping ? "Sincronizando…" : "Sincronizar todas"}
           </Button>
         </div>
+        <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={autoSync}
+            onChange={(e) => setAutoSync(e.target.checked)}
+            className="h-3.5 w-3.5"
+          />
+          Sincronizar automáticamente todas las reseñas al pegar la URL
+        </label>
         {urlSlug.trim() && (
           <p className="mt-2 text-xs text-muted-foreground">
             Se importarán hasta <strong>{maxReviews}</strong> reseñas y se publicarán en{" "}
