@@ -348,7 +348,7 @@ function AdminReviewsPage() {
           Solo trae reseñas: nombre del comprador, comentario (traducido al español), puntaje, fecha y fotos.
           Los productos y envíos siguen viniendo de SUP Dropshipping.
         </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_240px_auto]">
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_220px_110px_auto]">
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -360,6 +360,15 @@ function AdminReviewsPage() {
             onChange={(e) => setUrlSlug(e.target.value)}
             placeholder="slug del producto"
           />
+          <Input
+            type="number"
+            min={1}
+            max={100}
+            value={maxReviews}
+            onChange={(e) => setMaxReviews(Number(e.target.value) || 1)}
+            title="Cuántas reseñas importar"
+            placeholder="Cantidad"
+          />
           <datalist id="catalogo-slugs">
             {(catalogSlugs ?? []).map((s) => (
               <option key={s} value={s} />
@@ -370,6 +379,14 @@ function AdminReviewsPage() {
             {scraping ? "Leyendo…" : "Traer reseñas"}
           </Button>
         </div>
+        {urlSlug.trim() && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Se importarán hasta <strong>{maxReviews}</strong> reseñas y se publicarán en{" "}
+            <a className="underline" href={`/products/${urlSlug.trim()}`} target="_blank" rel="noreferrer">
+              /products/{urlSlug.trim()}
+            </a>
+          </p>
+        )}
         <div className="mt-4 rounded-lg border border-dashed p-4">
           <label className="text-sm font-medium">
             Cookies de tu sesión de 1688 <span className="text-muted-foreground">(opcional)</span>
