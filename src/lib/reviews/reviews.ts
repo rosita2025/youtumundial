@@ -37,7 +37,7 @@ export const countryFlags: Record<string, string> = {
 };
 
 /** Reseñas importadas desde 1688 / SUP (generadas por el script o a mano). */
-const importedReviews = (imported as { reviews?: Record<string, Review[]> }).reviews ?? {};
+export const importedReviews = (imported as { reviews?: Record<string, Review[]> }).reviews ?? {};
 
 /** Reseñas específicas por producto escritas a mano (tienen prioridad). */
 export const reviewOverrides: Record<string, Review[]> = {};

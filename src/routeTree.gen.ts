@@ -25,6 +25,7 @@ import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AdminResenasRouteImport } from './routes/admin.resenas'
+import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -106,6 +107,11 @@ const AdminResenasRoute = AdminResenasRouteImport.update({
   path: '/admin/resenas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
+  id: '/admin/diagnostico',
+  path: '/admin/diagnostico',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/admin/resenas': typeof AdminResenasRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/admin/resenas': typeof AdminResenasRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/admin/resenas': typeof AdminResenasRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/diagnostico'
     | '/admin/resenas'
     | '/checkout/return'
     | '/collections/$slug'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/diagnostico'
     | '/admin/resenas'
     | '/checkout/return'
     | '/collections/$slug'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/diagnostico'
     | '/admin/resenas'
     | '/checkout/return'
     | '/collections/$slug'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   ShippingRoute: typeof ShippingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  AdminDiagnosticoRoute: typeof AdminDiagnosticoRoute
   AdminResenasRoute: typeof AdminResenasRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminResenasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/diagnostico': {
+      id: '/admin/diagnostico'
+      path: '/admin/diagnostico'
+      fullPath: '/admin/diagnostico'
+      preLoaderRoute: typeof AdminDiagnosticoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -378,6 +398,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShippingRoute: ShippingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  AdminDiagnosticoRoute: AdminDiagnosticoRoute,
   AdminResenasRoute: AdminResenasRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
