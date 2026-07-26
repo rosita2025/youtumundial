@@ -1,0 +1,4 @@
+{
+  "_comment": "Reseñas importadas de 1688 / SUP. Clave = slug del producto. Se genera con `node scripts/import-1688-reviews.mjs <archivo>` o se edita a mano.",
+  "reviews": {}
+}
