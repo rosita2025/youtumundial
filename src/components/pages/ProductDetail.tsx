@@ -10,6 +10,9 @@ import { useCart } from '@/context/CartContext';
 import { getProduct, getRelatedProducts } from '@/lib/data/data-provider';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { formatPrice, calculateDiscount } from '@/lib/utils/format';
+import { ProductReviews } from '@/components/product/ProductReviews';
+import { StarRating } from '@/components/product/StarRating';
+import { getReviewSummary } from '@/lib/reviews/reviews';
 import { Minus, Plus, Truck, RotateCcw, Shield } from 'lucide-react';
 
 const ProductDetail = () => {
