@@ -9,8 +9,16 @@
 const env = import.meta.env as Record<string, string | undefined>;
 
 export const checkoutConfig = {
-  /** URL base de la tienda WooCommerce donde SUP Dropshipping importa los productos. */
+  /**
+   * Link de pago de Mercado Pago (Checkout Pro).
+   * Provisional: mientras no haya backend, se usa un link fijo generado desde
+   * el panel de Mercado Pago. Con Lovable Cloud activo se reemplaza por la
+   * creación dinámica de la preferencia vía API.
+   */
+  mercadoPagoLink: env.VITE_MERCADOPAGO_LINK ?? '',
+  /** URL base de la tienda WooCommerce (legado, opcional). */
   wooStoreUrl: env.VITE_WOO_STORE_URL ?? '',
+
   /** Usuario de PayPal.me (sin la @) para pagos directos. */
   paypalMe: env.VITE_PAYPAL_ME ?? '',
   /** Número asociado a Yape. */

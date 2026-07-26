@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
 import { checkoutConfig, shippingCountries } from '@/lib/checkout/config';
 import {
+  buildMercadoPagoLink,
   buildPaypalLink,
   buildWhatsappOrderLink,
   buildWooCheckoutUrl,
@@ -21,8 +22,8 @@ import { toast } from 'sonner';
 const methods: { id: PaymentMethod; title: string; description: string; icon: typeof CreditCard }[] = [
   {
     id: 'card',
-    title: 'Tarjeta (Stripe)',
-    description: 'Visa, Mastercard, Amex, Apple Pay y Google Pay. Cobro en USD.',
+    title: 'Tarjeta (Mercado Pago)',
+    description: 'Visa, Mastercard y Amex de Perú, EE.UU., Canadá y Reino Unido. Pago en cuotas disponible.',
     icon: CreditCard,
   },
   {
@@ -38,6 +39,7 @@ const methods: { id: PaymentMethod; title: string; description: string; icon: ty
     icon: Smartphone,
   },
 ];
+
 
 const Checkout = () => {
   const { cart } = useCart();
@@ -88,11 +90,20 @@ const Checkout = () => {
       }
     }
 
+    if (method === 'card') {
+      const mpLink = buildMercadoPagoLink();
+      if (mpLink) {
+        window.location.href = mpLink;
+        return;
+      }
+    }
+
     const wooUrl = buildWooCheckoutUrl(cart, method);
     if (wooUrl) {
       window.location.href = wooUrl;
       return;
     }
+
 
     toast.error('El pago aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(
