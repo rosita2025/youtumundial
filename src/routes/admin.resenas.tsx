@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2, Link2, Loader2 } from "lucide-react";
+import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2, Link2, Loader2, Rocket } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import {
 import { scrape1688Reviews } from "@/lib/reviews/scrape-1688.functions";
 import existingFile from "@/lib/reviews/reviews-1688.json";
 import { getProducts } from "@/lib/data/data-provider";
+import { readLocalReviews, writeLocalReviews, clearLocalReviews } from "@/lib/reviews/local-store";
 
 
 export const Route = createFileRoute("/admin/resenas")({
@@ -50,10 +51,15 @@ function AdminReviewsPage() {
   const [url, setUrl] = useState("");
   const [urlSlug, setUrlSlug] = useState("");
   const [scraping, setScraping] = useState(false);
+  const [localReviews, setLocalReviews] = useState<ReviewsBySlug>({});
+  const [published, setPublished] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
   const scrape = useServerFn(scrape1688Reviews);
 
   useEffect(() => {
+    const local = readLocalReviews() as ReviewsBySlug;
+    setLocalReviews(local);
+    setPublished(countReviews(local));
     getProducts()
       .then((products) => setCatalogSlugs(products.map((p) => p.slug)))
       .catch(() => setCatalogSlugs([]));
@@ -62,8 +68,8 @@ function AdminReviewsPage() {
 
   const result = useMemo(() => {
     if (!parsed) return null;
-    return mergeReviews(existingReviews, parsed.bySlug);
-  }, [parsed]);
+    return mergeReviews({ ...existingReviews, ...localReviews }, parsed.bySlug);
+  }, [parsed, localReviews]);
 
   const unknownSlugs = useMemo(() => {
     if (!parsed || !catalogSlugs) return [];
@@ -144,6 +150,23 @@ function AdminReviewsPage() {
     }
   }
 
+  function publish() {
+    if (!result) return;
+    writeLocalReviews(result.merged);
+    setLocalReviews(result.merged);
+    setPublished(countReviews(result.merged));
+    toast.success("Reseñas publicadas en la tienda", {
+      description: "Ya se ven en las fichas de producto de este navegador. Para dejarlas fijas para todos, mandame el archivo descargado.",
+    });
+  }
+
+  function unpublish() {
+    clearLocalReviews();
+    setLocalReviews({});
+    setPublished(0);
+    toast.success("Se quitaron las reseñas publicadas en este navegador");
+  }
+
   return (
     <main className="container mx-auto max-w-4xl px-4 py-12">
       <header className="mb-8">
@@ -157,6 +180,19 @@ function AdminReviewsPage() {
           que ya están cargadas.
         </p>
       </header>
+
+      {published > 0 && (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4 text-sm">
+          <p>
+            <span className="font-medium">{published} reseñas publicadas</span> en la tienda desde este panel
+            ({Object.keys(localReviews).length} productos).
+          </p>
+          <Button variant="ghost" size="sm" onClick={unpublish}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Quitar
+          </Button>
+        </div>
+      )}
 
       <section className="mb-6 rounded-xl border bg-card p-6">
         <h2 className="flex items-center gap-2 text-lg font-medium">
@@ -319,11 +355,15 @@ function AdminReviewsPage() {
                   (o pasámelo y lo subo yo). Ahí quedan publicadas en las fichas de producto.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Button onClick={download}>
+                  <Button onClick={publish}>
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Publicar en la tienda
+                  </Button>
+                  <Button variant="outline" onClick={download}>
                     <Download className="mr-2 h-4 w-4" />
                     Descargar reviews-1688.json
                   </Button>
-                  <Button variant="outline" onClick={copy}>
+                  <Button variant="ghost" onClick={copy}>
                     <Copy className="mr-2 h-4 w-4" />
                     Copiar JSON
                   </Button>
