@@ -60,6 +60,7 @@ function AdminReviewsPage() {
   const [pasteSlug, setPasteSlug] = useState("");
   const [pasteOrigin, setPasteOrigin] = useState("");
   const [cookie, setCookie] = useState("");
+  const [maxReviews, setMaxReviews] = useState(20);
   const [localReviews, setLocalReviews] = useState<ReviewsBySlug>({});
   const [published, setPublished] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -168,7 +169,7 @@ function AdminReviewsPage() {
       if (cookieValue) sessionStorage.setItem("1688_cookie", cookieValue);
       else sessionStorage.removeItem("1688_cookie");
       const res = await scrape({
-        data: { url: url.trim(), slug: urlSlug.trim(), cookie: cookieValue },
+        data: { url: url.trim(), slug: urlSlug.trim(), cookie: cookieValue, limit: maxReviews },
       });
       if (res.rows.length === 0) {
         setError(res.notice ?? "No se encontraron reseñas en esa URL.");
@@ -234,7 +235,7 @@ function AdminReviewsPage() {
 
   function importFromPaste() {
     setError(null);
-    const rows = parsePasted1688Reviews(pasteText, pasteSlug.trim());
+    const rows = parsePasted1688Reviews(pasteText, pasteSlug.trim()).slice(0, Math.max(1, maxReviews));
     if (rows.length === 0) {
       setError(
         "No pude reconocer reseñas en ese texto. Copiá el contenido del panel \"View reviews\" de 1688 (nombre, fecha y comentario de cada una).",
@@ -459,6 +460,15 @@ function AdminReviewsPage() {
             value={pasteSlug}
             onChange={(e) => setPasteSlug(e.target.value)}
             placeholder="slug del producto"
+          />
+          <Input
+            type="number"
+            min={1}
+            max={100}
+            value={maxReviews}
+            onChange={(e) => setMaxReviews(Number(e.target.value) || 1)}
+            className="w-28"
+            title="Cuántas reseñas importar"
           />
           <Button onClick={importFromPaste} disabled={!pasteText.trim() || !pasteSlug.trim()}>
             <ClipboardPaste className="mr-2 h-4 w-4" />
