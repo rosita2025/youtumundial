@@ -23,6 +23,8 @@ import { parsePasted1688Reviews } from "@/lib/reviews/paste-1688";
 import { readLocalReviews, writeLocalReviews, clearLocalReviews } from "@/lib/reviews/local-store";
 import { ReviewsTable } from "@/components/admin/ReviewsTable";
 import { ImportHistory } from "@/components/admin/ImportHistory";
+import { ModerationQueue } from "@/components/admin/ModerationQueue";
+import { queueForReview } from "@/lib/reviews/moderation";
 import { logImport } from "@/lib/reviews/import-log";
 
 
@@ -69,6 +71,7 @@ function AdminReviewsPage() {
   const scrape = useServerFn(scrape1688Reviews);
   const syncAll = useServerFn(sync1688Reviews);
   const [autoSync, setAutoSync] = useState(true);
+  const [moderate, setModerate] = useState(true);
   const lastSynced = useRef("");
 
   const previewPasteCount = useMemo(
@@ -213,16 +216,27 @@ function AdminReviewsPage() {
       setRawText(text);
       analyze(text, "url.json");
 
-      // Publicación automática: al importar desde una URL las reseñas quedan
-      // visibles al instante, sin depender de tocar "Publicar en la tienda".
       const parsedNow = parseReviewsInput(text, "url.json");
-      const mergedNow = mergeReviews(
-        { ...existingReviews, ...(readLocalReviews() as ReviewsBySlug) },
-        parsedNow.bySlug,
-      );
-      writeLocalReviews(mergedNow.merged);
-      setLocalReviews(mergedNow.merged);
-      setPublished(countReviews(mergedNow.merged));
+
+      // Con moderación activa las reseñas van a la cola de revisión con su
+      // evidencia; si está desactivada, se publican al instante.
+      let mergedNow = { added: 0, duplicates: 0, merged: {} as ReviewsBySlug };
+      if (moderate) {
+        const queued = queueForReview(urlSlug.trim(), parsedNow.bySlug[urlSlug.trim()] ?? [], {
+          source: "url",
+          origin: url.trim(),
+          productTitle: res.productTitle || undefined,
+        });
+        mergedNow = { added: queued.queued, duplicates: queued.duplicates, merged: {} };
+      } else {
+        mergedNow = mergeReviews(
+          { ...existingReviews, ...(readLocalReviews() as ReviewsBySlug) },
+          parsedNow.bySlug,
+        );
+        writeLocalReviews(mergedNow.merged);
+        setLocalReviews(mergedNow.merged);
+        setPublished(countReviews(mergedNow.merged));
+      }
 
       logImport({
         source: "url",
@@ -235,9 +249,16 @@ function AdminReviewsPage() {
         message: mergedNow.added === 0 ? "Todas ya estaban cargadas" : undefined,
       });
 
-      toast.success(`${res.rows.length} reseñas leídas y publicadas`, {
-        description: `${res.productTitle || url} → /products/${urlSlug.trim()}`,
-      });
+      toast.success(
+        moderate
+          ? `${mergedNow.added} reseñas en revisión`
+          : `${res.rows.length} reseñas leídas y publicadas`,
+        {
+          description: moderate
+            ? "Revisalas en \"Revisión antes de publicar\" y aprobá las que quieras mostrar."
+            : `${res.productTitle || url} → /products/${urlSlug.trim()}`,
+        },
+      );
     } catch (e) {
       const message = e instanceof Error ? e.message : "No se pudo leer esa URL de 1688.";
       logImport({
@@ -281,13 +302,22 @@ function AdminReviewsPage() {
     analyze(text, "pegado.json");
 
     const parsedNow = parseReviewsInput(text, "pegado.json");
-    const mergedNow = mergeReviews(
-      { ...existingReviews, ...(readLocalReviews() as ReviewsBySlug) },
-      parsedNow.bySlug,
-    );
-    writeLocalReviews(mergedNow.merged);
-    setLocalReviews(mergedNow.merged);
-    setPublished(countReviews(mergedNow.merged));
+    let mergedNow = { added: 0, duplicates: 0, merged: {} as ReviewsBySlug };
+    if (moderate) {
+      const queued = queueForReview(pasteSlug.trim(), parsedNow.bySlug[pasteSlug.trim()] ?? [], {
+        source: pasteOrigin ? "archivo" : "pegado",
+        origin: pasteOrigin || `Texto pegado (${pasteText.trim().length} caracteres)`,
+      });
+      mergedNow = { added: queued.queued, duplicates: queued.duplicates, merged: {} };
+    } else {
+      mergedNow = mergeReviews(
+        { ...existingReviews, ...(readLocalReviews() as ReviewsBySlug) },
+        parsedNow.bySlug,
+      );
+      writeLocalReviews(mergedNow.merged);
+      setLocalReviews(mergedNow.merged);
+      setPublished(countReviews(mergedNow.merged));
+    }
     logImport({
       source: pasteOrigin ? "archivo" : "pegado",
       origin: pasteOrigin || `Texto pegado (${pasteText.trim().length} caracteres)`,
@@ -298,9 +328,10 @@ function AdminReviewsPage() {
       status: mergedNow.added === 0 ? "parcial" : "ok",
       message: mergedNow.added === 0 ? "Todas ya estaban cargadas" : undefined,
     });
-    toast.success(`${rows.length} reseñas reales importadas y publicadas`, {
-      description: `→ /products/${pasteSlug.trim()}`,
-    });
+    toast.success(
+      moderate ? `${mergedNow.added} reseñas en revisión` : `${rows.length} reseñas reales importadas y publicadas`,
+      { description: moderate ? "Aprobalas desde \"Revisión antes de publicar\"." : `→ /products/${pasteSlug.trim()}` },
+    );
   }
 
   function publish() {
@@ -315,6 +346,19 @@ function AdminReviewsPage() {
       status: result.added === 0 ? "parcial" : "ok",
       message: result.added === 0 ? "Todas ya estaban cargadas" : undefined,
     });
+    if (moderate && parsed) {
+      let queued = 0;
+      for (const [slug, list] of Object.entries(parsed.bySlug)) {
+        queued += queueForReview(slug, list, {
+          source: "archivo",
+          origin: filename || "Archivo CSV/JSON",
+        }).queued;
+      }
+      toast.success(`${queued} reseñas enviadas a revisión`, {
+        description: "Aprobalas desde \"Revisión antes de publicar\".",
+      });
+      return;
+    }
     writeLocalReviews(result.merged);
     setLocalReviews(result.merged);
     setPublished(countReviews(result.merged));
@@ -356,6 +400,21 @@ function AdminReviewsPage() {
           </Button>
         </div>
       )}
+
+      <label className="mb-4 flex items-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm">
+        <input
+          type="checkbox"
+          checked={moderate}
+          onChange={(e) => setModerate(e.target.checked)}
+          className="h-4 w-4"
+        />
+        <span>
+          <strong>Revisar antes de publicar</strong> — las reseñas importadas quedan en la cola de
+          moderación con su evidencia (autor, estrellas y fotos) hasta que las apruebes.
+        </span>
+      </label>
+
+      <ModerationQueue />
 
       <ImportHistory />
 
