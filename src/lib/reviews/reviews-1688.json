@@ -1,4 +1,17 @@
 {
-  "_comment": "Reseñas importadas de 1688 / SUP. Clave = slug del producto. Se genera con `node scripts/import-1688-reviews.mjs <archivo>` o se edita a mano.",
-  "reviews": {}
+  "_comment": "Generado por scripts/import-1688-reviews.mjs. También se puede editar a mano.",
+  "reviews": {
+    "merino-wool-runner": [
+      {
+        "author": "Zhang W.",
+        "country": "PE",
+        "rating": 5,
+        "date": "2026-05-01",
+        "title": "Muy buena tela",
+        "body": "Calidad excelente, igual a la foto",
+        "verified": true,
+        "size": "M"
+      }
+    ]
+  }
 }
