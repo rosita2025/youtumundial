@@ -216,3 +216,89 @@ export async function scrapeReviewsFrom1688(
           : undefined,
   };
 }
+
+/** Extrae el offerId numérico de cualquier formato de URL de 1688. */
+export function extractOfferId(url: string): string | null {
+  const match =
+    url.match(/offer\/(\d{6,})/) ??
+    url.match(/offerId=(\d{6,})/i) ??
+    url.match(/(\d{9,})/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Todas las vistas conocidas donde 1688 sirve reseñas de una oferta.
+ * Se leen en orden y se van acumulando (con deduplicado) hasta llegar al límite.
+ */
+function candidateUrls(originalUrl: string, offerId: string | null, page: number): string[] {
+  if (!offerId) return page === 1 ? [originalUrl] : [];
+  const urls = [
+    `https://detail.1688.com/offer/${offerId}.html`,
+    `https://m.1688.com/offer/${offerId}.html`,
+    `https://m.1688.com/page/offerRemark.html?offerId=${offerId}&pageNum=${page}`,
+    `https://detail.1688.com/offer/${offerId}.html?pageNum=${page}#comment`,
+  ];
+  return page === 1 ? Array.from(new Set([originalUrl, ...urls])) : urls.slice(2);
+}
+
+const reviewKey = (r: ScrapedReviewRow) =>
+  `${normalizeForMatch(r.author)}|${normalizeForMatch(r.body).slice(0, 60)}`;
+
+/**
+ * Sincroniza TODAS las reseñas disponibles de una URL de 1688: recorre las
+ * distintas vistas (desktop, móvil, panel de comentarios) y pagina hasta que
+ * deja de aparecer contenido nuevo o se alcanza el límite.
+ */
+export async function syncAllReviewsFrom1688(
+  url: string,
+  slug: string,
+  cookie?: string,
+  limit = 100,
+  maxPages = 5,
+): Promise<ScrapeReviewsResult> {
+  const offerId = extractOfferId(url);
+  const seen = new Set<string>();
+  const rows: ScrapedReviewRow[] = [];
+  const notices: string[] = [];
+  let productTitle = "";
+  let lastError: string | null = null;
+
+  for (let page = 1; page <= maxPages && rows.length < limit; page++) {
+    let addedThisPage = 0;
+
+    for (const candidate of candidateUrls(url, offerId, page)) {
+      if (rows.length >= limit) break;
+      try {
+        const res = await scrapeReviewsFrom1688(candidate, slug, cookie, limit);
+        if (!productTitle && res.productTitle) productTitle = res.productTitle;
+        if (res.notice) notices.push(res.notice);
+        for (const row of res.rows) {
+          const key = reviewKey(row);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          rows.push(row);
+          addedThisPage += 1;
+          if (rows.length >= limit) break;
+        }
+      } catch (e) {
+        lastError = e instanceof Error ? e.message : String(e);
+      }
+    }
+
+    // Si una pasada completa no aportó reseñas nuevas, no hay más páginas.
+    if (addedThisPage === 0 && page > 1) break;
+    if (addedThisPage === 0 && page === 1 && !offerId) break;
+  }
+
+  return {
+    rows,
+    productTitle,
+    sourceUrl: url,
+    notice:
+      rows.length > 0
+        ? `Se sincronizaron ${rows.length} reseñas únicas desde 1688.`
+        : lastError ??
+          notices[0] ??
+          "No se encontraron reseñas públicas en esa URL. Probá pegando tus cookies de 1688 o el HTML del panel \"View reviews\".",
+  };
+}
