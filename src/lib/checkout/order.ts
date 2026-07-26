@@ -23,27 +23,6 @@ export function getTotals(cart: Cart, country: ShippingCountry): OrderTotals {
 }
 
 /**
- * Construye la URL del checkout de WooCommerce con el carrito precargado.
- * Woo acepta `add-to-cart` con IDs separados por coma cuando el plugin de
- * "fill cart" está activo; el fallback lleva al carrito de la tienda.
- */
-export function buildWooCheckoutUrl(cart: Cart, method: PaymentMethod): string | null {
-  const base = checkoutConfig.wooStoreUrl.replace(/\/$/, '');
-  if (!base) return null;
-
-  const items = cart.items
-    .map((item) => `${item.variantId || item.productId}:${item.quantity}`)
-    .join(',');
-
-  const params = new URLSearchParams({
-    'fill-cart': items,
-    'payment-method': method === 'paypal' ? 'paypal' : 'stripe',
-  });
-
-  return `${base}/checkout/?${params.toString()}`;
-}
-
-/**
  * Link de pago de Mercado Pago (Checkout Pro).
  * Provisional hasta tener backend: usa el link fijo del panel de MP.
  */

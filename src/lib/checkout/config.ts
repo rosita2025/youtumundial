@@ -1,9 +1,8 @@
 /**
- * Configuración de checkout de las tiendas.
+ * Configuración de checkout de la tienda.
  *
- * Todos los valores se pueden sobreescribir con variables de entorno
- * (VITE_*) sin tocar el código, así el mismo frontend sirve para las dos
- * tiendas / dos dominios.
+ * Tienda única (Youtumundial) alojada en Lovable. Los valores se pueden
+ * sobreescribir con variables de entorno (VITE_*) sin tocar el código.
  */
 
 const env = import.meta.env as Record<string, string | undefined>;
@@ -16,9 +15,6 @@ export const checkoutConfig = {
    * creación dinámica de la preferencia vía API.
    */
   mercadoPagoLink: env.VITE_MERCADOPAGO_LINK ?? '',
-  /** URL base de la tienda WooCommerce (legado, opcional). */
-  wooStoreUrl: env.VITE_WOO_STORE_URL ?? '',
-
   /** Usuario de PayPal.me (sin la @) para pagos directos. */
   paypalMe: env.VITE_PAYPAL_ME ?? '',
   /** Número asociado a Yape. */
