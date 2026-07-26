@@ -69,21 +69,8 @@ export function ProductReviews({ slug }: { slug: string }) {
 
               <h3 className="mt-3 font-medium">{review.title}</h3>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{review.body}</p>
-
-              {review.photos?.length ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {review.photos.map((src) => (
-                    <img
-                      key={src}
-                      src={src}
-                      alt={`Foto de la reseña de ${review.author}`}
-                      loading="lazy"
-                      className="h-20 w-20 rounded-md object-cover"
-                    />
-                  ))}
-                </div>
-              ) : null}
             </li>
+
           ))}
         </ul>
       </div>
