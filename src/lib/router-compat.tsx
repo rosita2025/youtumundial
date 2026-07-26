@@ -67,8 +67,9 @@ export function useNavigate() {
 }
 
 export function useParams<T extends Record<string, string> = Record<string, string>>() {
-  return useTanstackParams({ strict: false }) as T;
+  return useTanstackParams({ strict: false } as never) as T;
 }
+
 
 export function useLocation() {
   return useRouterState({ select: (s) => s.location });
