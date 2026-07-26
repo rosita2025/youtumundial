@@ -61,7 +61,7 @@ export function Footer() {
 
           {/* Shop Links */}
           <div>
-            <h4 className="font-medium mb-4">Shop</h4>
+            <h4 className="font-medium mb-4">Tienda</h4>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
                 <li key={link.label}>
@@ -78,7 +78,7 @@ export function Footer() {
 
           {/* Help Links */}
           <div>
-            <h4 className="font-medium mb-4">Help</h4>
+            <h4 className="font-medium mb-4">Ayuda</h4>
             <ul className="space-y-3">
               {footerLinks.help.map((link) => (
                 <li key={link.label}>
@@ -95,7 +95,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-medium mb-4">Company</h4>
+            <h4 className="font-medium mb-4">Empresa</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
