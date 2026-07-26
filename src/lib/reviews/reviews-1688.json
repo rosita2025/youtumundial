@@ -1,39 +1,4 @@
 {
   "_comment": "Reseñas importadas de 1688 / SUP. Clave = slug del producto. Se genera con el panel /admin/resenas o con `bun scripts/import-1688-reviews.ts <archivo>`.",
-  "reviews": {
-    "polo-oversize-algodon-premium": [
-      {
-        "author": "Carlos M.",
-        "country": "PE",
-        "rating": 5,
-        "date": "2026-06-18",
-        "title": "Excelente tela",
-        "body": "Llegó en 9 días a Lima, la tela es gruesa y no transparenta.",
-        "verified": true,
-        "size": "M"
-      },
-      {
-        "author": "Ana L.",
-        "country": "PE",
-        "rating": 4,
-        "date": "2026-06-02",
-        "title": "Igual a las fotos",
-        "body": "El color es idéntico al de la página.",
-        "verified": true,
-        "size": "S"
-      }
-    ],
-    "hoodie-perchado-unisex": [
-      {
-        "author": "Jason W.",
-        "country": "US",
-        "rating": 5,
-        "date": "2026-05-27",
-        "title": "Very warm",
-        "body": "Muy abrigado y el calce es perfecto.",
-        "verified": true,
-        "size": "L"
-      }
-    ]
-  }
+  "reviews": {}
 }
