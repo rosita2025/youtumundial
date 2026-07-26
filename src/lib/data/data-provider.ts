@@ -1,23 +1,35 @@
 /**
  * Data Provider - Abstract data layer
- * 
- * This file provides functions to fetch products and collections.
- * Currently uses dummy data, but is structured for easy Shopify integration.
- * 
- * TODO: To switch to Shopify:
- * 1. Add VITE_SHOPIFY_STORE_DOMAIN and VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN to .env
- * 2. Import Shopify client from './shopify/client'
- * 3. Replace dummy data returns with Shopify API calls
+ *
+ * Source of truth order:
+ * 1. WooCommerce (SUP Dropshipping -> WooCommerce -> this app), when the
+ *    WooCommerce connector is linked to the project.
+ * 2. Demo catalog (dummy data) as fallback, so the site always renders.
  */
 
 import { Product, Collection, FilterOptions, SortOption } from './types';
 import { dummyProducts, dummyCollections } from './dummy-data';
+import { fetchWooProducts } from '@/lib/woocommerce/woo.functions';
 
-// Check if Shopify credentials are available
-const SHOPIFY_ENABLED = Boolean(
-  import.meta.env.VITE_SHOPIFY_STORE_DOMAIN &&
-  import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN
-);
+let catalogCache: Product[] | null = null;
+
+/** Live WooCommerce catalog when connected, otherwise the demo catalog. */
+async function getCatalog(): Promise<Product[]> {
+  if (catalogCache) return catalogCache;
+
+  try {
+    const live = await fetchWooProducts();
+    if (live && live.length > 0) {
+      catalogCache = live;
+      return live;
+    }
+  } catch (error) {
+    console.error('WooCommerce catalog unavailable, using demo data', error);
+  }
+
+  catalogCache = dummyProducts;
+  return catalogCache;
+}
 
 /**
  * Get all products with optional filtering and sorting
@@ -26,12 +38,8 @@ export async function getProducts(
   filters?: FilterOptions,
   sort: SortOption = 'featured'
 ): Promise<Product[]> {
-  // TODO: Replace with Shopify API call when credentials are available
-  // if (SHOPIFY_ENABLED) {
-  //   return shopifyClient.getProducts(filters, sort);
-  // }
+  let products = [...(await getCatalog())];
 
-  let products = [...dummyProducts];
 
   // Apply filters
   if (filters) {
