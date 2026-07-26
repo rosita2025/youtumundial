@@ -1,3 +1,4 @@
+import { reviewFingerprint, similarity, NEAR_DUPLICATE_THRESHOLD } from "./fingerprint";
 /**
  * Lectura de una ficha de producto de 1688 mediante Firecrawl.
  *
@@ -241,8 +242,9 @@ function candidateUrls(originalUrl: string, offerId: string | null, page: number
   return page === 1 ? Array.from(new Set([originalUrl, ...urls])) : urls.slice(2);
 }
 
-const reviewKey = (r: ScrapedReviewRow) =>
-  `${normalizeForMatch(r.author)}|${normalizeForMatch(r.body).slice(0, 60)}`;
+// Anti-duplicados estricto: hash del contenido normalizado (ignora fecha,
+// tildes, puntuación y números), igual que el importador del panel.
+const reviewKey = (r: ScrapedReviewRow) => reviewFingerprint(r);
 
 /**
  * Sincroniza TODAS las reseñas disponibles de una URL de 1688: recorre las
@@ -275,6 +277,7 @@ export async function syncAllReviewsFrom1688(
         for (const row of res.rows) {
           const key = reviewKey(row);
           if (seen.has(key)) continue;
+          if (rows.some((r) => similarity(r.body, row.body) >= NEAR_DUPLICATE_THRESHOLD)) continue;
           seen.add(key);
           rows.push(row);
           addedThisPage += 1;
