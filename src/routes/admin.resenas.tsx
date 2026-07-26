@@ -140,8 +140,20 @@ function AdminReviewsPage() {
       setFilename(`1688-${urlSlug.trim()}.json`);
       setRawText(text);
       analyze(text, "url.json");
-      toast.success(`${res.rows.length} reseñas leídas de 1688`, {
-        description: res.productTitle || url,
+
+      // Publicación automática: al importar desde una URL las reseñas quedan
+      // visibles al instante, sin depender de tocar "Publicar en la tienda".
+      const parsedNow = parseReviewsInput(text, "url.json");
+      const mergedNow = mergeReviews(
+        { ...existingReviews, ...(readLocalReviews() as ReviewsBySlug) },
+        parsedNow.bySlug,
+      );
+      writeLocalReviews(mergedNow.merged);
+      setLocalReviews(mergedNow.merged);
+      setPublished(countReviews(mergedNow.merged));
+
+      toast.success(`${res.rows.length} reseñas leídas y publicadas`, {
+        description: `${res.productTitle || url} → /products/${urlSlug.trim()}`,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo leer esa URL de 1688.");
