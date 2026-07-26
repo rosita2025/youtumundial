@@ -13,6 +13,7 @@ import { formatPrice, calculateDiscount } from '@/lib/utils/format';
 import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
+import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
 import { Minus, Plus, Truck, RotateCcw, Shield } from 'lucide-react';
 
 const ProductDetail = () => {
@@ -24,6 +25,12 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const reviewSummary = useReviewSummary(product?.slug ?? slug ?? '');
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setShowDiagnostics(params.get('debug') === '1' || params.get('diag') === '1');
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -193,6 +200,8 @@ const ProductDetail = () => {
 
         {/* Reseñas */}
         <ProductReviews slug={product.slug} />
+
+        {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
 
 
         {/* Related Products */}
