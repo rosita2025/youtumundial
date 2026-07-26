@@ -231,7 +231,19 @@ const Checkout = () => {
                   </div>
                 </div>
               )}
+
+              {method === 'card' && showStripe && (
+                <div className="mt-6 rounded-lg border border-border p-4">
+                  <StripeCartCheckout
+                    items={stripeItems}
+                    shippingInCents={Math.round(totals.shipping * 100)}
+                    customerEmail={customer.email}
+                    returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
+                  />
+                </div>
+              )}
             </section>
+
           </div>
 
           <aside className="lg:col-span-1">
