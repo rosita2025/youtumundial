@@ -90,12 +90,8 @@ export async function getProducts(
  * Get a single product by slug
  */
 export async function getProduct(slug: string): Promise<Product | null> {
-  // TODO: Replace with Shopify API call
-  // if (SHOPIFY_ENABLED) {
-  //   return shopifyClient.getProduct(slug);
-  // }
-
-  return dummyProducts.find(p => p.slug === slug) || null;
+  const catalog = await getCatalog();
+  return catalog.find(p => p.slug === slug) || null;
 }
 
 /**
