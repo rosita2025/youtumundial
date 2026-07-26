@@ -12,7 +12,6 @@ import {
   buildMercadoPagoLink,
   buildPaypalLink,
   buildWhatsappOrderLink,
-  buildWooCheckoutUrl,
   getTotals,
   type PaymentMethod,
 } from '@/lib/checkout/order';
@@ -97,13 +96,6 @@ const Checkout = () => {
         return;
       }
     }
-
-    const wooUrl = buildWooCheckoutUrl(cart, method);
-    if (wooUrl) {
-      window.location.href = wooUrl;
-      return;
-    }
-
 
     toast.error('El pago aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(

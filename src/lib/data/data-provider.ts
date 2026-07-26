@@ -1,33 +1,18 @@
 /**
- * Data Provider - Abstract data layer
+ * Data Provider - Capa de datos de la tienda única (Lovable).
  *
- * Source of truth order:
- * 1. WooCommerce (SUP Dropshipping -> WooCommerce -> this app), when the
- *    WooCommerce connector is linked to the project.
- * 2. Demo catalog (dummy data) as fallback, so the site always renders.
+ * El catálogo vive en este proyecto (dummy-data). Cuando se active Lovable
+ * Cloud se reemplaza por la lectura desde la base de datos.
  */
 
 import { Product, Collection, FilterOptions, SortOption } from './types';
 import { dummyProducts, dummyCollections } from './dummy-data';
-import { fetchWooProducts } from '@/lib/woocommerce/woo.functions';
 
 let catalogCache: Product[] | null = null;
 
-/** Live WooCommerce catalog when connected, otherwise the demo catalog. */
+/** Catálogo de la tienda. */
 async function getCatalog(): Promise<Product[]> {
-  if (catalogCache) return catalogCache;
-
-  try {
-    const live = await fetchWooProducts();
-    if (live && live.length > 0) {
-      catalogCache = live;
-      return live;
-    }
-  } catch (error) {
-    console.error('WooCommerce catalog unavailable, using demo data', error);
-  }
-
-  catalogCache = dummyProducts;
+  if (!catalogCache) catalogCache = dummyProducts;
   return catalogCache;
 }
 
