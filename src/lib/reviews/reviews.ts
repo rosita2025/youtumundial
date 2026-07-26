@@ -155,8 +155,11 @@ function hash(slug: string): number {
 }
 
 export function getProductReviews(slug: string): Review[] {
-  const custom = reviewOverrides[slug];
+  // 1) reseñas escritas a mano, 2) reseñas importadas de 1688, 3) pool genérico
+  const custom = reviewOverrides[slug] ?? importedReviews[slug];
   if (custom?.length) return [...custom].sort((a, b) => b.date.localeCompare(a.date));
+
+
 
   const h = hash(slug);
   const count = 3 + (h % 4); // entre 3 y 6 reseñas
