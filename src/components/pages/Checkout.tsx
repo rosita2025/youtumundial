@@ -70,18 +70,20 @@ const Checkout = () => {
 
   const missingCustomer = !customer.name || !customer.email || !customer.address;
 
+  const stripeItems = cart.items.map((item) => ({
+    name: `${item.product.title} — ${item.variant.title}`,
+    amountInCents: Math.round(item.variant.price * 100),
+    quantity: item.quantity,
+  }));
+
   const handlePay = () => {
     if (missingCustomer) {
       toast.error('Completá tus datos de envío para continuar.');
       return;
     }
 
-    if (method === 'yape') {
-      window.open(
-        buildWhatsappOrderLink(cart, country, totals, customer),
-        '_blank',
-        'noopener,noreferrer',
-      );
+    if (method === 'card') {
+      setShowStripe(true);
       return;
     }
 
@@ -93,21 +95,23 @@ const Checkout = () => {
       }
     }
 
-    if (method === 'card') {
-      const mpLink = buildMercadoPagoLink();
-      if (mpLink) {
-        window.location.href = mpLink;
-        return;
-      }
+    if (method === 'yape') {
+      window.open(
+        buildWhatsappOrderLink(cart, country, totals, customer),
+        '_blank',
+        'noopener,noreferrer',
+      );
+      return;
     }
 
-    toast.error('El pago aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
+    toast.error('Ese método aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(
       buildWhatsappOrderLink(cart, country, totals, customer),
       '_blank',
       'noopener,noreferrer',
     );
   };
+
 
   return (
     <Layout>
