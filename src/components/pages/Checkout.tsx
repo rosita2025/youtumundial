@@ -9,7 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
 import { checkoutConfig, shippingCountries } from '@/lib/checkout/config';
 import {
-  buildMercadoPagoLink,
+  
   buildPaypalLink,
   buildWhatsappOrderLink,
   getTotals,
@@ -17,14 +17,18 @@ import {
 } from '@/lib/checkout/order';
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck } from 'lucide-react';
 import { toast } from 'sonner';
+import { StripeCartCheckout } from '@/components/StripeCartCheckout';
+import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
+
 
 const methods: { id: PaymentMethod; title: string; description: string; icon: typeof CreditCard }[] = [
   {
     id: 'card',
-    title: 'Tarjeta (Mercado Pago)',
-    description: 'Visa, Mastercard y Amex de Perú, EE.UU., Canadá y Reino Unido. Pago en cuotas disponible.',
+    title: 'Tarjeta de crédito o débito',
+    description: 'Visa, Mastercard y Amex de Perú, EE.UU., Canadá y Reino Unido. Pago seguro en la misma página.',
     icon: CreditCard,
   },
+
   {
     id: 'paypal',
     title: 'PayPal',
@@ -44,6 +48,8 @@ const Checkout = () => {
   const { cart } = useCart();
   const navigate = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>('card');
+  const [showStripe, setShowStripe] = useState(false);
+
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
 
@@ -66,18 +72,20 @@ const Checkout = () => {
 
   const missingCustomer = !customer.name || !customer.email || !customer.address;
 
+  const stripeItems = cart.items.map((item) => ({
+    name: `${item.product.title} — ${item.variant.title}`,
+    amountInCents: Math.round(item.variant.price * 100),
+    quantity: item.quantity,
+  }));
+
   const handlePay = () => {
     if (missingCustomer) {
       toast.error('Completá tus datos de envío para continuar.');
       return;
     }
 
-    if (method === 'yape') {
-      window.open(
-        buildWhatsappOrderLink(cart, country, totals, customer),
-        '_blank',
-        'noopener,noreferrer',
-      );
+    if (method === 'card') {
+      setShowStripe(true);
       return;
     }
 
@@ -89,15 +97,16 @@ const Checkout = () => {
       }
     }
 
-    if (method === 'card') {
-      const mpLink = buildMercadoPagoLink();
-      if (mpLink) {
-        window.location.href = mpLink;
-        return;
-      }
+    if (method === 'yape') {
+      window.open(
+        buildWhatsappOrderLink(cart, country, totals, customer),
+        '_blank',
+        'noopener,noreferrer',
+      );
+      return;
     }
 
-    toast.error('El pago aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
+    toast.error('Ese método aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(
       buildWhatsappOrderLink(cart, country, totals, customer),
       '_blank',
@@ -105,10 +114,13 @@ const Checkout = () => {
     );
   };
 
+
   return (
     <Layout>
+      <PaymentTestModeBanner />
       <div className="container mx-auto px-4 py-8">
         <Breadcrumbs items={[{ label: 'Carrito', href: '/cart' }, { label: 'Checkout' }]} />
+
 
         <h1 className="font-display text-3xl md:text-4xl mt-6 mb-8">Finalizar compra</h1>
 
@@ -221,7 +233,19 @@ const Checkout = () => {
                   </div>
                 </div>
               )}
+
+              {method === 'card' && showStripe && (
+                <div className="mt-6 rounded-lg border border-border p-4">
+                  <StripeCartCheckout
+                    items={stripeItems}
+                    shippingInCents={Math.round(totals.shipping * 100)}
+                    customerEmail={customer.email}
+                    returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
+                  />
+                </div>
+              )}
             </section>
+
           </div>
 
           <aside className="lg:col-span-1">
