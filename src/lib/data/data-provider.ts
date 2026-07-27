@@ -12,10 +12,24 @@ import { mapSupCatalog, filterInStock, SupRawProduct } from '../suppliers/sup';
 import { readSupCatalog } from '../suppliers/local-catalog';
 import { fetchStoreCatalog } from '../suppliers/catalog.functions';
 import { SUP_MARGIN } from '../suppliers/sup-selection';
+import { readPublishedIds } from '../suppliers/published-store';
 import supCatalog from '../suppliers/sup-catalog.json';
 
 const CACHE_TTL = 5 * 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
+
+/**
+ * Publicación manual: si el admin eligió productos concretos, solo esos se
+ * muestran en la tienda (sin importar en qué tienda externa estén listados
+ * dentro de SUP). Sin selección, se muestra todo el catálogo sincronizado.
+ */
+function applyPublishedSelection(products: Product[]): Product[] {
+  const ids = readPublishedIds();
+  if (ids.length === 0) return products;
+  const set = new Set(ids.flatMap((id) => [id, `sup-${id}`]));
+  const filtered = products.filter((p) => set.has(p.id));
+  return filtered.length > 0 ? filtered : products;
+}
 
 /**
  * Catálogo de la tienda.
@@ -31,7 +45,7 @@ async function getCatalog(): Promise<Product[]> {
   try {
     const res = await fetchStoreCatalog();
     if (res.ok && res.products.length > 0) {
-      const products = filterInStock(mapSupCatalog(res.products as SupRawProduct[], SUP_MARGIN));
+      const products = applyPublishedSelection(filterInStock(mapSupCatalog(res.products as SupRawProduct[], SUP_MARGIN)));
       if (products.length > 0) {
         catalogCache = { at: Date.now(), products };
         return products;
@@ -43,13 +57,14 @@ async function getCatalog(): Promise<Product[]> {
 
   const fromBrowser = readSupCatalog();
   if (fromBrowser.length > 0) {
-    const products = filterInStock(mapSupCatalog(fromBrowser, SUP_MARGIN));
+    const products = applyPublishedSelection(filterInStock(mapSupCatalog(fromBrowser, SUP_MARGIN)));
     if (products.length > 0) return products;
   }
 
-  const imported = filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN));
+  const imported = applyPublishedSelection(filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN)));
   return imported.length > 0 ? imported : dummyProducts;
 }
+
 
 
 
