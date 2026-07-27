@@ -56,10 +56,9 @@ export async function syncPublishedCatalog(ids: string[], force = false): Promis
     try {
       // Traemos TODO el Member Center (listados + cola importada), sin recortes,
       // para que cualquier producto nuevo aparezca apenas se importa en SUP.
-      const [listed, queue] = await Promise.all([
-        listMemberListedProducts({ page: 1, pageSize: 200 }),
-        listMemberImportQueue({ page: 1, pageSize: 200 }),
-      ]);
+      // Secuencial a propósito: SUP invalida el token si pedimos dos logins a la vez.
+      const listed = await listMemberListedProducts({ page: 1, pageSize: 200 });
+      const queue = await listMemberImportQueue({ page: 1, pageSize: 200 });
       const seen = new Set<string>();
       const merged = [...listed, ...queue].filter((row) => {
         const key = String(
