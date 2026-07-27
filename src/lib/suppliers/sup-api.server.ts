@@ -34,45 +34,59 @@ export function supCredentialsStatus() {
   };
 }
 
-/** Obtiene (y cachea) el access token de SUP. */
+/**
+ * Obtiene (y cachea) el access token de SUP.
+ * Según el panel: POST /api/auth/login.json (application/x-www-form-urlencoded)
+ * con username + password → { code, type, currency, message, data: { ...token } }
+ */
 export async function getAccessToken(): Promise<string> {
-  const direct = process.env.SUP_ACCESS_TOKEN;
-  if (direct) return direct;
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.token;
 
-  const appKey = process.env.SUP_APP_KEY;
-  const appSecret = process.env.SUP_APP_SECRET;
-  if (!appKey || !appSecret) {
+  const username = process.env.SUP_USERNAME;
+  const password = process.env.SUP_PASSWORD;
+
+  if (!username || !password) {
+    const direct = process.env.SUP_ACCESS_TOKEN;
+    if (direct) return direct;
     throw new Error(
-      "Faltan las credenciales de SUP. Guardá SUP_APP_KEY y SUP_APP_SECRET (o SUP_ACCESS_TOKEN) en los secretos del proyecto.",
+      "Faltan las credenciales de SUP. Guardá SUP_USERNAME y SUP_PASSWORD en los secretos del proyecto.",
     );
   }
 
-  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.token;
-
-  const res = await fetch(`${baseUrl()}/api/v1/token.json`, {
+  const res = await fetch(`${baseUrl()}/api/auth/login.json`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ app_key: appKey, app_secret: appSecret, grant_type: "client_credentials" }),
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+    },
+    body: new URLSearchParams({ username, password }).toString(),
   });
 
   const text = await res.text();
-  if (!res.ok) throw new Error(`SUP token [${res.status}]: ${text.slice(0, 400)}`);
+  if (!res.ok) throw new Error(`SUP login [${res.status}]: ${text.slice(0, 400)}`);
 
   let payload: Record<string, unknown> = {};
   try {
     payload = JSON.parse(text) as Record<string, unknown>;
   } catch {
-    throw new Error(`SUP devolvió una respuesta no-JSON al pedir el token: ${text.slice(0, 200)}`);
+    throw new Error(`SUP devolvió una respuesta no-JSON al iniciar sesión: ${text.slice(0, 200)}`);
   }
 
-  const data = (payload.data ?? payload) as Record<string, unknown>;
-  const token = String(data.access_token ?? data.token ?? "");
-  if (!token) throw new Error(`SUP no devolvió access_token: ${text.slice(0, 300)}`);
+  if (Number(payload.code) !== 200 && Number(payload.code) !== 0) {
+    throw new Error(`SUP login rechazado: ${String(payload.message ?? text.slice(0, 200))}`);
+  }
 
-  const expiresIn = Number(data.expires_in ?? 3600);
+  const data = (payload.data ?? {}) as Record<string, unknown>;
+  const token = String(
+    data.access_token ?? data.accessToken ?? data.token ?? data.auth_token ?? "",
+  );
+  if (!token) throw new Error(`SUP no devolvió token: ${text.slice(0, 300)}`);
+
+  const expiresIn = Number(data.expires_in ?? data.expiresIn ?? 7200);
   cachedToken = { token, expiresAt: Date.now() + expiresIn * 1000 };
   return token;
 }
+
 
 /** Llamada genérica autenticada a la Open API de SUP. */
 export async function supRequest<T = unknown>(
