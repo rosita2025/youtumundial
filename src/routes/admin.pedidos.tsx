@@ -188,6 +188,10 @@ function OrdersAdmin() {
           >
             {environment === "live" ? "Ventas reales" : "Modo prueba"}
           </Button>
+          <Button variant="outline" size="sm" onClick={() => void sync(environment)} disabled={syncing}>
+            <Truck className={`mr-2 h-4 w-4 ${syncing ? "animate-pulse" : ""}`} />
+            {syncing ? "Sincronizando…" : "Sincronizar tracking"}
+          </Button>
           <Button size="sm" onClick={() => void load(environment)} disabled={loading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Actualizar
@@ -195,7 +199,7 @@ function OrdersAdmin() {
         </div>
       </header>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Pedidos pagados</p>
           <p className="mt-1 text-2xl font-semibold">{orders.length}</p>
@@ -203,6 +207,10 @@ function OrdersAdmin() {
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Esperando tu pago en SUP</p>
           <p className="mt-1 text-2xl font-semibold">{pendientes}</p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-sm text-muted-foreground">Despachados con tracking</p>
+          <p className="mt-1 text-2xl font-semibold">{despachados}</p>
         </div>
         <div className="flex flex-col justify-between rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Tu saldo de proveedor</p>
@@ -217,11 +225,22 @@ function OrdersAdmin() {
         </div>
       </div>
 
+      <p className="mb-6 text-xs text-muted-foreground">
+        El tracking se sincroniza solo cada 2 minutos mientras esta pantalla está abierta, y también cuando SUP avisa
+        por webhook. Al aparecer el número de seguimiento se le envía el aviso al cliente una sola vez.
+      </p>
+
+      {notice && (
+        <p className="mb-6 rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground">{notice}</p>
+      )}
+
       {error && (
         <p className="mb-6 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </p>
       )}
+
+
 
       {!loading && !orders.length && !error && (
         <p className="rounded-md border p-6 text-sm text-muted-foreground">
