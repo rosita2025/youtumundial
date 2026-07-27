@@ -3,7 +3,7 @@
  * que ya usa la tienda (`src/lib/suppliers/sup.ts`).
  */
 
-import type { SupRawProduct } from "./sup";
+import type { SupRawProduct, SupRawVariant } from "./sup";
 
 type AnyRecord = Record<string, unknown>;
 
@@ -29,6 +29,45 @@ function toStringList(value: unknown): string[] {
   return [];
 }
 
+function normalizeUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("//")) return `https:${url}`;
+  if (url.startsWith("http://")) return url.replace(/^http:/, "https:");
+  return url;
+}
+
+function parseVariantTitle(value: string) {
+  const cleaned = value.replace(/[\u4e00-\u9fff]+/g, "").trim();
+  const sizeMatch = cleaned.match(/(?:^|\b)(XXXL|XXL|XL|L|M|S|XS|\dXL|\d+)(?:\b|$)/i);
+  const size = sizeMatch?.[1]?.toUpperCase() ?? "";
+  const color = size ? cleaned.replace(sizeMatch[0], "").trim() : cleaned;
+  return { size, color };
+}
+
+function normalizeVariants(value: unknown): SupRawVariant[] {
+  if (!Array.isArray(value)) return [];
+  return (value as AnyRecord[]).map((row, index) => {
+    const title = str(pick(row, ["props_str", "title", "name", "variant", "props", "sku_name"]));
+    const parsed = parseVariantTitle(title);
+    return {
+      id: pick(row, ["id", "variant_id", "sku_id"]),
+      product_id: pick(row, ["product_id", "variant_id", "sku_id", "id"]),
+      sku: str(pick(row, ["product_sn", "sku", "sku_sn", "code"])),
+      title,
+      size: str(pick(row, ["size", "size_name"])) || parsed.size,
+      color: str(pick(row, ["color", "color_name"])) || parsed.color,
+      price: num(pick(row, ["price", "cost_price", "supply_price"])),
+      retail_price: num(pick(row, ["sale_price", "my_price", "retail_price"])),
+      image: normalizeUrl(str(pick(row, ["img", "icon_img", "image", "pre_img"]))),
+      stock: pick(row, ["stock", "inventory", "quantity"]) === undefined
+        ? undefined
+        : num(pick(row, ["stock", "inventory", "quantity"])),
+      shipment_id: pick(row, ["shipment_id"]),
+      shipping_method: str(pick(row, ["shipping_method"])),
+    };
+  }).filter((v) => v.sku || v.title || v.product_id || index >= 0);
+}
+
 /** Extrae tallas y colores desde variantes o listas de opciones. */
 function extractOptions(raw: AnyRecord) {
   const sizes = new Set(toStringList(pick(raw, ["sizes", "size_list", "sizeList"])));
@@ -47,26 +86,45 @@ function extractOptions(raw: AnyRecord) {
 }
 
 export function normalizeSupProduct(raw: AnyRecord): SupRawProduct {
-  const { sizes, colors } = extractOptions(raw);
-  const images = toStringList(pick(raw, ["img", "images", "image_list", "imageList", "pictures", "album", "imgs"]));
-  const main = str(pick(raw, ["pre_img", "image", "main_image", "mainImage", "cover", "thumb"]));
+  const rowGoods = raw.goods && typeof raw.goods === "object" ? (raw.goods as AnyRecord) : undefined;
+  const source = rowGoods ? { ...rowGoods, ...raw, goods: rowGoods } : raw;
+  const rawVariants = normalizeVariants(pick(raw, ["products", "variants", "skus", "sku_list", "skuList", "variations"]));
+  const { sizes, colors } = extractOptions({ ...source, variants: rawVariants });
+  const images = toStringList(pick(source, ["img", "images", "image_list", "imageList", "pictures", "album", "imgs", "list_img"])).map(normalizeUrl);
+  for (const variant of rawVariants) {
+    if (variant.image && !images.includes(variant.image)) images.push(variant.image);
+  }
+  const main = normalizeUrl(str(pick(source, ["pre_img", "image", "main_image", "mainImage", "cover", "thumb"]))) ||
+    normalizeUrl(str(pick(rowGoods ?? {}, ["pre_img", "image", "main_image", "mainImage", "cover", "thumb"])));
   if (main && !images.includes(main)) images.unshift(main);
 
-  return {
-    id: str(pick(raw, ["id", "product_id", "productId", "goods_sn", "spu", "spu_id", "sku"])) || String(Date.now()),
-    name: str(pick(raw, ["title", "name", "title_en", "product_name", "productName"])) || "Producto SUP",
-    description: str(pick(raw, ["intro", "des", "description", "desc", "detail", "title_en"])),
+  const sourceKind: SupRawProduct["source"] = rowGoods
+    ? Array.isArray(raw.products)
+      ? "member-listed"
+      : "member-queue"
+    : "open-api";
 
-    cost_price: num(pick(raw, ["min_price", "price", "cost_price", "sale_price", "supply_price"])),
+  return {
+    id: str(pick(source, ["goods_id", "id", "product_id", "productId", "goods_sn", "spu", "spu_id", "sku"])) || String(Date.now()),
+    name: str(pick(source, ["my_title", "title", "name", "title_en", "product_name", "productName"])) || "Producto SUP",
+    description: str(pick(source, ["content", "intro", "des", "description", "desc", "detail", "title_en"])),
+
+    cost_price: num(pick(rowGoods ?? source, ["min_price", "price", "cost_price", "supply_price", "original_price"])),
+    retail_price: num(pick(source, ["my_price", "sale_price", "retail_price"])),
 
     images,
     sizes,
     colors,
+    variants: rawVariants,
     categories: toStringList(pick(raw, ["categories", "category", "category_name"])),
     tags: toStringList(pick(raw, ["tags", "keywords"])),
     stock: pick(raw, ["stock", "inventory", "quantity"]) === undefined
       ? undefined
       : num(pick(raw, ["stock", "inventory", "quantity"])),
+    source: sourceKind,
+    storeProductId: pick(raw, ["shopify_goods_id", "shopify_product_id"]),
+    storeName: str((raw.store as AnyRecord | undefined)?.name ?? raw.shop_name),
+    sourceUrl: str(pick(rowGoods ?? raw, ["source_url", "link", "product_url"])),
   };
 }
 
