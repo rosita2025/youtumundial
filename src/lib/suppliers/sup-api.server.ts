@@ -21,9 +21,20 @@ interface TokenCache {
 
 let cachedToken: TokenCache | null = null;
 
+const SUP_DEFAULT_BASE = "https://www.supdropshipping.com";
+
 function baseUrl(): string {
-  return (process.env.SUP_API_BASE || "https://www.supdropshipping.com").replace(/\/+$/, "");
+  const configured = (process.env.SUP_API_BASE || "").trim().replace(/\/+$/, "");
+  // Ignoramos valores que apunten al portal de documentación / mock de YApi:
+  // no son la API real y devuelven datos falsos.
+  const isDocsOrMock =
+    !configured ||
+    /developer\.supdropshipping\.com/i.test(configured) ||
+    /\/mock\//i.test(configured) ||
+    /\.json$/i.test(configured);
+  return isDocsOrMock ? SUP_DEFAULT_BASE : configured;
 }
+
 
 export function supCredentialsStatus() {
   return {
