@@ -46,7 +46,8 @@ export const Route = createFileRoute("/admin/pedidos")({
 const ACTION_LABEL: Record<AdminOrder["action"], { text: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   pagar_en_sup: { text: "Pagar en SUP", variant: "destructive" },
   crear_pedido_sup: { text: "Falta crear en SUP", variant: "destructive" },
-  en_transito: { text: "Pagado · en camino", variant: "secondary" },
+  en_transito: { text: "Pagado · preparando", variant: "secondary" },
+  enviado: { text: "Despachado · con tracking", variant: "default" },
   manual: { text: "Preparación manual", variant: "outline" },
 };
 
@@ -57,9 +58,16 @@ function money(value: number | undefined, currency = "USD") {
 
 function OrdersAdmin() {
   const fetchOrders = useServerFn(listOrders);
+  const runSync = useServerFn(syncTracking);
+  const sendNotice = useServerFn(notifyShipped);
+  const setNotified = useServerFn(markNotified);
+
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [busyOrder, setBusyOrder] = useState<string | null>(null);
   const [environment, setEnvironment] = useState<"live" | "sandbox">("live");
 
   const load = useCallback(
@@ -80,8 +88,37 @@ function OrdersAdmin() {
     [fetchOrders],
   );
 
+  /** Consulta SUP, guarda el tracking y avisa a los clientes despachados. */
+  const sync = useCallback(
+    async (env: "live" | "sandbox", silent = false) => {
+      setSyncing(true);
+      try {
+        const result = await runSync({ data: { environment: env } });
+        if (!result.ok) {
+          if (!silent) setError(result.message ?? "No se pudo sincronizar con SUP.");
+        } else if (!silent) {
+          setNotice(
+            `Sincronizados ${result.checked} pedidos · ${result.updated} actualizados · ${result.notified} clientes avisados.`,
+          );
+        }
+        await load(env);
+      } catch (e) {
+        if (!silent) setError((e as Error).message);
+      } finally {
+        setSyncing(false);
+      }
+    },
+    [runSync, load],
+  );
+
+  const syncRef = useRef(sync);
+  syncRef.current = sync;
+
   useEffect(() => {
     void load(environment);
+    void syncRef.current(environment, true);
+    const timer = setInterval(() => void syncRef.current(environment, true), AUTO_SYNC_MS);
+    return () => clearInterval(timer);
   }, [load, environment]);
 
   const payLink = useServerFn(getSupPaymentLink);
@@ -100,7 +137,37 @@ function OrdersAdmin() {
     }
   }
 
+  async function notifyOne(order: AdminOrder) {
+    setBusyOrder(order.sessionId);
+    setError(null);
+    try {
+      const result = await sendNotice({ data: { sessionId: order.sessionId, environment } });
+      if (result.ok) {
+        setNotice(result.message);
+        await load(environment);
+      } else {
+        // Sin servicio de email: abrimos el correo del cliente ya escrito.
+        const subject = encodeURIComponent(`Tu pedido ${order.supOrderId ?? ""} ya fue enviado`);
+        const body = encodeURIComponent(
+          `Hola ${order.customer},\n\nTu pedido de Youtumundial ya fue despachado${order.carrier ? ` con ${order.carrier}` : ""}.\n` +
+            `Número de seguimiento: ${order.tracking ?? ""}\n\n` +
+            `El envío es internacional: el rastreo puede tardar hasta 72 h en mostrar movimientos.\n\nGracias por tu compra.`,
+        );
+        window.open(`mailto:${order.email}?subject=${subject}&body=${body}`, "_blank", "noopener");
+        setNotice(`${result.message} Te abrí el email listo para enviar.`);
+        await setNotified({ data: { sessionId: order.sessionId, environment } });
+        await load(environment);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusyOrder(null);
+    }
+  }
+
   const pendientes = orders.filter((o) => o.action === "pagar_en_sup" || o.action === "crear_pedido_sup").length;
+  const despachados = orders.filter((o) => o.action === "enviado").length;
+
 
 
   return (
