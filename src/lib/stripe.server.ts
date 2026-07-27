@@ -147,7 +147,7 @@ export async function createCartSession(data: CartCheckoutInput) {
   return session.client_secret ?? '';
 }
 
-const SHIPPING_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] =
+const SHIPPING_COUNTRIES =
   [
     'PE', 'US', 'CA', 'GB', 'MX', 'CL', 'CO', 'AR', 'EC', 'BO', 'BR', 'ES',
     'FR', 'DE', 'IT', 'PT', 'NL', 'AU', 'NZ', 'JP',
