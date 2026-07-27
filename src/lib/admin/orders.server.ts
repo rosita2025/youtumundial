@@ -42,8 +42,19 @@ export interface AdminOrder {
   notifyPending?: string;
   lastSyncAt?: string;
   /** Qué te toca hacer a vos ahora mismo. */
-  action: 'pagar_en_sup' | 'crear_pedido_sup' | 'en_transito' | 'enviado' | 'manual';
+  action: 'pagar_en_sup' | 'crear_pedido_sup' | 'en_transito' | 'enviado' | 'manual' | 'completado';
+  /** De dónde salió el pedido: tu tienda (Stripe/cupón) o el historial de SUP. */
+  source: 'tienda' | 'sup';
+  /** Pedido viejo de SUP, anterior a la tienda: no requiere acción tuya. */
+  historical?: boolean;
+  /** Link directo al pedido dentro del Member Center de SUP. */
+  supUrl?: string;
 }
+
+/** Desde esta fecha los pedidos de SUP se consideran de la tienda Youtumundial. */
+const STORE_START = Date.parse('2026-07-01T00:00:00Z');
+
+export const SUP_ORDER_LIST_URL = 'https://www.supdropshipping.com/memberCenter?type=6&index=7';
 
 
 const num = (v: unknown): number | undefined => {
@@ -56,7 +67,8 @@ const str = (v: unknown): string => (v === undefined || v === null ? '' : String
 
 /** Interpreta el estado que devuelve SUP para saber si ya está pagado al proveedor. */
 function readSupState(detail: Record<string, unknown>) {
-  const label = str(detail.statusInfo ?? detail.status_text ?? detail.status).toLowerCase();
+  const label = str(detail.statusInfo ?? detail.status_text ?? detail.status_name).toLowerCase();
+  const code = num(detail.status);
   const goods = Array.isArray(detail.order_goods_list)
     ? (detail.order_goods_list as Record<string, unknown>[])
     : [];
@@ -66,15 +78,32 @@ function readSupState(detail: Record<string, unknown>) {
     str(goods.find((g) => str(g.tracking_number))?.tracking_number) ||
     undefined;
   const paidAt = str(detail.paid_at);
-  const supPaid = Boolean(paidAt) || /paid|processing|shipped|delivered|completed|fulfilled/.test(label);
+  const finishedAt = str(detail.finished_at);
+  const shipmentAt = str(detail.shipment_at ?? detail.shipment_depart_at);
+  const supPaid =
+    Boolean(paidAt) ||
+    Boolean(finishedAt) ||
+    code === 22 ||
+    /paid|processing|shipped|delivered|completed|fulfilled/.test(label);
+
+  // Etiqueta legible aunque SUP solo devuelva el código numérico.
+  const fallbackLabel = finishedAt
+    ? 'Completado en SUP'
+    : shipmentAt
+      ? 'Despachado por SUP'
+      : paidAt
+        ? 'Pagado · preparando'
+        : 'Esperando tu pago en SUP';
 
   return {
-    supStatus: str(detail.statusInfo) || label || undefined,
+    supStatus: str(detail.statusInfo) || label || fallbackLabel,
     supPaid,
     supCost: num(detail.amount ?? detail.total_price ?? detail.goods_amount),
     supShippingCost: num(detail.shipment_fee ?? detail.remote_shipping_fee),
     tracking,
     carrier: str(goods.find((g) => str(g.tracking_type))?.tracking_type) || undefined,
+    finished: Boolean(finishedAt) || code === 22,
+    shippedAt: shipmentAt || undefined,
   };
 }
 
