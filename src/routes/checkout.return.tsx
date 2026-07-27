@@ -58,13 +58,16 @@ function CheckoutReturn() {
     <Layout>
       <div className="container mx-auto px-4 py-24 text-center max-w-xl">
         <h1 className="font-display text-3xl md:text-4xl mb-4">
-          {sessionId ? '¡Gracias por tu compra!' : 'No encontramos tu pago'}
+          {sessionId || isFreeOrder ? '¡Gracias por tu compra!' : 'No encontramos tu pago'}
         </h1>
         <p className="text-muted-foreground mb-8">
-          {sessionId
-            ? 'Recibimos tu pago y ya estamos preparando el envío. Te escribimos por email con el seguimiento.'
-            : 'Si creés que hubo un error, escribinos y lo revisamos.'}
+          {isFreeOrder
+            ? 'Tu pedido con cupón quedó confirmado automáticamente. Te escribimos por email con el seguimiento del envío.'
+            : sessionId
+              ? 'Recibimos tu pago y ya estamos preparando el envío. Te escribimos por email con el seguimiento.'
+              : 'Si creés que hubo un error, escribinos y lo revisamos.'}
         </p>
+
 
         {sessionId && state === 'loading' && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
