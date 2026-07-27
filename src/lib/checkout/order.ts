@@ -1,21 +1,31 @@
 import type { Cart } from '@/lib/data/types';
 import { checkoutConfig, type ShippingCountry, FREE_SHIPPING_THRESHOLD } from './config';
+import { couponDiscount, type Coupon } from './coupons';
 
 export type PaymentMethod = 'card' | 'paypal' | 'yape';
 
 export interface OrderTotals {
   subtotal: number;
+  discount: number;
   shipping: number;
   total: number;
   totalPen: number;
 }
 
-export function getTotals(cart: Cart, country: ShippingCountry): OrderTotals {
+export function getTotals(
+  cart: Cart,
+  country: ShippingCountry,
+  coupon: Coupon | null = null,
+): OrderTotals {
   const subtotal = cart.subtotal;
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : country.shipping;
-  const total = subtotal + shipping;
+  const discount = couponDiscount(coupon, subtotal);
+  const discounted = Math.max(0, subtotal - discount);
+  const shipping =
+    coupon?.freeShipping || discounted >= FREE_SHIPPING_THRESHOLD ? 0 : country.shipping;
+  const total = Math.round((discounted + shipping) * 100) / 100;
   return {
     subtotal,
+    discount,
     shipping,
     total,
     totalPen: Math.round(total * checkoutConfig.usdToPen * 100) / 100,
