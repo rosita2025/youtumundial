@@ -1,6 +1,11 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
+import { fulfillSupOrder, type FulfillmentResult } from '@/lib/suppliers/fulfillment.functions';
+import { getStripeEnvironment } from '@/lib/stripe';
+import { Loader2, PackageCheck, Truck } from 'lucide-react';
+
 
 export const Route = createFileRoute('/checkout/return')({
   head: () => ({
