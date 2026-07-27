@@ -13,6 +13,7 @@ const footerLinks = {
   ],
   help: [
     { label: 'Contacto', href: '/contact' },
+    { label: 'Seguimiento de pedido', href: '/seguimiento' },
     { label: 'Envíos y devoluciones', href: '/shipping' },
     { label: 'Términos y condiciones', href: '/terms' },
     { label: 'Política de privacidad', href: '/privacy' },
