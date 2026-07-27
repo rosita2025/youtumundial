@@ -121,7 +121,7 @@ async function listSupOnlyOrders(stripeOrders: AdminOrder[]): Promise<AdminOrder
   try {
     const { listSupOrders } = await import('@/lib/suppliers/sup-api.server');
     const known = new Set(stripeOrders.map((o) => o.supOrderId).filter(Boolean) as string[]);
-    const rows = (await listSupOrders({ limit: 50 })) as Record<string, unknown>[];
+    const rows = (await listSupOrders({ limit: 100 })) as Record<string, unknown>[];
 
     return rows
       .map((row) => {
@@ -132,9 +132,12 @@ async function listSupOnlyOrders(stripeOrders: AdminOrder[]): Promise<AdminOrder
         const createdAt = str(row.created_at ?? row.create_time ?? row.created ?? '');
         const products = Array.isArray(row.products) ? (row.products as Record<string, unknown>[]) : [];
 
+        const createdIso = createdAt ? new Date(createdAt.replace(' ', 'T') + 'Z').toISOString() : new Date().toISOString();
+        const historical = Date.parse(createdIso) < STORE_START;
+
         const order: AdminOrder = {
           sessionId: `sup_${supOrderId}`,
-          createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+          createdAt: createdIso,
           customer: str(consignee.name) || 'Cliente',
           email: str(consignee.email),
           country: str(consignee.country),
@@ -145,14 +148,35 @@ async function listSupOnlyOrders(stripeOrders: AdminOrder[]): Promise<AdminOrder
           phone: str(consignee.phone),
           amountPaid: 0,
           currency: 'USD',
-          items: products.map((p) => ({
-            supProductId: str(p.product_id ?? p.id),
-            quantity: Number(p.quantity) || 1,
-            variantTitle: str(p.variant ?? p.variant_name ?? ''),
-          })),
+          items: products.length
+            ? products.map((p) => ({
+                supProductId: str(p.product_id ?? p.id),
+                quantity: Number(p.quantity) || 1,
+                variantTitle: str(p.variant ?? p.variant_name ?? ''),
+              }))
+            : str(row.order_title)
+              ? [
+                  {
+                    supProductId: str(row.order_sn),
+                    quantity: Number(row.goods_num) || 1,
+                    variantTitle: str(row.order_title),
+                  },
+                ]
+              : [],
           supOrderId,
           ...state,
-          action: state.tracking ? 'enviado' : state.supPaid ? 'en_transito' : 'pagar_en_sup',
+          source: 'sup',
+          historical,
+          supUrl: SUP_ORDER_LIST_URL,
+          action: state.finished
+            ? 'completado'
+            : state.tracking
+              ? 'enviado'
+              : state.supPaid
+                ? 'en_transito'
+                : historical
+                  ? 'manual'
+                  : 'pagar_en_sup',
         };
         return order;
       })
@@ -259,6 +283,8 @@ async function listStripeOrders(env: StripeEnv, limit: number): Promise<AdminOrd
         carrier,
         trackingUrl: metadata.sup_tracking_url || undefined,
         shippedAt,
+        source: 'tienda',
+        supUrl: SUP_ORDER_LIST_URL,
         notifiedAt: metadata.sup_notified_at || undefined,
         notifyPending: metadata.sup_notify_error || undefined,
         lastSyncAt: metadata.sup_synced_at || undefined,
