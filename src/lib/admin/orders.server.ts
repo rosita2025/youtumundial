@@ -35,9 +35,16 @@ export interface AdminOrder {
   supPaid?: boolean;
   tracking?: string;
   carrier?: string;
+  trackingUrl?: string;
+  /** Cuándo SUP despachó y cuándo se avisó al cliente. */
+  shippedAt?: string;
+  notifiedAt?: string;
+  notifyPending?: string;
+  lastSyncAt?: string;
   /** Qué te toca hacer a vos ahora mismo. */
-  action: 'pagar_en_sup' | 'crear_pedido_sup' | 'en_transito' | 'manual';
+  action: 'pagar_en_sup' | 'crear_pedido_sup' | 'en_transito' | 'enviado' | 'manual';
 }
+
 
 const num = (v: unknown): number | undefined => {
   if (v === undefined || v === null || v === '') return undefined;
@@ -120,17 +127,30 @@ export async function listAdminOrders(env: StripeEnv, limit = 25): Promise<Admin
         try {
           supState = readSupState(await getOrderDetail(supOrderId));
         } catch {
-          supState = { ...supState, supStatus: 'sin respuesta de SUP' };
+          // Sin respuesta en vivo usamos lo último sincronizado/recibido por webhook.
+          supState = {
+            ...supState,
+            supStatus: metadata.sup_status || 'sin respuesta de SUP',
+            tracking: metadata.sup_tracking || undefined,
+            carrier: metadata.sup_carrier || undefined,
+          };
         }
       }
+
+      // La metadata guarda el último tracking sincronizado: nunca lo perdemos.
+      const tracking = supState.tracking ?? metadata.sup_tracking ?? undefined;
+      const carrier = supState.carrier ?? metadata.sup_carrier ?? undefined;
+      const shippedAt = metadata.sup_shipped_at || undefined;
 
       const action: AdminOrder['action'] = !items.length
         ? 'manual'
         : !supOrderId
           ? 'crear_pedido_sup'
-          : supState.supPaid
-            ? 'en_transito'
-            : 'pagar_en_sup';
+          : tracking || shippedAt
+            ? 'enviado'
+            : supState.supPaid
+              ? 'en_transito'
+              : 'pagar_en_sup';
 
       return {
         sessionId: session.id,
@@ -147,8 +167,16 @@ export async function listAdminOrders(env: StripeEnv, limit = 25): Promise<Admin
         items,
         supOrderId,
         ...supState,
+        tracking,
+        carrier,
+        trackingUrl: metadata.sup_tracking_url || undefined,
+        shippedAt,
+        notifiedAt: metadata.sup_notified_at || undefined,
+        notifyPending: metadata.sup_notify_error || undefined,
+        lastSyncAt: metadata.sup_synced_at || undefined,
         action,
       };
+
     }),
   );
 }

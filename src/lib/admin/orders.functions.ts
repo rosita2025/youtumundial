@@ -9,10 +9,17 @@ export interface AdminOrdersResult {
   message?: string;
 }
 
+const readEnv = (value: unknown) => (value === 'sandbox' ? ('sandbox' as const) : ('live' as const));
+const readSessionId = (value: unknown) => {
+  const sessionId = String(value ?? '').trim();
+  if (!/^cs_[a-zA-Z0-9_]+$/.test(sessionId)) throw new Error('Sesión de pago inválida');
+  return sessionId;
+};
+
 /** Lista los pedidos pagados y su estado dentro de SUP Dropshipping. */
 export const listOrders = createServerFn({ method: 'POST' })
   .inputValidator((input: { environment?: 'sandbox' | 'live' }) => ({
-    environment: input?.environment === 'sandbox' ? ('sandbox' as const) : ('live' as const),
+    environment: readEnv(input?.environment),
   }))
   .handler(async ({ data }): Promise<AdminOrdersResult> => {
     const { listAdminOrders } = await import('@/lib/admin/orders.server');
@@ -40,3 +47,57 @@ export const getSupPaymentLink = createServerFn({ method: 'POST' })
     }
   });
 
+export interface SyncTrackingResult {
+  ok: boolean;
+  checked: number;
+  updated: number;
+  notified: number;
+  message?: string;
+}
+
+/** Refresca estado y tracking de todos los pedidos y avisa los despachos nuevos. */
+export const syncTracking = createServerFn({ method: 'POST' })
+  .inputValidator((input: { environment?: 'sandbox' | 'live' }) => ({
+    environment: readEnv(input?.environment),
+  }))
+  .handler(async ({ data }): Promise<SyncTrackingResult> => {
+    const { syncSupTracking } = await import('@/lib/suppliers/tracking-sync.server');
+    try {
+      const result = await syncSupTracking(data.environment);
+      return { ok: true, checked: result.checked, updated: result.updated, notified: result.notified };
+    } catch (error) {
+      return { ok: false, checked: 0, updated: 0, notified: 0, message: (error as Error).message };
+    }
+  });
+
+/** Envía (o reenvía) el aviso de despacho de un pedido puntual. */
+export const notifyShipped = createServerFn({ method: 'POST' })
+  .inputValidator((input: { sessionId: string; environment?: 'sandbox' | 'live' }) => ({
+    sessionId: readSessionId(input?.sessionId),
+    environment: readEnv(input?.environment),
+  }))
+  .handler(async ({ data }): Promise<{ ok: boolean; message: string }> => {
+    const { notifyOrderShipped } = await import('@/lib/suppliers/tracking-sync.server');
+    try {
+      const result = await notifyOrderShipped(data.sessionId, data.environment);
+      return { ok: result.sent, message: result.message };
+    } catch (error) {
+      return { ok: false, message: (error as Error).message };
+    }
+  });
+
+/** Marca como avisado un pedido cuyo cliente contactaste a mano. */
+export const markNotified = createServerFn({ method: 'POST' })
+  .inputValidator((input: { sessionId: string; environment?: 'sandbox' | 'live' }) => ({
+    sessionId: readSessionId(input?.sessionId),
+    environment: readEnv(input?.environment),
+  }))
+  .handler(async ({ data }): Promise<{ ok: boolean; message?: string }> => {
+    const { markCustomerNotified } = await import('@/lib/suppliers/tracking-sync.server');
+    try {
+      await markCustomerNotified(data.sessionId, data.environment);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, message: (error as Error).message };
+    }
+  });

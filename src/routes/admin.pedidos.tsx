@@ -1,14 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-react";
+import { BellRing, ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getSupPaymentLink, listOrders, type AdminOrder } from "@/lib/admin/orders.functions";
+import {
+  getSupPaymentLink,
+  listOrders,
+  markNotified,
+  notifyShipped,
+  syncTracking,
+  type AdminOrder,
+} from "@/lib/admin/orders.functions";
 
 const SUP_ORDERS_URL = "https://www.supdropshipping.com/member/order";
 const SUP_WALLET_URL = "https://www.supdropshipping.com/member/wallet";
+/** Cada cuánto se refresca solo el panel (ms). */
+const AUTO_SYNC_MS = 120_000;
+
 
 export const Route = createFileRoute("/admin/pedidos")({
   ssr: false,
@@ -36,7 +46,8 @@ export const Route = createFileRoute("/admin/pedidos")({
 const ACTION_LABEL: Record<AdminOrder["action"], { text: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   pagar_en_sup: { text: "Pagar en SUP", variant: "destructive" },
   crear_pedido_sup: { text: "Falta crear en SUP", variant: "destructive" },
-  en_transito: { text: "Pagado · en camino", variant: "secondary" },
+  en_transito: { text: "Pagado · preparando", variant: "secondary" },
+  enviado: { text: "Despachado · con tracking", variant: "default" },
   manual: { text: "Preparación manual", variant: "outline" },
 };
 
@@ -47,9 +58,16 @@ function money(value: number | undefined, currency = "USD") {
 
 function OrdersAdmin() {
   const fetchOrders = useServerFn(listOrders);
+  const runSync = useServerFn(syncTracking);
+  const sendNotice = useServerFn(notifyShipped);
+  const setNotified = useServerFn(markNotified);
+
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [busyOrder, setBusyOrder] = useState<string | null>(null);
   const [environment, setEnvironment] = useState<"live" | "sandbox">("live");
 
   const load = useCallback(
@@ -70,8 +88,37 @@ function OrdersAdmin() {
     [fetchOrders],
   );
 
+  /** Consulta SUP, guarda el tracking y avisa a los clientes despachados. */
+  const sync = useCallback(
+    async (env: "live" | "sandbox", silent = false) => {
+      setSyncing(true);
+      try {
+        const result = await runSync({ data: { environment: env } });
+        if (!result.ok) {
+          if (!silent) setError(result.message ?? "No se pudo sincronizar con SUP.");
+        } else if (!silent) {
+          setNotice(
+            `Sincronizados ${result.checked} pedidos · ${result.updated} actualizados · ${result.notified} clientes avisados.`,
+          );
+        }
+        await load(env);
+      } catch (e) {
+        if (!silent) setError((e as Error).message);
+      } finally {
+        setSyncing(false);
+      }
+    },
+    [runSync, load],
+  );
+
+  const syncRef = useRef(sync);
+  syncRef.current = sync;
+
   useEffect(() => {
     void load(environment);
+    void syncRef.current(environment, true);
+    const timer = setInterval(() => void syncRef.current(environment, true), AUTO_SYNC_MS);
+    return () => clearInterval(timer);
   }, [load, environment]);
 
   const payLink = useServerFn(getSupPaymentLink);
@@ -90,7 +137,37 @@ function OrdersAdmin() {
     }
   }
 
+  async function notifyOne(order: AdminOrder) {
+    setBusyOrder(order.sessionId);
+    setError(null);
+    try {
+      const result = await sendNotice({ data: { sessionId: order.sessionId, environment } });
+      if (result.ok) {
+        setNotice(result.message);
+        await load(environment);
+      } else {
+        // Sin servicio de email: abrimos el correo del cliente ya escrito.
+        const subject = encodeURIComponent(`Tu pedido ${order.supOrderId ?? ""} ya fue enviado`);
+        const body = encodeURIComponent(
+          `Hola ${order.customer},\n\nTu pedido de Youtumundial ya fue despachado${order.carrier ? ` con ${order.carrier}` : ""}.\n` +
+            `Número de seguimiento: ${order.tracking ?? ""}\n\n` +
+            `El envío es internacional: el rastreo puede tardar hasta 72 h en mostrar movimientos.\n\nGracias por tu compra.`,
+        );
+        window.open(`mailto:${order.email}?subject=${subject}&body=${body}`, "_blank", "noopener");
+        setNotice(`${result.message} Te abrí el email listo para enviar.`);
+        await setNotified({ data: { sessionId: order.sessionId, environment } });
+        await load(environment);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusyOrder(null);
+    }
+  }
+
   const pendientes = orders.filter((o) => o.action === "pagar_en_sup" || o.action === "crear_pedido_sup").length;
+  const despachados = orders.filter((o) => o.action === "enviado").length;
+
 
 
   return (
@@ -111,6 +188,10 @@ function OrdersAdmin() {
           >
             {environment === "live" ? "Ventas reales" : "Modo prueba"}
           </Button>
+          <Button variant="outline" size="sm" onClick={() => void sync(environment)} disabled={syncing}>
+            <Truck className={`mr-2 h-4 w-4 ${syncing ? "animate-pulse" : ""}`} />
+            {syncing ? "Sincronizando…" : "Sincronizar tracking"}
+          </Button>
           <Button size="sm" onClick={() => void load(environment)} disabled={loading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Actualizar
@@ -118,7 +199,7 @@ function OrdersAdmin() {
         </div>
       </header>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Pedidos pagados</p>
           <p className="mt-1 text-2xl font-semibold">{orders.length}</p>
@@ -126,6 +207,10 @@ function OrdersAdmin() {
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Esperando tu pago en SUP</p>
           <p className="mt-1 text-2xl font-semibold">{pendientes}</p>
+        </div>
+        <div className="rounded-lg border p-4">
+          <p className="text-sm text-muted-foreground">Despachados con tracking</p>
+          <p className="mt-1 text-2xl font-semibold">{despachados}</p>
         </div>
         <div className="flex flex-col justify-between rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Tu saldo de proveedor</p>
@@ -140,11 +225,22 @@ function OrdersAdmin() {
         </div>
       </div>
 
+      <p className="mb-6 text-xs text-muted-foreground">
+        El tracking se sincroniza solo cada 2 minutos mientras esta pantalla está abierta, y también cuando SUP avisa
+        por webhook. Al aparecer el número de seguimiento se le envía el aviso al cliente una sola vez.
+      </p>
+
+      {notice && (
+        <p className="mb-6 rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground">{notice}</p>
+      )}
+
       {error && (
         <p className="mb-6 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
           {error}
         </p>
       )}
+
+
 
       {!loading && !orders.length && !error && (
         <p className="rounded-md border p-6 text-sm text-muted-foreground">
@@ -215,7 +311,19 @@ function OrdersAdmin() {
                   <span className="text-muted-foreground">
                     <Truck className="mr-2 inline h-4 w-4" />
                     {order.carrier ? `${order.carrier} · ` : ""}
-                    {order.tracking}
+                    {order.trackingUrl ? (
+                      <a className="underline underline-offset-4" href={order.trackingUrl} target="_blank" rel="noreferrer">
+                        {order.tracking}
+                      </a>
+                    ) : (
+                      order.tracking
+                    )}
+                  </span>
+                )}
+                {order.notifiedAt && (
+                  <span className="text-muted-foreground">
+                    <BellRing className="mr-2 inline h-4 w-4" />
+                    Cliente avisado el {new Date(order.notifiedAt).toLocaleString("es-PE")}
                   </span>
                 )}
                 {order.supOrderId && order.action === "pagar_en_sup" && (
@@ -228,6 +336,17 @@ function OrdersAdmin() {
                     {paying === order.supOrderId ? "Abriendo…" : "Pagar al proveedor"}
                   </Button>
                 )}
+                {order.tracking && !order.notifiedAt && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => void notifyOne(order)}
+                    disabled={busyOrder === order.sessionId}
+                  >
+                    <BellRing className="mr-2 h-4 w-4" />
+                    {busyOrder === order.sessionId ? "Avisando…" : "Avisar al cliente"}
+                  </Button>
+                )}
 
                 <a
                   className="inline-flex items-center font-medium underline underline-offset-4"
@@ -238,6 +357,16 @@ function OrdersAdmin() {
                   Abrir en SUP <ExternalLink className="ml-1 h-3.5 w-3.5" />
                 </a>
               </div>
+
+              {order.notifyPending && !order.notifiedAt && (
+                <p className="mt-2 text-xs text-muted-foreground">Aviso pendiente: {order.notifyPending}</p>
+              )}
+              {order.lastSyncAt && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Última sincronización con SUP: {new Date(order.lastSyncAt).toLocaleString("es-PE")}
+                </p>
+              )}
+
             </li>
           );
         })}

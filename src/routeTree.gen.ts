@@ -28,6 +28,7 @@ import { Route as AdminSupRouteImport } from './routes/admin.sup'
 import { Route as AdminResenasRouteImport } from './routes/admin.resenas'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
+import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
 
 const TermsRoute = TermsRouteImport.update({
@@ -125,6 +126,12 @@ const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
   path: '/admin/diagnostico',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSupSyncTrackingRoute =
+  ApiPublicSupSyncTrackingRouteImport.update({
+    id: '/api/public/sup/sync-tracking',
+    path: '/api/public/sup/sync-tracking',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicSupShippingRoute = ApiPublicSupShippingRouteImport.update({
   id: '/api/public/sup/shipping',
   path: '/api/public/sup/shipping',
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
+  '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -174,6 +182,7 @@ export interface FileRoutesByTo {
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
+  '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -197,6 +206,7 @@ export interface FileRoutesById {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
+  '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/api/public/sup/shipping'
+    | '/api/public/sup/sync-tracking'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products'
     | '/api/public/sup/shipping'
+    | '/api/public/sup/sync-tracking'
   id:
     | '__root__'
     | '/'
@@ -265,6 +277,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/api/public/sup/shipping'
+    | '/api/public/sup/sync-tracking'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -287,6 +300,7 @@ export interface RootRouteChildren {
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
+  ApiPublicSupSyncTrackingRoute: typeof ApiPublicSupSyncTrackingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -424,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDiagnosticoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sup/sync-tracking': {
+      id: '/api/public/sup/sync-tracking'
+      path: '/api/public/sup/sync-tracking'
+      fullPath: '/api/public/sup/sync-tracking'
+      preLoaderRoute: typeof ApiPublicSupSyncTrackingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sup/shipping': {
       id: '/api/public/sup/shipping'
       path: '/api/public/sup/shipping'
@@ -466,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
+  ApiPublicSupSyncTrackingRoute: ApiPublicSupSyncTrackingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
