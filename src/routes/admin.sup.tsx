@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ClipboardCopy, Download, Link as LinkIcon, PackageSearch, RefreshCw, Trash2 } from "lucide-react";
+import { ClipboardCopy, Download, Link as LinkIcon, PackageSearch, RefreshCw, Stethoscope, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   fetchSupMemberProducts,
   importFromSourceUrl,
   resyncStoreCatalog,
+  supHealthCheck,
   supStatus,
 } from "@/lib/suppliers/sup.functions";
 
@@ -42,6 +43,7 @@ function SupAdmin() {
   const getMemberProducts = useServerFn(fetchSupMemberProducts);
   const importByUrl = useServerFn(importFromSourceUrl);
   const resyncCatalog = useServerFn(resyncStoreCatalog);
+  const checkHealth = useServerFn(supHealthCheck);
 
   const [status, setStatus] = useState<{ base: string; hasKey: boolean; hasSecret: boolean; hasToken: boolean; hasUsername?: boolean; hasPassword?: boolean } | null>(null);
   const [keyword, setKeyword] = useState("");
@@ -55,6 +57,25 @@ function SupAdmin() {
   const [error, setError] = useState<string | null>(null);
   const [stored, setStored] = useState<SupRawProduct[]>([]);
   const [published, setPublished] = useState<string[]>([]);
+  const [health, setHealth] = useState<{ step: string; ok: boolean; detail: string }[] | null>(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+
+  async function runHealth() {
+    setHealthLoading(true);
+    try {
+      const res = await checkHealth();
+      setHealth(res.steps);
+      if (res.ok) {
+        toast.success(`SUP responde: ${res.totalProducts} productos disponibles`);
+      } else {
+        toast.error(res.error ?? "No pude revisar la conexión con SUP.");
+      }
+    } catch (e) {
+      setHealth([{ step: "Conexión con SUP", ok: false, detail: (e as Error).message }]);
+    } finally {
+      setHealthLoading(false);
+    }
+  }
 
 
   useEffect(() => {
