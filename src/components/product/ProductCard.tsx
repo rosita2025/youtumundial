@@ -46,12 +46,23 @@ export function ProductCard({ product, className }: ProductCardProps) {
         )}
 
         {/* Sale badge */}
-        {discount > 0 && (
+        {discount > 0 && !soldOut && (
           <span className="absolute top-3 left-3 bg-destructive text-destructive-foreground text-xs font-medium px-2 py-1 rounded">
             {discount}% Off
           </span>
         )}
+
+        {/* Sold out */}
+        {soldOut && (
+          <>
+            <div className="absolute inset-0 bg-background/60" />
+            <span className="absolute top-3 left-3 bg-foreground text-background text-xs font-medium px-2 py-1 rounded">
+              Agotado
+            </span>
+          </>
+        )}
       </div>
+
 
       {/* Product Info */}
       <div className="mt-4 space-y-1">
