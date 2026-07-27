@@ -145,24 +145,42 @@ export async function listCategories() {
   return pickList(payload);
 }
 
-/** Lista de productos de SUP (crudos, tal cual los devuelve la API). */
+/**
+ * Lista de productos de SUP (crudos, tal cual los devuelve la API).
+ * Nota: la Open API filtra por `title`, no por `keyword`.
+ */
 export async function listProducts(params: { page?: number; pageSize?: number; keyword?: string; categoryId?: string } = {}) {
+  const term = (params.keyword ?? "").trim();
   const payload = await supRequest<AnyRecord>("/api/v1/products.json", {
     query: {
       page: params.page ?? 1,
       page_size: params.pageSize ?? 20,
-      keyword: params.keyword,
-      category_id: params.categoryId,
+      title: term || undefined,
+      goods_cat_id: params.categoryId,
     },
   });
-  return pickList(payload);
+  const rows = pickList(payload);
+  // Si el término parece un SKU (SD...) filtramos localmente: la API no soporta goods_sn.
+  if (term && /^SD[0-9A-Z]{6,}$/i.test(term)) {
+    const hit = rows.filter((r) => String(r.goods_sn ?? "").toLowerCase() === term.toLowerCase());
+    if (hit.length) return hit;
+  }
+  return rows;
 }
 
-/** Detalle de un producto de SUP. */
+/** Detalle de un producto de SUP. Si no hay endpoint de detalle, lo busca en el listado. */
 export async function getProductDetail(id: string) {
-  const payload = await supRequest<AnyRecord>(`/api/v1/product/${encodeURIComponent(id)}.json`);
-  return (payload.data ?? payload) as AnyRecord;
+  try {
+    const payload = await supRequest<AnyRecord>(`/api/v1/product/${encodeURIComponent(id)}.json`);
+    const data = (payload.data ?? payload) as AnyRecord;
+    if (data && Object.keys(data).length) return data;
+  } catch {
+    // sin endpoint de detalle: caemos al listado
+  }
+  const rows = await listProducts({ page: 1, pageSize: 100 });
+  return (rows.find((r) => String(r.id) === id || String(r.goods_sn) === id) ?? {}) as AnyRecord;
 }
+
 
 /** Crea una orden de compra en SUP (para enviar el pedido al proveedor). */
 export async function createPurchaseOrder(order: unknown) {
