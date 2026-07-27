@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ClipboardCopy, Download, PackageSearch, RefreshCw, Trash2 } from "lucide-react";
+import { ClipboardCopy, Download, Link as LinkIcon, PackageSearch, RefreshCw, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { fetchSupProducts, supStatus } from "@/lib/suppliers/sup.functions";
+import {
+  fetchSupProducts,
+  importFromSourceUrl,
+  resyncStoreCatalog,
+  supStatus,
+} from "@/lib/suppliers/sup.functions";
+
 import { mergeSupCatalog, readSupCatalog, clearSupCatalog } from "@/lib/suppliers/local-catalog";
 import { retailPrice } from "@/lib/suppliers/sup";
 import type { SupRawProduct } from "@/lib/suppliers/sup";
