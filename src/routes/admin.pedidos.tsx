@@ -5,7 +5,7 @@ import { ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-rea
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { listOrders, type AdminOrder } from "@/lib/admin/orders.functions";
+import { getSupPaymentLink, listOrders, type AdminOrder } from "@/lib/admin/orders.functions";
 
 const SUP_ORDERS_URL = "https://www.supdropshipping.com/member/order";
 const SUP_WALLET_URL = "https://www.supdropshipping.com/member/wallet";
