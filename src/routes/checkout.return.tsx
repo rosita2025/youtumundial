@@ -104,9 +104,15 @@ function CheckoutReturn() {
         {sessionId && (
           <p className="text-xs text-muted-foreground mb-8 break-all">Referencia: {sessionId}</p>
         )}
-        <Button asChild size="lg">
-          <Link to="/products">Seguir comprando</Link>
-        </Button>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Button asChild size="lg">
+            <Link to="/products">Seguir comprando</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/seguimiento">Ver estado y tracking</Link>
+          </Button>
+        </div>
+
       </div>
     </Layout>
 
