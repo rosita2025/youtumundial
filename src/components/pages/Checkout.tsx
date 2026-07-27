@@ -15,7 +15,8 @@ import {
   getTotals,
   type PaymentMethod,
 } from '@/lib/checkout/order';
-import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck } from 'lucide-react';
+import { findCoupon, type Coupon } from '@/lib/checkout/coupons';
+import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
@@ -52,9 +53,11 @@ const Checkout = () => {
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
 
   const country = shippingCountries.find((c) => c.code === countryCode) ?? shippingCountries[0];
-  const totals = getTotals(cart, country);
+  const totals = getTotals(cart, country, coupon);
 
   if (cart.items.length === 0) {
     return (
@@ -71,13 +74,35 @@ const Checkout = () => {
   }
 
   const missingCustomer = !customer.name || !customer.email || !customer.address;
+  const isFreeOrder = totals.total < 0.5;
+
+  const applyCoupon = () => {
+    const result = findCoupon(couponInput, cart.subtotal);
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
+    setCoupon(result.coupon);
+    setShowStripe(false);
+    toast.success(`Cupón aplicado: ${result.coupon.label}`);
+  };
+
+  const removeCoupon = () => {
+    setCoupon(null);
+    setCouponInput('');
+    setShowStripe(false);
+  };
+
+  // El descuento se reparte proporcionalmente entre los ítems para Stripe.
+  const discountFactor =
+    cart.subtotal > 0 ? Math.max(0, cart.subtotal - totals.discount) / cart.subtotal : 1;
 
   const stripeItems = cart.items.map((item) => {
     const supMatch = /^sup-(.+)$/.exec(String(item.product.id));
     const variantMatch = /^sup-[^-]+-(.+)$/.exec(String(item.variant.id));
     return {
       name: `${item.product.title} — ${item.variant.title}`,
-      amountInCents: Math.round(item.variant.price * 100),
+      amountInCents: Math.max(1, Math.round(item.variant.price * discountFactor * 100)),
       quantity: item.quantity,
       supProductId: supMatch ? supMatch[1] : undefined,
       variantTitle: item.variant.title,
@@ -92,10 +117,21 @@ const Checkout = () => {
       return;
     }
 
+    if (isFreeOrder) {
+      toast.success('Pedido gratis con cupón: lo confirmamos por WhatsApp.');
+      window.open(
+        buildWhatsappOrderLink(cart, country, totals, customer),
+        '_blank',
+        'noopener,noreferrer',
+      );
+      return;
+    }
+
     if (method === 'card') {
       setShowStripe(true);
       return;
     }
+
 
     if (method === 'paypal') {
       const link = buildPaypalLink(totals.total);
@@ -270,11 +306,61 @@ const Checkout = () => {
                 ))}
               </div>
 
+              <div className="border-t border-border mt-4 pt-4">
+                <Label htmlFor="coupon" className="mb-2 block text-sm">
+                  Cupón de descuento
+                </Label>
+                {coupon ? (
+                  <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+                    <span className="flex items-center gap-2">
+                      <Tag className="h-3.5 w-3.5 text-primary" />
+                      <span>
+                        <span className="font-medium">{coupon.code}</span>
+                        <span className="block text-xs text-muted-foreground">{coupon.label}</span>
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      aria-label="Quitar cupón"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      id="coupon"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          applyCoupon();
+                        }
+                      }}
+                      placeholder="BIENVENIDA10"
+                      className="uppercase"
+                    />
+                    <Button type="button" variant="outline" onClick={applyCoupon}>
+                      Aplicar
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div className="border-t border-border mt-4 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatPrice(totals.subtotal)}</span>
                 </div>
+                {totals.discount > 0 && (
+                  <div className="flex justify-between text-primary">
+                    <span>Descuento ({coupon?.code})</span>
+                    <span>-{formatPrice(totals.discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Envío a {country.name}</span>
                   <span>{totals.shipping === 0 ? 'Gratis' : formatPrice(totals.shipping)}</span>
@@ -289,8 +375,13 @@ const Checkout = () => {
               </div>
 
               <Button className="w-full mt-6" size="lg" onClick={handlePay}>
-                {method === 'yape' ? 'Confirmar pedido por WhatsApp' : 'Pagar ahora'}
+                {isFreeOrder
+                  ? 'Confirmar pedido gratis'
+                  : method === 'yape'
+                    ? 'Confirmar pedido por WhatsApp'
+                    : 'Pagar ahora'}
               </Button>
+
 
               <ul className="mt-4 space-y-2 text-xs text-muted-foreground">
                 <li className="flex items-center gap-2">
