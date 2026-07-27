@@ -30,6 +30,77 @@ export const fetchSupProducts = createServerFn({ method: "POST" })
     }
   });
 
+/** Importa desde una URL de 1688 / AliExpress / Alibaba buscando el producto en SUP. */
+export const importFromSourceUrl = createServerFn({ method: "POST" })
+  .inputValidator((input: { url?: string }) => ({
+    url: String(input?.url ?? "").trim().slice(0, 1000),
+  }))
+  .handler(async ({ data }) => {
+    if (!data.url) return { ok: false as const, products: [], error: "Pegá la URL del producto." };
+    const { findBySourceUrl } = await import("./sourcing.server");
+    try {
+      const { parsed, matches } = await findBySourceUrl(data.url);
+      if (!parsed) {
+        return { ok: false as const, products: [], error: "No pude leer el ID del producto en esa URL." };
+      }
+      if (matches.length === 0) {
+        return {
+          ok: false as const,
+          products: [],
+          market: parsed.market,
+          offerId: parsed.offerId,
+          error:
+            `Ese producto (${parsed.market} · ${parsed.offerId}) todavía no está en tu catálogo de SUP. ` +
+            "Pegá la URL en SUP → Sourcing / Import by URL, esperá a que lo aprueben y volvé a intentar acá.",
+        };
+      }
+      return { ok: true as const, products: matches, market: parsed.market, offerId: parsed.offerId };
+    } catch (error) {
+      return { ok: false as const, products: [], error: (error as Error).message };
+    }
+  });
+
+/** Fuerza la resincronización del catálogo público (precio, stock, fotos, talles). */
+export const resyncStoreCatalog = createServerFn({ method: "POST" }).handler(async () => {
+  const { SUP_PUBLISHED_IDS } = await import("./sup-selection");
+  const { syncPublishedCatalog } = await import("./catalog.server");
+  try {
+    const products = await syncPublishedCatalog(SUP_PUBLISHED_IDS, true);
+    return { ok: true as const, count: products.length };
+  } catch (error) {
+    return { ok: false as const, count: 0, error: (error as Error).message };
+  }
+});
+
+/** Estado de envío de un pedido: primero el webhook, si no consulta SUP. */
+export const getShipmentTracking = createServerFn({ method: "POST" })
+  .inputValidator((input: { supOrderId?: string }) => ({
+    supOrderId: String(input?.supOrderId ?? "").trim().slice(0, 100),
+  }))
+  .handler(async ({ data }) => {
+    if (!data.supOrderId) return { ok: false as const, error: "Falta el número de pedido." };
+    const { getShipmentStatus } = await import("./shipment-store.server");
+    const live = getShipmentStatus(data.supOrderId);
+    if (live) return { ok: true as const, source: "webhook" as const, ...live };
+
+    const { getOrderDetail } = await import("./sup-api.server");
+    try {
+      const detail = await getOrderDetail(data.supOrderId);
+      const str = (v: unknown) => (v === undefined || v === null ? "" : String(v));
+      return {
+        ok: true as const,
+        source: "api" as const,
+        supOrderId: data.supOrderId,
+        status: str(detail.status ?? detail.order_status ?? detail.state) || "procesando",
+        tracking: str(detail.tracking_number ?? detail.logistics_no) || undefined,
+        carrier: str(detail.shipping_method ?? detail.logistics_name) || undefined,
+        updatedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      return { ok: false as const, error: (error as Error).message };
+    }
+  });
+
 /** Envía un pedido de la tienda a SUP para que lo despachen. */
 export const sendOrderToSup = createServerFn({ method: "POST" })
   .inputValidator((input: { order: unknown }) => ({ order: input?.order ?? null }))
@@ -43,4 +114,3 @@ export const sendOrderToSup = createServerFn({ method: "POST" })
       return { ok: false as const, error: (error as Error).message };
     }
   });
-

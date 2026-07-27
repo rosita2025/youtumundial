@@ -27,6 +27,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AdminSupRouteImport } from './routes/admin.sup'
 import { Route as AdminResenasRouteImport } from './routes/admin.resenas'
 import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
+import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -118,6 +119,11 @@ const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
   path: '/admin/diagnostico',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSupShippingRoute = ApiPublicSupShippingRouteImport.update({
+  id: '/api/public/sup/shipping',
+  path: '/api/public/sup/shipping',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
+  '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/products/$slug'
     | '/products/'
+    | '/api/public/sup/shipping'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/products/$slug'
     | '/products'
+    | '/api/public/sup/shipping'
   id:
     | '__root__'
     | '/'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/collections/$slug'
     | '/products/$slug'
     | '/products/'
+    | '/api/public/sup/shipping'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -391,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDiagnosticoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sup/shipping': {
+      id: '/api/public/sup/shipping'
+      path: '/api/public/sup/shipping'
+      fullPath: '/api/public/sup/shipping'
+      preLoaderRoute: typeof ApiPublicSupShippingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -424,6 +444,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollectionsSlugRoute: CollectionsSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

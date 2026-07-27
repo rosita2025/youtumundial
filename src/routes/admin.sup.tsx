@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ClipboardCopy, Download, PackageSearch, RefreshCw, Trash2 } from "lucide-react";
+import { ClipboardCopy, Download, Link as LinkIcon, PackageSearch, RefreshCw, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { fetchSupProducts, supStatus } from "@/lib/suppliers/sup.functions";
+import {
+  fetchSupProducts,
+  importFromSourceUrl,
+  resyncStoreCatalog,
+  supStatus,
+} from "@/lib/suppliers/sup.functions";
+
 import { mergeSupCatalog, readSupCatalog, clearSupCatalog } from "@/lib/suppliers/local-catalog";
 import { retailPrice } from "@/lib/suppliers/sup";
 import type { SupRawProduct } from "@/lib/suppliers/sup";
@@ -31,14 +37,19 @@ export const Route = createFileRoute("/admin/sup")({
 function SupAdmin() {
   const getStatus = useServerFn(supStatus);
   const getProducts = useServerFn(fetchSupProducts);
+  const importByUrl = useServerFn(importFromSourceUrl);
+  const resyncCatalog = useServerFn(resyncStoreCatalog);
 
   const [status, setStatus] = useState<{ base: string; hasKey: boolean; hasSecret: boolean; hasToken: boolean } | null>(null);
   const [keyword, setKeyword] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [urlLoading, setUrlLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SupRawProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [stored, setStored] = useState<SupRawProduct[]>([]);
+
 
   useEffect(() => {
     getStatus().then(setStatus).catch(() => setStatus(null));
@@ -71,6 +82,38 @@ function SupAdmin() {
     setStored(readSupCatalog());
     toast.success(`${added} productos nuevos importados`, { description: `Catálogo SUP: ${total} productos.` });
   }
+
+  async function importUrl() {
+    if (!sourceUrl.trim()) return;
+    setUrlLoading(true);
+    setError(null);
+    try {
+      const res = await importByUrl({ data: { url: sourceUrl } });
+      if (!res.ok) {
+        setError(res.error ?? "No se pudo importar esa URL.");
+      } else {
+        setResults(res.products);
+        importAll(res.products);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUrlLoading(false);
+    }
+  }
+
+  async function resync() {
+    setUrlLoading(true);
+    try {
+      const res = await resyncCatalog();
+      if (res.ok) toast.success(`Tienda sincronizada: ${res.count} productos actualizados desde SUP.`);
+      else toast.error(res.error ?? "No se pudo sincronizar.");
+    } finally {
+      setUrlLoading(false);
+    }
+  }
+
+
 
   const connected = Boolean(status?.hasToken || (status?.hasKey && status?.hasSecret));
 
@@ -119,6 +162,29 @@ function SupAdmin() {
       </section>
 
       <section className="mt-6 rounded-xl border bg-card p-5">
+        <h2 className="text-sm font-medium">Importar por URL (1688 · AliExpress · Alibaba)</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Pegá el link del producto y lo busco en tu catálogo de SUP con fotos, talles y costo reales.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Input
+            className="max-w-lg"
+            value={sourceUrl}
+            onChange={(e) => setSourceUrl(e.target.value)}
+            placeholder="https://detail.1688.com/offer/123456789.html"
+            onKeyDown={(e) => e.key === "Enter" && importUrl()}
+          />
+          <Button onClick={importUrl} disabled={urlLoading}>
+            <LinkIcon className="mr-2 h-4 w-4" /> Buscar e importar
+          </Button>
+          <Button variant="outline" onClick={resync} disabled={urlLoading}>
+            <RefreshCw className="mr-2 h-4 w-4" /> Resincronizar tienda
+          </Button>
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border bg-card p-5">
+
         <div className="flex flex-wrap gap-2">
           <Input
             className="max-w-sm"
