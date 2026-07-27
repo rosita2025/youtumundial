@@ -1,28 +1,48 @@
 /**
  * Data Provider - Capa de datos de la tienda única (Lovable).
  *
- * El catálogo vive en este proyecto (dummy-data). Cuando se active Lovable
- * Cloud se reemplaza por la lectura desde la base de datos.
+ * El catálogo se sincroniza en vivo con SUP Dropshipping (imágenes, talles,
+ * precio y stock). Si SUP no responde, se usa lo importado localmente y, como
+ * último recurso, el catálogo demo.
  */
 
 import { Product, Collection, FilterOptions, SortOption } from './types';
 import { dummyProducts, dummyCollections } from './dummy-data';
 import { mapSupCatalog, SupRawProduct } from '../suppliers/sup';
 import { readSupCatalog } from '../suppliers/local-catalog';
+import { fetchStoreCatalog } from '../suppliers/catalog.functions';
+import { SUP_MARGIN } from '../suppliers/sup-selection';
 import supCatalog from '../suppliers/sup-catalog.json';
+
+const CACHE_TTL = 5 * 60 * 1000;
+let catalogCache: { at: number; products: Product[] } | null = null;
 
 /**
  * Catálogo de la tienda.
- * Prioridad: productos importados desde la Open API de SUP (guardados en el
- * navegador) → sup-catalog.json → catálogo demo.
+ * Prioridad: SUP en vivo → productos importados en este navegador →
+ * sup-catalog.json → catálogo demo.
  */
 async function getCatalog(): Promise<Product[]> {
-  const fromApi = readSupCatalog();
-  if (fromApi.length > 0) return mapSupCatalog(fromApi);
+  if (catalogCache && Date.now() - catalogCache.at < CACHE_TTL) return catalogCache.products;
 
-  const imported = mapSupCatalog(supCatalog as SupRawProduct[]);
+  try {
+    const res = await fetchStoreCatalog();
+    if (res.ok && res.products.length > 0) {
+      const products = mapSupCatalog(res.products as SupRawProduct[], SUP_MARGIN);
+      catalogCache = { at: Date.now(), products };
+      return products;
+    }
+  } catch {
+    // seguimos con los respaldos locales
+  }
+
+  const fromBrowser = readSupCatalog();
+  if (fromBrowser.length > 0) return mapSupCatalog(fromBrowser, SUP_MARGIN);
+
+  const imported = mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN);
   return imported.length > 0 ? imported : dummyProducts;
 }
+
 
 
 
