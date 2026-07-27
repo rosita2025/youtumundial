@@ -16,6 +16,7 @@ import {
 } from "@/lib/suppliers/sup.functions";
 
 import { mergeSupCatalog, readSupCatalog, clearSupCatalog } from "@/lib/suppliers/local-catalog";
+import { readPublishedIds, togglePublished, clearPublished } from "@/lib/suppliers/published-store";
 import { retailPrice } from "@/lib/suppliers/sup";
 import type { SupRawProduct } from "@/lib/suppliers/sup";
 
@@ -53,12 +54,15 @@ function SupAdmin() {
   const [results, setResults] = useState<SupRawProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [stored, setStored] = useState<SupRawProduct[]>([]);
+  const [published, setPublished] = useState<string[]>([]);
 
 
   useEffect(() => {
     getStatus().then(setStatus).catch(() => setStatus(null));
     setStored(readSupCatalog());
+    setPublished(readPublishedIds());
   }, [getStatus]);
+
 
   async function search(nextPage = page) {
     setLoading(true);
@@ -161,6 +165,14 @@ function SupAdmin() {
           </Badge>
           {status && <span className="text-xs text-muted-foreground">API: {status.base}</span>}
           <Badge variant="outline">{stored.length} productos importados</Badge>
+          <Badge variant={published.length > 0 ? "default" : "secondary"}>
+            {published.length > 0 ? `${published.length} publicados en mi tienda` : "Mostrando todo el catálogo"}
+          </Badge>
+          {published.length > 0 && (
+            <Button size="sm" variant="ghost" onClick={() => { clearPublished(); setPublished([]); toast.success("Selección borrada: la tienda vuelve a mostrar todo."); }}>
+              Mostrar todo
+            </Button>
+          )}
           {stored.length > 0 && (
             <>
               <Button
@@ -286,16 +298,30 @@ function SupAdmin() {
                 <p className="truncate text-sm font-medium">{p.name}</p>
                 <div className="mt-1 flex flex-wrap gap-1">
                   <Badge variant="outline">{p.source === "member-listed" ? "Listado" : p.source === "member-queue" ? "Importado" : "Open API"}</Badge>
-                  {p.storeName && <Badge variant="secondary">{p.storeName}</Badge>}
+                  {published.includes(String(p.id)) && <Badge>En mi tienda</Badge>}
                   {p.variants?.length ? <Badge variant="secondary">{p.variants.length} variantes</Badge> : null}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Costo ${Number(p.cost_price) || 0} → venta ${salePrice(p)}
                 </p>
-                <Button size="sm" variant="outline" className="mt-2" onClick={() => importAll([p])}>
-                  Importar
-                </Button>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={published.includes(String(p.id)) ? "default" : "outline"}
+                    onClick={() => {
+                      const now = togglePublished(p.id);
+                      setPublished(readPublishedIds());
+                      toast.success(now ? "Publicado en tu tienda" : "Quitado de tu tienda");
+                    }}
+                  >
+                    {published.includes(String(p.id)) ? "Quitar de mi tienda" : "Publicar en mi tienda"}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => importAll([p])}>
+                    Importar
+                  </Button>
+                </div>
               </div>
+
             </li>
           ))}
         </ul>
