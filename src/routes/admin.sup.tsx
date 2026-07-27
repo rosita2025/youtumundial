@@ -119,6 +119,29 @@ function SupAdmin() {
       </section>
 
       <section className="mt-6 rounded-xl border bg-card p-5">
+        <h2 className="text-sm font-medium">Importar por URL (1688 · AliExpress · Alibaba)</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Pegá el link del producto y lo busco en tu catálogo de SUP con fotos, talles y costo reales.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Input
+            className="max-w-lg"
+            value={sourceUrl}
+            onChange={(e) => setSourceUrl(e.target.value)}
+            placeholder="https://detail.1688.com/offer/123456789.html"
+            onKeyDown={(e) => e.key === "Enter" && importUrl()}
+          />
+          <Button onClick={importUrl} disabled={urlLoading}>
+            <LinkIcon className="mr-2 h-4 w-4" /> Buscar e importar
+          </Button>
+          <Button variant="outline" onClick={resync} disabled={urlLoading}>
+            <RefreshCw className="mr-2 h-4 w-4" /> Resincronizar tienda
+          </Button>
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border bg-card p-5">
+
         <div className="flex flex-wrap gap-2">
           <Input
             className="max-w-sm"
