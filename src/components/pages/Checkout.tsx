@@ -52,9 +52,11 @@ const Checkout = () => {
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
 
   const country = shippingCountries.find((c) => c.code === countryCode) ?? shippingCountries[0];
-  const totals = getTotals(cart, country);
+  const totals = getTotals(cart, country, coupon);
 
   if (cart.items.length === 0) {
     return (
@@ -71,13 +73,35 @@ const Checkout = () => {
   }
 
   const missingCustomer = !customer.name || !customer.email || !customer.address;
+  const isFreeOrder = totals.total < 0.5;
+
+  const applyCoupon = () => {
+    const result = findCoupon(couponInput, cart.subtotal);
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
+    setCoupon(result.coupon);
+    setShowStripe(false);
+    toast.success(`Cupón aplicado: ${result.coupon.label}`);
+  };
+
+  const removeCoupon = () => {
+    setCoupon(null);
+    setCouponInput('');
+    setShowStripe(false);
+  };
+
+  // El descuento se reparte proporcionalmente entre los ítems para Stripe.
+  const discountFactor =
+    cart.subtotal > 0 ? Math.max(0, cart.subtotal - totals.discount) / cart.subtotal : 1;
 
   const stripeItems = cart.items.map((item) => {
     const supMatch = /^sup-(.+)$/.exec(String(item.product.id));
     const variantMatch = /^sup-[^-]+-(.+)$/.exec(String(item.variant.id));
     return {
       name: `${item.product.title} — ${item.variant.title}`,
-      amountInCents: Math.round(item.variant.price * 100),
+      amountInCents: Math.max(1, Math.round(item.variant.price * discountFactor * 100)),
       quantity: item.quantity,
       supProductId: supMatch ? supMatch[1] : undefined,
       variantTitle: item.variant.title,
