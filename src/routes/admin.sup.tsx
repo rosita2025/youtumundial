@@ -78,6 +78,38 @@ function SupAdmin() {
     toast.success(`${added} productos nuevos importados`, { description: `Catálogo SUP: ${total} productos.` });
   }
 
+  async function importUrl() {
+    if (!sourceUrl.trim()) return;
+    setUrlLoading(true);
+    setError(null);
+    try {
+      const res = await importByUrl({ data: { url: sourceUrl } });
+      if (!res.ok) {
+        setError(res.error ?? "No se pudo importar esa URL.");
+      } else {
+        setResults(res.products);
+        importAll(res.products);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUrlLoading(false);
+    }
+  }
+
+  async function resync() {
+    setUrlLoading(true);
+    try {
+      const res = await resyncCatalog();
+      if (res.ok) toast.success(`Tienda sincronizada: ${res.count} productos actualizados desde SUP.`);
+      else toast.error(res.error ?? "No se pudo sincronizar.");
+    } finally {
+      setUrlLoading(false);
+    }
+  }
+
+
+
   const connected = Boolean(status?.hasToken || (status?.hasKey && status?.hasSecret));
 
   return (
