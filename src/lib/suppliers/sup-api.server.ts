@@ -8,7 +8,7 @@
  *   POST /api/v1/purchase/order.json
  *
  * Credenciales (secrets del proyecto):
- *   SUP_API_BASE        (opcional, por defecto https://api.supdropshipping.com)
+ *   SUP_API_BASE        (opcional, por defecto https://www.supdropshipping.com)
  *   SUP_APP_KEY         (App Key / Client ID)
  *   SUP_APP_SECRET      (App Secret)
  *   SUP_ACCESS_TOKEN    (opcional: si SUP te entrega el token ya generado)
@@ -22,7 +22,7 @@ interface TokenCache {
 let cachedToken: TokenCache | null = null;
 
 function baseUrl(): string {
-  return (process.env.SUP_API_BASE || "https://api.supdropshipping.com").replace(/\/+$/, "");
+  return (process.env.SUP_API_BASE || "https://www.supdropshipping.com").replace(/\/+$/, "");
 }
 
 export function supCredentialsStatus() {
