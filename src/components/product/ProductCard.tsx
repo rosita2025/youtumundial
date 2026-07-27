@@ -12,6 +12,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const discount = product.compareAtPrice
     ? calculateDiscount(product.price, product.compareAtPrice)
     : 0;
+  const soldOut =
+    Array.isArray(product.variants) && product.variants.length > 0
+      ? !product.variants.some((v) => v.available)
+      : false;
+
 
   return (
     <Link
