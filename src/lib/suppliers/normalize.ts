@@ -48,15 +48,16 @@ function extractOptions(raw: AnyRecord) {
 
 export function normalizeSupProduct(raw: AnyRecord): SupRawProduct {
   const { sizes, colors } = extractOptions(raw);
-  const images = toStringList(pick(raw, ["images", "image_list", "imageList", "pictures", "album"]));
-  const main = str(pick(raw, ["image", "main_image", "mainImage", "cover", "thumb"]));
+  const images = toStringList(pick(raw, ["images", "image_list", "imageList", "pictures", "album", "imgs"]));
+  const main = str(pick(raw, ["pre_img", "image", "main_image", "mainImage", "cover", "thumb"]));
   if (main && !images.includes(main)) images.unshift(main);
 
   return {
-    id: str(pick(raw, ["id", "product_id", "productId", "spu", "spu_id", "sku"])) || String(Date.now()),
-    name: str(pick(raw, ["name", "title", "product_name", "productName"])) || "Producto SUP",
-    description: str(pick(raw, ["description", "desc", "detail", "content"])),
-    cost_price: num(pick(raw, ["cost_price", "price", "sale_price", "min_price", "supply_price"])),
+    id: str(pick(raw, ["id", "product_id", "productId", "goods_sn", "spu", "spu_id", "sku"])) || String(Date.now()),
+    name: str(pick(raw, ["title", "name", "title_en", "product_name", "productName"])) || "Producto SUP",
+    description: str(pick(raw, ["description", "desc", "detail", "content", "title_en"])),
+    cost_price: num(pick(raw, ["min_price", "price", "cost_price", "sale_price", "supply_price"])),
+
     images,
     sizes,
     colors,
