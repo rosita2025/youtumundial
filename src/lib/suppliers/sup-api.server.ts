@@ -181,7 +181,25 @@ export async function getProductVariants(id: string) {
 
 
 
-/** Crea una orden de compra en SUP (para enviar el pedido al proveedor). */
+/** Crea una orden de compra en SUP: POST /api/v1/order.json */
 export async function createPurchaseOrder(order: unknown) {
-  return supRequest<AnyRecord>("/api/v1/purchase/order.json", { method: "POST", body: order });
+  return supRequest<AnyRecord>("/api/v1/order.json", { method: "POST", body: order });
 }
+
+/** Confirmación previa de la orden (totales y envío): GET /api/v1/order/confirmation.json */
+export async function getOrderConfirmation(query: Record<string, string | number> = {}) {
+  return supRequest<AnyRecord>("/api/v1/order/confirmation.json", { query });
+}
+
+/** Detalle de una orden en SUP (para leer estado y tracking). */
+export async function getOrderDetail(id: string) {
+  const payload = await supRequest<AnyRecord>(`/api/v1/order/${encodeURIComponent(id)}.json`);
+  return (payload.data ?? payload) as AnyRecord;
+}
+
+/** Países disponibles para envío. */
+export async function listCountries() {
+  const payload = await supRequest<AnyRecord>("/api/country.json");
+  return pickList(payload);
+}
+
