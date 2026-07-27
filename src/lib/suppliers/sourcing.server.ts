@@ -8,7 +8,13 @@
  * aparece y se publica en la tienda con un clic.
  */
 
-import { listProducts, getProductDetail, getProductVariants } from "./sup-api.server";
+import {
+  listMemberImportQueue,
+  listMemberListedProducts,
+  listProducts,
+  getProductDetail,
+  getProductVariants,
+} from "./sup-api.server";
 import { normalizeSupProduct, normalizeSupProducts } from "./normalize";
 import type { SupRawProduct } from "./sup";
 
@@ -94,6 +100,18 @@ export async function findBySourceUrl(url: string): Promise<{
   if (direct) return { parsed, matches: [direct] };
 
   // 2) Si no, lo buscamos como término (SUP indexa SKU y código de origen).
+  try {
+    const [listed, queue] = await Promise.all([
+      listMemberListedProducts({ page: 1, pageSize: 50, keyword: parsed.offerId }),
+      listMemberImportQueue({ page: 1, pageSize: 50, keyword: parsed.offerId }),
+    ]);
+    const memberMatches = normalizeSupProducts([...listed, ...queue]);
+    if (memberMatches.length) return { parsed, matches: memberMatches };
+  } catch {
+    // Seguimos con la Open API pública.
+  }
+
+  // 3) Si no, buscamos en la Open API pública.
   try {
     const rows = await listProducts({ page: 1, pageSize: 20, keyword: parsed.offerId });
     return { parsed, matches: normalizeSupProducts(rows) };
