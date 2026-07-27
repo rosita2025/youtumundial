@@ -75,6 +75,61 @@ function readSupState(detail: Record<string, unknown>) {
 }
 
 export async function listAdminOrders(env: StripeEnv, limit = 25): Promise<AdminOrder[]> {
+  const stripeOrders = await listStripeOrders(env, limit);
+  const supOnly = await listSupOnlyOrders(stripeOrders);
+  return [...supOnly, ...stripeOrders].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/**
+ * Pedidos creados directo en SUP (cupón 100%, Yape/Plin, PayPal manual):
+ * no existen en Stripe, así que los leemos de la cuenta de SUP.
+ */
+async function listSupOnlyOrders(stripeOrders: AdminOrder[]): Promise<AdminOrder[]> {
+  try {
+    const { listSupOrders } = await import('@/lib/suppliers/sup-api.server');
+    const known = new Set(stripeOrders.map((o) => o.supOrderId).filter(Boolean) as string[]);
+    const rows = (await listSupOrders({ limit: 50 })) as Record<string, unknown>[];
+
+    return rows
+      .map((row) => {
+        const supOrderId = str(row.order_id ?? row.id ?? row.order_sn ?? row.order_no);
+        if (!supOrderId || known.has(supOrderId)) return null;
+        const consignee = (row.consignee ?? row.address ?? {}) as Record<string, unknown>;
+        const state = readSupState(row);
+        const createdAt = str(row.created_at ?? row.create_time ?? row.created ?? '');
+        const products = Array.isArray(row.products) ? (row.products as Record<string, unknown>[]) : [];
+
+        const order: AdminOrder = {
+          sessionId: `sup_${supOrderId}`,
+          createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+          customer: str(consignee.name) || 'Cliente',
+          email: str(consignee.email),
+          country: str(consignee.country),
+          address: [consignee.address, consignee.city, consignee.province, consignee.zip_code]
+            .map(str)
+            .filter(Boolean)
+            .join(', '),
+          phone: str(consignee.phone),
+          amountPaid: 0,
+          currency: 'USD',
+          items: products.map((p) => ({
+            supProductId: str(p.product_id ?? p.id),
+            quantity: Number(p.quantity) || 1,
+            variantTitle: str(p.variant ?? p.variant_name ?? ''),
+          })),
+          supOrderId,
+          ...state,
+          action: state.tracking ? 'enviado' : state.supPaid ? 'en_transito' : 'pagar_en_sup',
+        };
+        return order;
+      })
+      .filter((o): o is AdminOrder => o !== null);
+  } catch {
+    return [];
+  }
+}
+
+async function listStripeOrders(env: StripeEnv, limit: number): Promise<AdminOrder[]> {
   const stripe = createStripeClient(env);
   const { getOrderDetail } = await import('@/lib/suppliers/sup-api.server');
 
