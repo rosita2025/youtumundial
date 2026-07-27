@@ -37,8 +37,10 @@ export const sendOrderToSup = createServerFn({ method: "POST" })
     if (!data.order) throw new Error("Falta el pedido a enviar.");
     const { createPurchaseOrder } = await import("./sup-api.server");
     try {
-      return { ok: true as const, result: await createPurchaseOrder(data.order) };
+      const result = await createPurchaseOrder(data.order);
+      return { ok: true as const, result: JSON.stringify(result) };
     } catch (error) {
       return { ok: false as const, error: (error as Error).message };
     }
   });
+
