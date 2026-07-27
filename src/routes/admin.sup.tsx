@@ -165,6 +165,14 @@ function SupAdmin() {
           </Badge>
           {status && <span className="text-xs text-muted-foreground">API: {status.base}</span>}
           <Badge variant="outline">{stored.length} productos importados</Badge>
+          <Badge variant={published.length > 0 ? "default" : "secondary"}>
+            {published.length > 0 ? `${published.length} publicados en mi tienda` : "Mostrando todo el catálogo"}
+          </Badge>
+          {published.length > 0 && (
+            <Button size="sm" variant="ghost" onClick={() => { clearPublished(); setPublished([]); toast.success("Selección borrada: la tienda vuelve a mostrar todo."); }}>
+              Mostrar todo
+            </Button>
+          )}
           {stored.length > 0 && (
             <>
               <Button
