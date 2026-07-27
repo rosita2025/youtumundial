@@ -40,8 +40,13 @@ function parseVariantTitle(value: string) {
   const cleaned = value.replace(/[\u4e00-\u9fff]+/g, "").trim();
   const sizeMatch = cleaned.match(/(?:^|\b)(XXXL|XXL|XL|L|M|S|XS|\dXL|\d+)(?:\b|$)/i);
   const size = sizeMatch?.[1]?.toUpperCase() ?? "";
-  const color = size ? cleaned.replace(sizeMatch[0], "").trim() : cleaned;
+  const color = sizeMatch ? cleaned.replace(sizeMatch[0], "").trim() : cleaned;
   return { size, color };
+}
+
+function idValue(value: unknown): string | number | undefined {
+  if (typeof value === "string" || typeof value === "number") return value;
+  return undefined;
 }
 
 function normalizeVariants(value: unknown): SupRawVariant[] {
@@ -50,8 +55,8 @@ function normalizeVariants(value: unknown): SupRawVariant[] {
     const title = str(pick(row, ["props_str", "title", "name", "variant", "props", "sku_name"]));
     const parsed = parseVariantTitle(title);
     return {
-      id: pick(row, ["id", "variant_id", "sku_id"]),
-      product_id: pick(row, ["product_id", "variant_id", "sku_id", "id"]),
+      id: idValue(pick(row, ["id", "variant_id", "sku_id"])) ?? index,
+      product_id: idValue(pick(row, ["product_id", "variant_id", "sku_id", "id"])),
       sku: str(pick(row, ["product_sn", "sku", "sku_sn", "code"])),
       title,
       size: str(pick(row, ["size", "size_name"])) || parsed.size,
@@ -62,10 +67,10 @@ function normalizeVariants(value: unknown): SupRawVariant[] {
       stock: pick(row, ["stock", "inventory", "quantity"]) === undefined
         ? undefined
         : num(pick(row, ["stock", "inventory", "quantity"])),
-      shipment_id: pick(row, ["shipment_id"]),
+      shipment_id: idValue(pick(row, ["shipment_id"])),
       shipping_method: str(pick(row, ["shipping_method"])),
     };
-  }).filter((v) => v.sku || v.title || v.product_id || index >= 0);
+  }).filter((v) => v.sku || v.title || v.product_id || v.id !== undefined);
 }
 
 /** Extrae tallas y colores desde variantes o listas de opciones. */
@@ -122,7 +127,7 @@ export function normalizeSupProduct(raw: AnyRecord): SupRawProduct {
       ? undefined
       : num(pick(raw, ["stock", "inventory", "quantity"])),
     source: sourceKind,
-    storeProductId: pick(raw, ["shopify_goods_id", "shopify_product_id"]),
+    storeProductId: idValue(pick(raw, ["shopify_goods_id", "shopify_product_id"])),
     storeName: str((raw.store as AnyRecord | undefined)?.name ?? raw.shop_name),
     sourceUrl: str(pick(rowGoods ?? raw, ["source_url", "link", "product_url"])),
   };
