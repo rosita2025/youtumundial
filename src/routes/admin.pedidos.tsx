@@ -1,14 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-react";
+import { BellRing, ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getSupPaymentLink, listOrders, type AdminOrder } from "@/lib/admin/orders.functions";
+import {
+  getSupPaymentLink,
+  listOrders,
+  markNotified,
+  notifyShipped,
+  syncTracking,
+  type AdminOrder,
+} from "@/lib/admin/orders.functions";
 
 const SUP_ORDERS_URL = "https://www.supdropshipping.com/member/order";
 const SUP_WALLET_URL = "https://www.supdropshipping.com/member/wallet";
+/** Cada cuánto se refresca solo el panel (ms). */
+const AUTO_SYNC_MS = 120_000;
+
 
 export const Route = createFileRoute("/admin/pedidos")({
   ssr: false,
