@@ -65,6 +65,7 @@ export function buildWhatsappOrderLink(
     ),
     '',
     `Subtotal: $${totals.subtotal.toFixed(2)}`,
+    ...(totals.discount > 0 ? [`Descuento cupón: -$${totals.discount.toFixed(2)}`] : []),
     `Envío (${country.name}): ${totals.shipping === 0 ? 'Gratis' : `$${totals.shipping.toFixed(2)}`}`,
     `*Total: $${totals.total.toFixed(2)} USD (S/ ${totals.totalPen.toFixed(2)})*`,
     '',
