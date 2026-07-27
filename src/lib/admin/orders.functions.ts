@@ -22,3 +22,21 @@ export const listOrders = createServerFn({ method: 'POST' })
       return { ok: false, orders: [], message: (error as Error).message };
     }
   });
+
+/** Devuelve el link para pagar el pedido en la wallet de SUP. */
+export const getSupPaymentLink = createServerFn({ method: 'POST' })
+  .inputValidator((input: { supOrderId: string }) => {
+    const supOrderId = String(input?.supOrderId ?? '').trim();
+    if (!/^[A-Za-z0-9_-]+$/.test(supOrderId)) throw new Error('Pedido de SUP inválido');
+    return { supOrderId };
+  })
+  .handler(async ({ data }): Promise<{ ok: boolean; url?: string; message?: string }> => {
+    const { getOrderPaymentLink } = await import('@/lib/suppliers/sup-api.server');
+    try {
+      const url = await getOrderPaymentLink(data.supOrderId);
+      return url ? { ok: true, url } : { ok: false, message: 'SUP no devolvió un link de pago.' };
+    } catch (error) {
+      return { ok: false, message: (error as Error).message };
+    }
+  });
+
