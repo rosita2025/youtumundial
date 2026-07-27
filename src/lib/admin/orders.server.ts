@@ -35,9 +35,16 @@ export interface AdminOrder {
   supPaid?: boolean;
   tracking?: string;
   carrier?: string;
+  trackingUrl?: string;
+  /** Cuándo SUP despachó y cuándo se avisó al cliente. */
+  shippedAt?: string;
+  notifiedAt?: string;
+  notifyPending?: string;
+  lastSyncAt?: string;
   /** Qué te toca hacer a vos ahora mismo. */
-  action: 'pagar_en_sup' | 'crear_pedido_sup' | 'en_transito' | 'manual';
+  action: 'pagar_en_sup' | 'crear_pedido_sup' | 'en_transito' | 'enviado' | 'manual';
 }
+
 
 const num = (v: unknown): number | undefined => {
   if (v === undefined || v === null || v === '') return undefined;
