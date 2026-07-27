@@ -14,8 +14,7 @@ import {
   type AdminOrder,
 } from "@/lib/admin/orders.functions";
 
-const SUP_ORDERS_URL = "https://www.supdropshipping.com/member/order";
-const SUP_WALLET_URL = "https://www.supdropshipping.com/member/wallet";
+import { SUP_ORDER_LIST_URL as SUP_ORDERS_URL, SUP_WALLET_URL } from "@/lib/admin/sup-links";
 /** Cada cuánto se refresca solo el panel (ms). */
 const AUTO_SYNC_MS = 120_000;
 
@@ -48,7 +47,8 @@ const ACTION_LABEL: Record<AdminOrder["action"], { text: string; variant: "defau
   crear_pedido_sup: { text: "Falta crear en SUP", variant: "destructive" },
   en_transito: { text: "Pagado · preparando", variant: "secondary" },
   enviado: { text: "Despachado · con tracking", variant: "default" },
-  manual: { text: "Preparación manual", variant: "outline" },
+  manual: { text: "Historial de SUP", variant: "outline" },
+  completado: { text: "Completado en SUP", variant: "secondary" },
 };
 
 function money(value: number | undefined, currency = "USD") {
@@ -69,6 +69,7 @@ function OrdersAdmin() {
   const [syncing, setSyncing] = useState(false);
   const [busyOrder, setBusyOrder] = useState<string | null>(null);
   const [environment, setEnvironment] = useState<"live" | "sandbox">("live");
+  const [showHistory, setShowHistory] = useState(false);
 
   const load = useCallback(
     async (env: "live" | "sandbox") => {
@@ -165,8 +166,14 @@ function OrdersAdmin() {
     }
   }
 
-  const pendientes = orders.filter((o) => o.action === "pagar_en_sup" || o.action === "crear_pedido_sup").length;
-  const despachados = orders.filter((o) => o.action === "enviado").length;
+  // Los pedidos viejos de SUP (antes de abrir la tienda) no cuentan como ventas tuyas.
+  const storeOrders = orders.filter((o) => !o.historical);
+  const historicos = orders.filter((o) => o.historical);
+  const visibles = showHistory ? orders : storeOrders;
+  const pendientes = storeOrders.filter(
+    (o) => o.action === "pagar_en_sup" || o.action === "crear_pedido_sup",
+  ).length;
+  const despachados = storeOrders.filter((o) => o.action === "enviado").length;
 
 
 
@@ -202,7 +209,7 @@ function OrdersAdmin() {
       <div className="mb-8 grid gap-4 sm:grid-cols-4">
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Pedidos pagados</p>
-          <p className="mt-1 text-2xl font-semibold">{orders.length}</p>
+          <p className="mt-1 text-2xl font-semibold">{storeOrders.length}</p>
         </div>
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Esperando tu pago en SUP</p>
@@ -242,14 +249,26 @@ function OrdersAdmin() {
 
 
 
-      {!loading && !orders.length && !error && (
+      {historicos.length > 0 && (
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-4 text-sm">
+          <span className="text-muted-foreground">
+            Tenés {historicos.length} pedidos antiguos en tu cuenta de SUP (compras tuyas anteriores a la tienda). No
+            requieren acción.
+          </span>
+          <Button size="sm" variant="outline" onClick={() => setShowHistory((v) => !v)}>
+            {showHistory ? "Ocultar historial" : "Ver historial de SUP"}
+          </Button>
+        </div>
+      )}
+
+      {!loading && !visibles.length && !error && (
         <p className="rounded-md border p-6 text-sm text-muted-foreground">
           Todavía no hay compras pagadas en este modo.
         </p>
       )}
 
       <ul className="space-y-4">
-        {orders.map((order) => {
+        {visibles.map((order) => {
           const label = ACTION_LABEL[order.action];
           const margen =
             order.supCost !== undefined ? order.amountPaid - order.supCost : undefined;
@@ -350,7 +369,7 @@ function OrdersAdmin() {
 
                 <a
                   className="inline-flex items-center font-medium underline underline-offset-4"
-                  href={SUP_ORDERS_URL}
+                  href={order.supUrl ?? SUP_ORDERS_URL}
                   target="_blank"
                   rel="noreferrer"
                 >

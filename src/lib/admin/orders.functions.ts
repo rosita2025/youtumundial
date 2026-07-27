@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
+import { SUP_ORDER_LIST_URL } from './sup-links';
 import type { AdminOrder } from '@/lib/admin/orders.server';
 
 export type { AdminOrder } from '@/lib/admin/orders.server';
@@ -41,9 +42,10 @@ export const getSupPaymentLink = createServerFn({ method: 'POST' })
     const { getOrderPaymentLink } = await import('@/lib/suppliers/sup-api.server');
     try {
       const url = await getOrderPaymentLink(data.supOrderId);
-      return url ? { ok: true, url } : { ok: false, message: 'SUP no devolvió un link de pago.' };
-    } catch (error) {
-      return { ok: false, message: (error as Error).message };
+      // Si SUP no devuelve link (o el pedido ya está pagado) abrimos el Member Center.
+      return { ok: true, url: url || SUP_ORDER_LIST_URL };
+    } catch {
+      return { ok: true, url: SUP_ORDER_LIST_URL };
     }
   });
 
