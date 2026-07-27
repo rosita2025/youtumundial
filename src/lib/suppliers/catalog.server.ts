@@ -54,11 +54,24 @@ export async function syncPublishedCatalog(ids: string[], force = false): Promis
     // Sin selección todavía: usamos primero el Member Center real de la cuenta
     // (productos importados/listados desde 1688, AliExpress, Alibaba, etc.).
     try {
-      const listed = await listMemberListedProducts({ page: 1, pageSize: 24 });
-      const queue = listed.length < 24
-        ? await listMemberImportQueue({ page: 1, pageSize: 24 - listed.length })
-        : [];
-      products = normalizeSupProducts([...listed, ...queue]);
+      // Traemos TODO el Member Center (listados + cola importada), sin recortes,
+      // para que cualquier producto nuevo aparezca apenas se importa en SUP.
+      // Secuencial a propósito: SUP invalida el token si pedimos dos logins a la vez.
+      const listed = await listMemberListedProducts({ page: 1, pageSize: 200 });
+      const queue = await listMemberImportQueue({ page: 1, pageSize: 200 });
+      const seen = new Set<string>();
+      const merged = [...listed, ...queue].filter((row) => {
+        const key = String(
+          (row as Record<string, unknown>).goods_id ??
+            (row as Record<string, unknown>).product_id ??
+            (row as Record<string, unknown>).id ??
+            "",
+        );
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      products = normalizeSupProducts(merged);
     } catch {
       products = [];
     }
