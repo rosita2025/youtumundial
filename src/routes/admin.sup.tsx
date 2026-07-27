@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Download, PackageSearch, RefreshCw, Trash2 } from "lucide-react";
+import { ClipboardCopy, Download, PackageSearch, RefreshCw, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,10 +90,25 @@ function SupAdmin() {
           {status && <span className="text-xs text-muted-foreground">API: {status.base}</span>}
           <Badge variant="outline">{stored.length} productos importados</Badge>
           {stored.length > 0 && (
-            <Button size="sm" variant="ghost" onClick={() => { clearSupCatalog(); setStored([]); }}>
-              <Trash2 className="mr-2 h-4 w-4" /> Vaciar catálogo importado
-            </Button>
+            <>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const ids = stored.map((p) => String(p.id));
+                  navigator.clipboard?.writeText(JSON.stringify(ids));
+                  toast.success("IDs copiados", {
+                    description: `Pegá esta lista en el chat de Lovable para publicarlos: ${ids.join(", ")}`,
+                  });
+                }}
+              >
+                <ClipboardCopy className="mr-2 h-4 w-4" /> Copiar IDs para publicar
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { clearSupCatalog(); setStored([]); }}>
+                <Trash2 className="mr-2 h-4 w-4" /> Vaciar catálogo importado
+              </Button>
+            </>
           )}
+
         </div>
         {!connected && (
           <p className="mt-3 text-sm text-muted-foreground">
