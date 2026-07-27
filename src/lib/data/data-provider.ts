@@ -8,7 +8,7 @@
 
 import { Product, Collection, FilterOptions, SortOption } from './types';
 import { dummyProducts, dummyCollections } from './dummy-data';
-import { mapSupCatalog, SupRawProduct } from '../suppliers/sup';
+import { mapSupCatalog, filterInStock, SupRawProduct } from '../suppliers/sup';
 import { readSupCatalog } from '../suppliers/local-catalog';
 import { fetchStoreCatalog } from '../suppliers/catalog.functions';
 import { SUP_MARGIN } from '../suppliers/sup-selection';
@@ -21,6 +21,9 @@ let catalogCache: { at: number; products: Product[] } | null = null;
  * Catálogo de la tienda.
  * Prioridad: SUP en vivo → productos importados en este navegador →
  * sup-catalog.json → catálogo demo.
+ *
+ * Regla de stock: solo se publican productos con stock en SUP y se ocultan
+ * los talles/variantes agotados.
  */
 async function getCatalog(): Promise<Product[]> {
   if (catalogCache && Date.now() - catalogCache.at < CACHE_TTL) return catalogCache.products;
@@ -28,20 +31,26 @@ async function getCatalog(): Promise<Product[]> {
   try {
     const res = await fetchStoreCatalog();
     if (res.ok && res.products.length > 0) {
-      const products = mapSupCatalog(res.products as SupRawProduct[], SUP_MARGIN);
-      catalogCache = { at: Date.now(), products };
-      return products;
+      const products = filterInStock(mapSupCatalog(res.products as SupRawProduct[], SUP_MARGIN));
+      if (products.length > 0) {
+        catalogCache = { at: Date.now(), products };
+        return products;
+      }
     }
   } catch {
     // seguimos con los respaldos locales
   }
 
   const fromBrowser = readSupCatalog();
-  if (fromBrowser.length > 0) return mapSupCatalog(fromBrowser, SUP_MARGIN);
+  if (fromBrowser.length > 0) {
+    const products = filterInStock(mapSupCatalog(fromBrowser, SUP_MARGIN));
+    if (products.length > 0) return products;
+  }
 
-  const imported = mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN);
+  const imported = filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN));
   return imported.length > 0 ? imported : dummyProducts;
 }
+
 
 
 

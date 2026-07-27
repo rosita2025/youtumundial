@@ -123,6 +123,9 @@ export function mapSupProduct(raw: SupRawProduct, margin: number = DEFAULT_MARGI
     height: 1000,
   }));
 
+  const variants = buildVariants(raw, price);
+  const anyVariantInStock = variants.some(v => v.available);
+
   return {
     id: `sup-${raw.id}`,
     slug: slugify(raw.name),
@@ -130,15 +133,31 @@ export function mapSupProduct(raw: SupRawProduct, margin: number = DEFAULT_MARGI
     description: raw.description ?? '',
     price,
     images,
-    variants: buildVariants(raw, price),
+    variants,
     collections: raw.categories ?? [],
     tags: raw.tags ?? [],
-    available: raw.stock === undefined ? true : raw.stock > 0,
+    available: (raw.stock === undefined ? true : raw.stock > 0) && anyVariantInStock,
     createdAt: new Date().toISOString(),
   };
+}
+
+/**
+ * Regla de stock de la tienda: no publicamos talles agotados según SUP y
+ * ocultamos por completo los productos que se quedaron sin ninguna variante
+ * disponible. El stock viene de la sincronización con SUP (que lo toma del
+ * proveedor 1688/AliExpress).
+ */
+export function filterInStock(products: Product[]): Product[] {
+  return products
+    .map(product => ({
+      ...product,
+      variants: product.variants.filter(v => v.available),
+    }))
+    .filter(product => product.available && product.variants.length > 0);
 }
 
 /** Mapea un lote completo (export CSV convertido a JSON o respuesta de API). */
 export function mapSupCatalog(raws: SupRawProduct[], margin: number = DEFAULT_MARGIN): Product[] {
   return raws.map(raw => mapSupProduct(raw, margin));
 }
+
