@@ -56,21 +56,25 @@ const str = (v: unknown): string => (v === undefined || v === null ? '' : String
 
 /** Interpreta el estado que devuelve SUP para saber si ya está pagado al proveedor. */
 function readSupState(detail: Record<string, unknown>) {
-  const status = str(detail.status ?? detail.order_status ?? detail.state).toLowerCase();
-  const paidFlag = detail.pay_status ?? detail.paid ?? detail.is_paid;
-  const supPaid =
-    paidFlag === true ||
-    paidFlag === 1 ||
-    str(paidFlag) === '1' ||
-    /paid|payed|processing|shipped|delivered|completed|fulfilled/.test(status);
+  const label = str(detail.statusInfo ?? detail.status_text ?? detail.status).toLowerCase();
+  const goods = Array.isArray(detail.order_goods_list)
+    ? (detail.order_goods_list as Record<string, unknown>[])
+    : [];
+
+  const tracking =
+    str(detail.tracking_number) ||
+    str(goods.find((g) => str(g.tracking_number))?.tracking_number) ||
+    undefined;
+  const paidAt = str(detail.paid_at);
+  const supPaid = Boolean(paidAt) || /paid|processing|shipped|delivered|completed|fulfilled/.test(label);
 
   return {
-    supStatus: status || undefined,
+    supStatus: str(detail.statusInfo) || label || undefined,
     supPaid,
-    supCost: num(detail.total_amount ?? detail.amount ?? detail.total ?? detail.pay_amount),
-    supShippingCost: num(detail.shipping_fee ?? detail.freight ?? detail.shipping_amount),
-    tracking: str(detail.tracking_number ?? detail.trackingNo ?? detail.waybill ?? detail.logistics_no) || undefined,
-    carrier: str(detail.shipping_method ?? detail.carrier ?? detail.logistics_name) || undefined,
+    supCost: num(detail.amount ?? detail.total_price ?? detail.goods_amount),
+    supShippingCost: num(detail.shipment_fee ?? detail.remote_shipping_fee),
+    tracking,
+    carrier: str(goods.find((g) => str(g.tracking_type))?.tracking_type) || undefined,
   };
 }
 
