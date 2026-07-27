@@ -74,7 +74,24 @@ function OrdersAdmin() {
     void load(environment);
   }, [load, environment]);
 
+  const payLink = useServerFn(getSupPaymentLink);
+  const [paying, setPaying] = useState<string | null>(null);
+
+  async function openPayment(supOrderId: string) {
+    setPaying(supOrderId);
+    try {
+      const result = await payLink({ data: { supOrderId } });
+      if (result.ok && result.url) window.open(result.url, "_blank", "noopener");
+      else setError(result.message ?? "No se pudo abrir el pago en SUP.");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setPaying(null);
+    }
+  }
+
   const pendientes = orders.filter((o) => o.action === "pagar_en_sup" || o.action === "crear_pedido_sup").length;
+
 
   return (
     <main className="container mx-auto max-w-6xl px-4 py-10">
