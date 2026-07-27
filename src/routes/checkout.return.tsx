@@ -29,6 +29,28 @@ export const Route = createFileRoute('/checkout/return')({
 
 function CheckoutReturn() {
   const { session_id: sessionId } = Route.useSearch();
+  const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
+  const [result, setResult] = useState<FulfillmentResult | null>(null);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    let active = true;
+    setState('loading');
+    fulfillSupOrder({ data: { sessionId, environment: getStripeEnvironment() } })
+      .then((res) => {
+        if (!active) return;
+        setResult(res);
+        setState('done');
+      })
+      .catch((error: Error) => {
+        if (!active) return;
+        setResult({ ok: false, paid: false, message: error.message });
+        setState('done');
+      });
+    return () => {
+      active = false;
+    };
+  }, [sessionId]);
 
   return (
     <Layout>
@@ -41,6 +63,39 @@ function CheckoutReturn() {
             ? 'Recibimos tu pago y ya estamos preparando el envío. Te escribimos por email con el seguimiento.'
             : 'Si creés que hubo un error, escribinos y lo revisamos.'}
         </p>
+
+        {sessionId && state === 'loading' && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Registrando tu pedido con el proveedor…
+          </div>
+        )}
+
+        {sessionId && state === 'done' && result && (
+          <div className="rounded-lg border border-border p-5 text-left text-sm space-y-2 mb-8">
+            {result.supOrderId ? (
+              <>
+                <p className="flex items-center gap-2 font-medium">
+                  <PackageCheck className="h-4 w-4" /> Pedido enviado al proveedor
+                </p>
+                <p className="text-muted-foreground">N° de pedido: {result.supOrderId}</p>
+                {result.status && <p className="text-muted-foreground">Estado: {result.status}</p>}
+                {result.tracking && (
+                  <p className="flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    Seguimiento: <span className="font-medium">{result.tracking}</span>
+                    {result.carrier ? ` (${result.carrier})` : ''}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-muted-foreground">
+                {result.message ?? 'Estamos preparando tu pedido manualmente.'}
+              </p>
+            )}
+          </div>
+        )}
+
         {sessionId && (
           <p className="text-xs text-muted-foreground mb-8 break-all">Referencia: {sessionId}</p>
         )}
@@ -49,5 +104,6 @@ function CheckoutReturn() {
         </Button>
       </div>
     </Layout>
+
   );
 }
