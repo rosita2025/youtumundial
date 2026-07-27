@@ -46,7 +46,7 @@ const methods: { id: PaymentMethod; title: string; description: string; icon: ty
 
 
 const Checkout = () => {
-  const { cart } = useCart();
+  const { cart, clearCart } = useCart();
   const navigate = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>('card');
   const [showStripe, setShowStripe] = useState(false);
