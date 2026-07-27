@@ -117,10 +117,21 @@ const Checkout = () => {
       return;
     }
 
+    if (isFreeOrder) {
+      toast.success('Pedido gratis con cupón: lo confirmamos por WhatsApp.');
+      window.open(
+        buildWhatsappOrderLink(cart, country, totals, customer),
+        '_blank',
+        'noopener,noreferrer',
+      );
+      return;
+    }
+
     if (method === 'card') {
       setShowStripe(true);
       return;
     }
+
 
     if (method === 'paypal') {
       const link = buildPaypalLink(totals.total);
