@@ -118,14 +118,12 @@ const Checkout = () => {
     }
 
     if (isFreeOrder) {
-      toast.success('Pedido gratis con cupón: lo confirmamos por WhatsApp.');
-      window.open(
-        buildWhatsappOrderLink(cart, country, totals, customer),
-        '_blank',
-        'noopener,noreferrer',
-      );
+      toast.success('¡Gracias por tu compra! Pedido confirmado con tu cupón.');
+      clearCart();
+      navigate('/checkout/return?free=1');
       return;
     }
+
 
     if (method === 'card') {
       setShowStripe(true);
