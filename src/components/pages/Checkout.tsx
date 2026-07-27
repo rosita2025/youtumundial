@@ -72,11 +72,16 @@ const Checkout = () => {
 
   const missingCustomer = !customer.name || !customer.email || !customer.address;
 
-  const stripeItems = cart.items.map((item) => ({
-    name: `${item.product.title} — ${item.variant.title}`,
-    amountInCents: Math.round(item.variant.price * 100),
-    quantity: item.quantity,
-  }));
+  const stripeItems = cart.items.map((item) => {
+    const supMatch = /^sup-(.+)$/.exec(String(item.product.id));
+    return {
+      name: `${item.product.title} — ${item.variant.title}`,
+      amountInCents: Math.round(item.variant.price * 100),
+      quantity: item.quantity,
+      supProductId: supMatch ? supMatch[1] : undefined,
+      variantTitle: item.variant.title,
+    };
+  });
 
   const handlePay = () => {
     if (missingCustomer) {

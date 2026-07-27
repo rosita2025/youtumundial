@@ -3,7 +3,13 @@ import { getStripe, getStripeEnvironment } from '@/lib/stripe';
 import { createCartCheckout } from '@/utils/payments.functions';
 
 interface StripeCartCheckoutProps {
-  items: { name: string; amountInCents: number; quantity: number }[];
+  items: {
+    name: string;
+    amountInCents: number;
+    quantity: number;
+    supProductId?: string;
+    variantTitle?: string;
+  }[];
   shippingInCents: number;
   customerEmail?: string;
   returnUrl: string;
