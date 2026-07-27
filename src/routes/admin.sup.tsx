@@ -286,16 +286,30 @@ function SupAdmin() {
                 <p className="truncate text-sm font-medium">{p.name}</p>
                 <div className="mt-1 flex flex-wrap gap-1">
                   <Badge variant="outline">{p.source === "member-listed" ? "Listado" : p.source === "member-queue" ? "Importado" : "Open API"}</Badge>
-                  {p.storeName && <Badge variant="secondary">{p.storeName}</Badge>}
+                  {published.includes(String(p.id)) && <Badge>En mi tienda</Badge>}
                   {p.variants?.length ? <Badge variant="secondary">{p.variants.length} variantes</Badge> : null}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Costo ${Number(p.cost_price) || 0} → venta ${salePrice(p)}
                 </p>
-                <Button size="sm" variant="outline" className="mt-2" onClick={() => importAll([p])}>
-                  Importar
-                </Button>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={published.includes(String(p.id)) ? "default" : "outline"}
+                    onClick={() => {
+                      const now = togglePublished(p.id);
+                      setPublished(readPublishedIds());
+                      toast.success(now ? "Publicado en tu tienda" : "Quitado de tu tienda");
+                    }}
+                  >
+                    {published.includes(String(p.id)) ? "Quitar de mi tienda" : "Publicar en mi tienda"}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => importAll([p])}>
+                    Importar
+                  </Button>
+                </div>
               </div>
+
             </li>
           ))}
         </ul>
