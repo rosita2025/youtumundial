@@ -218,6 +218,17 @@ function OrdersAdmin() {
                     {order.tracking}
                   </span>
                 )}
+                {order.supOrderId && order.action === "pagar_en_sup" && (
+                  <Button
+                    size="sm"
+                    onClick={() => void openPayment(order.supOrderId!)}
+                    disabled={paying === order.supOrderId}
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    {paying === order.supOrderId ? "Abriendo…" : "Pagar al proveedor"}
+                  </Button>
+                )}
+
                 <a
                   className="inline-flex items-center font-medium underline underline-offset-4"
                   href={SUP_ORDERS_URL}
