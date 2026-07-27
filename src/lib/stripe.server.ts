@@ -80,6 +80,10 @@ export interface CheckoutLineInput {
   name: string;
   amountInCents: number;
   quantity: number;
+  /** ID del producto en SUP Dropshipping (para crear el pedido automáticamente). */
+  supProductId?: string;
+  /** Variante elegida (talla / color). */
+  variantTitle?: string;
 }
 
 export interface CartCheckoutInput {
@@ -88,6 +92,20 @@ export interface CartCheckoutInput {
   customerEmail?: string;
   returnUrl: string;
   environment: StripeEnv;
+}
+
+/** Guarda el detalle del pedido en la metadata de la sesión (máx. 500 chars por clave). */
+function buildOrderMetadata(items: CheckoutLineInput[]): Record<string, string> {
+  const compact = items
+    .filter((i) => i.supProductId)
+    .map((i) => ({ p: i.supProductId, q: i.quantity, v: i.variantTitle ?? '' }));
+  if (!compact.length) return {};
+  const json = JSON.stringify(compact);
+  const chunks: Record<string, string> = {};
+  for (let i = 0; i * 480 < json.length && i < 10; i++) {
+    chunks[`sup_items_${i}`] = json.slice(i * 480, (i + 1) * 480);
+  }
+  return chunks;
 }
 
 export async function createCartSession(data: CartCheckoutInput) {
@@ -119,8 +137,89 @@ export async function createCartSession(data: CartCheckoutInput) {
     ui_mode: 'embedded_page',
     return_url: data.returnUrl,
     payment_intent_data: { description: 'Pedido Ropa de Youtumundial' },
+    // Necesitamos la dirección real para despachar el pedido en SUP.
+    shipping_address_collection: { allowed_countries: SHIPPING_COUNTRIES },
+    phone_number_collection: { enabled: true },
+    metadata: buildOrderMetadata(data.items),
     ...(data.customerEmail && { customer_email: data.customerEmail }),
-  });
+  } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
 
   return session.client_secret ?? '';
 }
+
+const SHIPPING_COUNTRIES: Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[] =
+  [
+    'PE', 'US', 'CA', 'GB', 'MX', 'CL', 'CO', 'AR', 'EC', 'BO', 'BR', 'ES',
+    'FR', 'DE', 'IT', 'PT', 'NL', 'AU', 'NZ', 'JP',
+  ];
+
+export interface StripeOrderSnapshot {
+  paid: boolean;
+  supOrderId?: string;
+  email?: string;
+  name?: string;
+  phone?: string;
+  address?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
+  };
+  items: { supProductId: string; quantity: number; variantTitle: string }[];
+  amountTotal: number;
+}
+
+/** Lee una sesión de Stripe y arma el snapshot del pedido para enviarlo a SUP. */
+export async function readOrderSnapshot(
+  sessionId: string,
+  env: StripeEnv,
+): Promise<StripeOrderSnapshot> {
+  const stripe = createStripeClient(env);
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  const metadata = (session.metadata ?? {}) as Record<string, string>;
+
+  let json = '';
+  for (let i = 0; i < 10; i++) json += metadata[`sup_items_${i}`] ?? '';
+  let items: StripeOrderSnapshot['items'] = [];
+  if (json) {
+    try {
+      items = (JSON.parse(json) as { p: string; q: number; v: string }[]).map((i) => ({
+        supProductId: String(i.p),
+        quantity: Number(i.q) || 1,
+        variantTitle: String(i.v ?? ''),
+      }));
+    } catch {
+      items = [];
+    }
+  }
+
+  const shipping =
+    (session as unknown as {
+      collected_information?: { shipping_details?: { name?: string; address?: Record<string, string> } };
+      shipping_details?: { name?: string; address?: Record<string, string> };
+    }).collected_information?.shipping_details ??
+    (session as unknown as { shipping_details?: { name?: string; address?: Record<string, string> } })
+      .shipping_details;
+
+  return {
+    paid: session.payment_status === 'paid',
+    supOrderId: metadata.sup_order_id || undefined,
+    email: session.customer_details?.email ?? undefined,
+    name: shipping?.name ?? session.customer_details?.name ?? undefined,
+    phone: session.customer_details?.phone ?? undefined,
+    address: (shipping?.address ?? session.customer_details?.address ?? undefined) as
+      | StripeOrderSnapshot['address']
+      | undefined,
+    items,
+    amountTotal: (session.amount_total ?? 0) / 100,
+  };
+}
+
+/** Marca la sesión con el ID del pedido creado en SUP (idempotencia sin base de datos). */
+export async function markSessionFulfilled(sessionId: string, env: StripeEnv, supOrderId: string) {
+  const stripe = createStripeClient(env);
+  await stripe.checkout.sessions.update(sessionId, { metadata: { sup_order_id: supOrderId } });
+}
+
