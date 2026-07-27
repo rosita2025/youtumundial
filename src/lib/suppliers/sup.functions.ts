@@ -30,6 +30,38 @@ export const fetchSupProducts = createServerFn({ method: "POST" })
     }
   });
 
+/** Trae lo que ya está en tu Member Center: Imported Queue y productos Listed. */
+export const fetchSupMemberProducts = createServerFn({ method: "POST" })
+  .inputValidator((input: { page?: number; pageSize?: number; keyword?: string; source?: "queue" | "listed" | "all" }) => ({
+    page: Math.max(1, Math.round(Number(input?.page) || 1)),
+    pageSize: Math.min(100, Math.max(1, Math.round(Number(input?.pageSize) || 20))),
+    keyword: String(input?.keyword ?? "").trim().slice(0, 200),
+    source: input?.source === "queue" || input?.source === "listed" ? input.source : "all",
+  }))
+  .handler(async ({ data }) => {
+    const { listMemberImportQueue, listMemberListedProducts } = await import("./sup-api.server");
+    const { normalizeSupProducts } = await import("./normalize");
+    try {
+      const params = {
+        page: data.page,
+        pageSize: data.pageSize,
+        keyword: data.keyword || undefined,
+      };
+      const [queue, listed] = await Promise.all([
+        data.source === "listed" ? Promise.resolve([]) : listMemberImportQueue(params),
+        data.source === "queue" ? Promise.resolve([]) : listMemberListedProducts(params),
+      ]);
+      return {
+        ok: true as const,
+        products: normalizeSupProducts([...listed, ...queue]),
+        listedCount: listed.length,
+        queueCount: queue.length,
+      };
+    } catch (error) {
+      return { ok: false as const, products: [], listedCount: 0, queueCount: 0, error: (error as Error).message };
+    }
+  });
+
 /** Importa desde una URL de 1688 / AliExpress / Alibaba buscando el producto en SUP. */
 export const importFromSourceUrl = createServerFn({ method: "POST" })
   .inputValidator((input: { url?: string }) => ({

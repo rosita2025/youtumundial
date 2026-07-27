@@ -84,6 +84,9 @@ export interface CheckoutLineInput {
   supProductId?: string;
   /** Variante elegida (talla / color). */
   variantTitle?: string;
+  /** ID/SKU real de la variante en SUP, si viene del Member Center. */
+  supVariantId?: string;
+  supVariantSku?: string;
 }
 
 export interface CartCheckoutInput {
@@ -98,7 +101,13 @@ export interface CartCheckoutInput {
 function buildOrderMetadata(items: CheckoutLineInput[]): Record<string, string> {
   const compact = items
     .filter((i) => i.supProductId)
-    .map((i) => ({ p: i.supProductId, q: i.quantity, v: i.variantTitle ?? '' }));
+    .map((i) => ({
+      p: i.supProductId,
+      q: i.quantity,
+      v: i.variantTitle ?? '',
+      vid: i.supVariantId ?? '',
+      sku: i.supVariantSku ?? '',
+    }));
   if (!compact.length) return {};
   const json = JSON.stringify(compact);
   const chunks: Record<string, string> = {};
@@ -167,7 +176,7 @@ export interface StripeOrderSnapshot {
     postal_code?: string;
     country?: string;
   };
-  items: { supProductId: string; quantity: number; variantTitle: string }[];
+  items: { supProductId: string; quantity: number; variantTitle: string; supVariantId?: string; supVariantSku?: string }[];
   amountTotal: number;
 }
 
@@ -185,10 +194,12 @@ export async function readOrderSnapshot(
   let items: StripeOrderSnapshot['items'] = [];
   if (json) {
     try {
-      items = (JSON.parse(json) as { p: string; q: number; v: string }[]).map((i) => ({
+      items = (JSON.parse(json) as { p: string; q: number; v: string; vid?: string; sku?: string }[]).map((i) => ({
         supProductId: String(i.p),
         quantity: Number(i.q) || 1,
         variantTitle: String(i.v ?? ''),
+        supVariantId: i.vid ? String(i.vid) : undefined,
+        supVariantSku: i.sku ? String(i.sku) : undefined,
       }));
     } catch {
       items = [];

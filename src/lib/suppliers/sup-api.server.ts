@@ -42,6 +42,8 @@ export function supCredentialsStatus() {
     hasKey: Boolean(process.env.SUP_APP_KEY),
     hasSecret: Boolean(process.env.SUP_APP_SECRET),
     hasToken: Boolean(process.env.SUP_ACCESS_TOKEN),
+    hasUsername: Boolean(process.env.SUP_USERNAME),
+    hasPassword: Boolean(process.env.SUP_PASSWORD),
   };
 }
 
@@ -161,6 +163,50 @@ export async function listProducts(params: { page?: number; pageSize?: number; k
     },
   });
   return pickList(payload);
+}
+
+function memberCenterQuery(params: { page?: number; pageSize?: number; keyword?: string } = {}) {
+  return {
+    page: params.page ?? 1,
+    limit: Math.min(Math.max(params.pageSize ?? 20, 1), 200),
+    keyword: params.keyword?.trim() || undefined,
+    title: params.keyword?.trim() || undefined,
+    merchant_id: process.env.SUP_MERCHANT_ID || 100,
+    shop_id: process.env.SUP_SHOP_ID || 100,
+    model: process.env.SUP_MODEL || 1,
+    language: process.env.SUP_LANGUAGE || 'en',
+    currency: process.env.SUP_CURRENCY || 'USD',
+  };
+}
+
+function filterMemberRows(rows: AnyRecord[], keyword?: string) {
+  const term = keyword?.trim().toLowerCase();
+  if (!term) return rows;
+  return rows.filter((row) => JSON.stringify(row).toLowerCase().includes(term));
+}
+
+/**
+ * Productos en la cola real del Member Center de SUP (Imported / Queue).
+ * Estas rutas son las que usa el panel de SUP para lo importado desde 1688,
+ * AliExpress, Alibaba, etc.; la Open API pública no siempre lo expone.
+ */
+export async function listMemberImportQueue(
+  params: { page?: number; pageSize?: number; keyword?: string } = {},
+) {
+  const payload = await supRequest<AnyRecord>('/api/shopify/queue.json', {
+    query: memberCenterQuery(params),
+  });
+  return filterMemberRows(pickList(payload), params.keyword);
+}
+
+/** Productos ya listados/conectados a una tienda dentro del Member Center de SUP. */
+export async function listMemberListedProducts(
+  params: { page?: number; pageSize?: number; keyword?: string } = {},
+) {
+  const payload = await supRequest<AnyRecord>('/api/shopify/goods.json', {
+    query: memberCenterQuery(params),
+  });
+  return filterMemberRows(pickList(payload), params.keyword);
 }
 
 /** Detalle de un producto de SUP: GET /api/v1/product/{id}.json */

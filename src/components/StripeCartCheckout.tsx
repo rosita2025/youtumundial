@@ -9,6 +9,8 @@ interface StripeCartCheckoutProps {
     quantity: number;
     supProductId?: string;
     variantTitle?: string;
+    supVariantId?: string;
+    supVariantSku?: string;
   }[];
   shippingInCents: number;
   customerEmail?: string;

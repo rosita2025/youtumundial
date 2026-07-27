@@ -74,12 +74,15 @@ const Checkout = () => {
 
   const stripeItems = cart.items.map((item) => {
     const supMatch = /^sup-(.+)$/.exec(String(item.product.id));
+    const variantMatch = /^sup-[^-]+-(.+)$/.exec(String(item.variant.id));
     return {
       name: `${item.product.title} — ${item.variant.title}`,
       amountInCents: Math.round(item.variant.price * 100),
       quantity: item.quantity,
       supProductId: supMatch ? supMatch[1] : undefined,
       variantTitle: item.variant.title,
+      supVariantId: variantMatch ? variantMatch[1] : undefined,
+      supVariantSku: item.variant.sku,
     };
   });
 

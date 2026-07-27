@@ -7,7 +7,13 @@
  * minutos para no golpear la API en cada visita.
  */
 
-import { getProductDetail, getProductVariants, listProducts } from "./sup-api.server";
+import {
+  getProductDetail,
+  getProductVariants,
+  listMemberImportQueue,
+  listMemberListedProducts,
+  listProducts,
+} from "./sup-api.server";
 import { normalizeSupProduct, normalizeSupProducts } from "./normalize";
 import type { SupRawProduct } from "./sup";
 
@@ -45,12 +51,24 @@ export async function syncPublishedCatalog(ids: string[], force = false): Promis
     const settled = await Promise.all(ids.map((id) => fetchOne(String(id))));
     products = settled.filter((p): p is SupRawProduct => p !== null);
   } else {
-    // Sin selección todavía: mostramos las primeras novedades del catálogo de SUP
-    // para que la tienda nunca quede vacía.
+    // Sin selección todavía: usamos primero el Member Center real de la cuenta
+    // (productos importados/listados desde 1688, AliExpress, Alibaba, etc.).
     try {
-      products = normalizeSupProducts(await listProducts({ page: 1, pageSize: 24 }));
+      const listed = await listMemberListedProducts({ page: 1, pageSize: 24 });
+      const queue = listed.length < 24
+        ? await listMemberImportQueue({ page: 1, pageSize: 24 - listed.length })
+        : [];
+      products = normalizeSupProducts([...listed, ...queue]);
     } catch {
       products = [];
+    }
+
+    if (products.length === 0) {
+      try {
+        products = normalizeSupProducts(await listProducts({ page: 1, pageSize: 24 }));
+      } catch {
+        products = [];
+      }
     }
   }
 

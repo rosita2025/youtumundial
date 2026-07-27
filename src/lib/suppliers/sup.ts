@@ -19,15 +19,38 @@ export interface SupRawProduct {
   description?: string;
   /** Precio de costo en USD */
   cost_price: number | string;
+  /** Precio final ya definido en SUP/Member Center, si existe. */
+  retail_price?: number | string;
   images?: string[];
   /** Tallas disponibles */
   sizes?: string[];
   /** Colores disponibles */
   colors?: string[];
+  /** Variantes reales de SUP/listing (SKU, product_id, stock, precio). */
+  variants?: SupRawVariant[];
   /** Colecciones/categorías destino en la tienda */
   categories?: string[];
   tags?: string[];
   stock?: number;
+  source?: 'open-api' | 'member-listed' | 'member-queue' | 'local';
+  storeProductId?: string | number;
+  storeName?: string;
+  sourceUrl?: string;
+}
+
+export interface SupRawVariant {
+  id?: string | number;
+  product_id?: string | number;
+  sku?: string;
+  title?: string;
+  size?: string;
+  color?: string;
+  price?: number | string;
+  retail_price?: number | string;
+  image?: string;
+  stock?: number;
+  shipment_id?: string | number;
+  shipping_method?: string;
 }
 
 const slugify = (value: string) =>
@@ -43,7 +66,31 @@ export function retailPrice(cost: number, margin: number = DEFAULT_MARGIN): numb
   return Math.round(cost * (1 + margin));
 }
 
+function parseMoney(value: unknown): number {
+  const n = typeof value === 'string' ? parseFloat(value) : Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function buildVariants(raw: SupRawProduct, price: number): ProductVariant[] {
+  if (raw.variants?.length) {
+    return raw.variants.map((variant, index) => {
+      const variantPrice = parseMoney(variant.retail_price ?? variant.price) || price;
+      const title = variant.title || [variant.color, variant.size].filter(Boolean).join(' / ') || `Variante ${index + 1}`;
+      const sku = variant.sku || `SUP-${raw.id}-${variant.product_id ?? variant.id ?? index + 1}`;
+      return {
+        id: `sup-${raw.id}-${variant.product_id ?? variant.id ?? index}`,
+        title,
+        price: variantPrice,
+        available: variant.stock === undefined ? true : variant.stock > 0,
+        sku,
+        options: title.split('/').map((value, optionIndex) => ({
+          name: optionIndex === 0 ? 'Color' : optionIndex === 1 ? 'Size' : `Opción ${optionIndex + 1}`,
+          value: value.trim(),
+        })),
+      };
+    });
+  }
+
   const sizes = raw.sizes?.length ? raw.sizes : ['Única'];
   const colors = raw.colors?.length ? raw.colors : ['Estándar'];
   const inStock = raw.stock === undefined ? true : raw.stock > 0;
@@ -65,8 +112,9 @@ function buildVariants(raw: SupRawProduct, price: number): ProductVariant[] {
 
 /** Mapea un producto de SUP al catálogo de la tienda. */
 export function mapSupProduct(raw: SupRawProduct, margin: number = DEFAULT_MARGIN): Product {
-  const cost = typeof raw.cost_price === 'string' ? parseFloat(raw.cost_price) : raw.cost_price;
-  const price = retailPrice(Number.isFinite(cost) ? cost : 0, margin);
+  const cost = parseMoney(raw.cost_price);
+  const fixedRetail = parseMoney(raw.retail_price);
+  const price = fixedRetail || retailPrice(cost, margin);
   const images = (raw.images ?? []).map((url, i) => ({
     id: `sup-img-${raw.id}-${i}`,
     url,
