@@ -115,14 +115,21 @@ export function normalizeSupProduct(raw: AnyRecord): SupRawProduct {
     description: str(pick(source, ["content", "intro", "des", "description", "desc", "detail", "title_en"])),
 
     cost_price: num(pick(rowGoods ?? source, ["min_price", "price", "cost_price", "supply_price", "original_price"])),
-    retail_price:
-      num(pick(source, ["my_price", "sale_price", "retail_price"])) ||
-      // Si el precio final está solo en las variantes del listing de SUP,
-      // usamos el menor precio de venta definido allí.
-      rawVariants.reduce((min, v) => {
+    retail_price: (() => {
+      const cost = num(pick(rowGoods ?? source, ["min_price", "price", "cost_price", "supply_price", "original_price"]));
+      // Precio de venta definido en el listing de SUP (variantes) o en la cabecera del listing.
+      const fromVariants = rawVariants.reduce((min, v) => {
         const value = num(v.retail_price);
         return value > 0 && (min === 0 || value < min) ? value : min;
-      }, 0),
+      }, 0);
+      const listingPrice = rowGoods ? num(pick(raw, ["min_price", "max_price"])) : 0;
+      const manual = num(pick(source, ["my_price", "sale_price", "retail_price", "myprice"]));
+      // `my_price` a veces queda desactualizado (igual o menor al costo): en ese
+      // caso preferimos el precio real de venta del listing / variantes.
+      const candidates = [fromVariants, listingPrice, manual].filter((v) => v > cost);
+      return candidates.length ? Math.min(...candidates) : Math.max(manual, fromVariants, listingPrice);
+    })(),
+
 
     images,
     sizes,
