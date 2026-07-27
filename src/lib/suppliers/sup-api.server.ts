@@ -146,40 +146,39 @@ export async function listCategories() {
 }
 
 /**
- * Lista de productos de SUP (crudos, tal cual los devuelve la API).
- * Nota: la Open API filtra por `title`, no por `keyword`.
+ * Lista de productos de SUP.
+ * Parámetros oficiales (spec YApi pid=13): limit (máx 200), page, goods_cate_id, title.
+ * `title` acepta el nombre del producto o su SKU.
  */
 export async function listProducts(params: { page?: number; pageSize?: number; keyword?: string; categoryId?: string } = {}) {
   const term = (params.keyword ?? "").trim();
   const payload = await supRequest<AnyRecord>("/api/v1/products.json", {
     query: {
       page: params.page ?? 1,
-      page_size: params.pageSize ?? 20,
+      limit: Math.min(Math.max(params.pageSize ?? 20, 1), 200),
       title: term || undefined,
-      goods_cat_id: params.categoryId,
+      goods_cate_id: params.categoryId,
     },
   });
-  const rows = pickList(payload);
-  // Si el término parece un SKU (SD...) filtramos localmente: la API no soporta goods_sn.
-  if (term && /^SD[0-9A-Z]{6,}$/i.test(term)) {
-    const hit = rows.filter((r) => String(r.goods_sn ?? "").toLowerCase() === term.toLowerCase());
-    if (hit.length) return hit;
-  }
-  return rows;
+  return pickList(payload);
 }
 
-/** Detalle de un producto de SUP. Si no hay endpoint de detalle, lo busca en el listado. */
+/** Detalle de un producto de SUP: GET /api/v1/product/{id}.json */
 export async function getProductDetail(id: string) {
-  try {
-    const payload = await supRequest<AnyRecord>(`/api/v1/product/${encodeURIComponent(id)}.json`);
-    const data = (payload.data ?? payload) as AnyRecord;
-    if (data && Object.keys(data).length) return data;
-  } catch {
-    // sin endpoint de detalle: caemos al listado
-  }
-  const rows = await listProducts({ page: 1, pageSize: 100 });
-  return (rows.find((r) => String(r.id) === id || String(r.goods_sn) === id) ?? {}) as AnyRecord;
+  const payload = await supRequest<AnyRecord>(`/api/v1/product/${encodeURIComponent(id)}.json`);
+  return (payload.data ?? payload) as AnyRecord;
 }
+
+/** Variantes (talla/color) de un producto: GET /api/v1/product/{id}/variants.json */
+export async function getProductVariants(id: string) {
+  const payload = await supRequest<AnyRecord>(`/api/v1/product/${encodeURIComponent(id)}/variants.json`);
+  const data = (payload.data ?? {}) as AnyRecord;
+  const rows = pickList(payload);
+  if (rows.length) return rows;
+  const skus = data.skus ?? data.variants ?? data.sku_list;
+  return Array.isArray(skus) ? (skus as AnyRecord[]) : [];
+}
+
 
 
 /** Crea una orden de compra en SUP (para enviar el pedido al proveedor). */
