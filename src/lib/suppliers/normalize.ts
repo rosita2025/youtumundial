@@ -115,7 +115,14 @@ export function normalizeSupProduct(raw: AnyRecord): SupRawProduct {
     description: str(pick(source, ["content", "intro", "des", "description", "desc", "detail", "title_en"])),
 
     cost_price: num(pick(rowGoods ?? source, ["min_price", "price", "cost_price", "supply_price", "original_price"])),
-    retail_price: num(pick(source, ["my_price", "sale_price", "retail_price"])),
+    retail_price:
+      num(pick(source, ["my_price", "sale_price", "retail_price"])) ||
+      // Si el precio final está solo en las variantes del listing de SUP,
+      // usamos el menor precio de venta definido allí.
+      rawVariants.reduce((min, v) => {
+        const value = num(v.retail_price);
+        return value > 0 && (min === 0 || value < min) ? value : min;
+      }, 0),
 
     images,
     sizes,

@@ -61,9 +61,9 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
-/** Precio de venta = costo + margen, redondeado a entero. */
+/** Precio de venta = costo + margen (solo si SUP no define un precio propio). */
 export function retailPrice(cost: number, margin: number = DEFAULT_MARGIN): number {
-  return Math.round(cost * (1 + margin));
+  return Math.round(cost * (1 + margin) * 100) / 100;
 }
 
 function parseMoney(value: unknown): number {
