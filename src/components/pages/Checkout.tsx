@@ -18,6 +18,8 @@ import {
 import { findCoupon, type Coupon } from '@/lib/checkout/coupons';
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useServerFn } from '@tanstack/react-start';
+import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 
@@ -50,6 +52,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>('card');
   const [showStripe, setShowStripe] = useState(false);
+  const createSupOrder = useServerFn(createDirectSupOrder);
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
@@ -111,18 +114,42 @@ const Checkout = () => {
     };
   });
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (missingCustomer) {
       toast.error('Completá tus datos de envío para continuar.');
       return;
     }
 
     if (isFreeOrder) {
+      const reference = `YTM-${Date.now()}`;
+      try {
+        const result = await createSupOrder({
+          data: {
+            reference,
+            name: customer.name,
+            email: customer.email,
+            country: country.name,
+            address: customer.address,
+            note: coupon ? `Cupón ${coupon.code}` : 'Pedido sin cargo',
+            items: stripeItems.map((item) => ({
+              supProductId: item.supProductId,
+              supVariantId: item.supVariantId,
+              supVariantSku: item.supVariantSku,
+              variantTitle: item.variantTitle,
+              quantity: item.quantity,
+            })),
+          },
+        });
+        if (!result.ok) toast.error(result.message ?? 'No se pudo registrar el pedido en SUP.');
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
       toast.success('¡Gracias por tu compra! Pedido confirmado con tu cupón.');
       clearCart();
       navigate('/checkout/return?free=1');
       return;
     }
+
 
 
     if (method === 'card') {
@@ -372,7 +399,7 @@ const Checkout = () => {
                 )}
               </div>
 
-              <Button className="w-full mt-6" size="lg" onClick={handlePay}>
+              <Button className="w-full mt-6" size="lg" onClick={() => void handlePay()}>
                 {isFreeOrder
                   ? 'Confirmar pedido gratis'
                   : method === 'yape'
