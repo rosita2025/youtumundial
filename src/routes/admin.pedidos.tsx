@@ -14,8 +14,8 @@ import {
   type AdminOrder,
 } from "@/lib/admin/orders.functions";
 
-const SUP_ORDERS_URL = "https://www.supdropshipping.com/member/order";
-const SUP_WALLET_URL = "https://www.supdropshipping.com/member/wallet";
+const SUP_ORDERS_URL = "https://www.supdropshipping.com/memberCenter?type=6&index=7";
+const SUP_WALLET_URL = "https://www.supdropshipping.com/memberCenter?type=8&index=1";
 /** Cada cuánto se refresca solo el panel (ms). */
 const AUTO_SYNC_MS = 120_000;
 
@@ -48,7 +48,8 @@ const ACTION_LABEL: Record<AdminOrder["action"], { text: string; variant: "defau
   crear_pedido_sup: { text: "Falta crear en SUP", variant: "destructive" },
   en_transito: { text: "Pagado · preparando", variant: "secondary" },
   enviado: { text: "Despachado · con tracking", variant: "default" },
-  manual: { text: "Preparación manual", variant: "outline" },
+  manual: { text: "Historial de SUP", variant: "outline" },
+  completado: { text: "Completado en SUP", variant: "secondary" },
 };
 
 function money(value: number | undefined, currency = "USD") {
@@ -350,7 +351,7 @@ function OrdersAdmin() {
 
                 <a
                   className="inline-flex items-center font-medium underline underline-offset-4"
-                  href={SUP_ORDERS_URL}
+                  href={order.supUrl ?? SUP_ORDERS_URL}
                   target="_blank"
                   rel="noreferrer"
                 >

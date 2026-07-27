@@ -227,12 +227,14 @@ async function listStripeOrders(env: StripeEnv, limit: number): Promise<AdminOrd
       const supOrderId = metadata.sup_order_id || undefined;
 
       let supState: ReturnType<typeof readSupState> = {
-        supStatus: undefined,
+        supStatus: '',
         supPaid: false,
         supCost: undefined,
         supShippingCost: undefined,
         tracking: undefined,
         carrier: undefined,
+        finished: false,
+        shippedAt: undefined,
       };
 
       if (supOrderId) {
