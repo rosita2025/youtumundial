@@ -16,6 +16,7 @@ import {
 } from "@/lib/suppliers/sup.functions";
 
 import { mergeSupCatalog, readSupCatalog, clearSupCatalog } from "@/lib/suppliers/local-catalog";
+import { readPublishedIds, togglePublished, clearPublished } from "@/lib/suppliers/published-store";
 import { retailPrice } from "@/lib/suppliers/sup";
 import type { SupRawProduct } from "@/lib/suppliers/sup";
 
