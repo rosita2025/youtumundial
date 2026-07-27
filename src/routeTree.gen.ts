@@ -26,6 +26,7 @@ import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AdminSupRouteImport } from './routes/admin.sup'
 import { Route as AdminResenasRouteImport } from './routes/admin.resenas'
+import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
 
@@ -114,6 +115,11 @@ const AdminResenasRoute = AdminResenasRouteImport.update({
   path: '/admin/resenas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPedidosRoute = AdminPedidosRouteImport.update({
+  id: '/admin/pedidos',
+  path: '/admin/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
   id: '/admin/diagnostico',
   path: '/admin/diagnostico',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin/diagnostico': typeof AdminDiagnosticoRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/resenas': typeof AdminResenasRoute
   '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin/diagnostico': typeof AdminDiagnosticoRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/resenas': typeof AdminResenasRoute
   '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin/diagnostico': typeof AdminDiagnosticoRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/resenas': typeof AdminResenasRoute
   '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
@@ -204,6 +213,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/admin/diagnostico'
+    | '/admin/pedidos'
     | '/admin/resenas'
     | '/admin/sup'
     | '/checkout/return'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/admin/diagnostico'
+    | '/admin/pedidos'
     | '/admin/resenas'
     | '/admin/sup'
     | '/checkout/return'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/admin/diagnostico'
+    | '/admin/pedidos'
     | '/admin/resenas'
     | '/admin/sup'
     | '/checkout/return'
@@ -268,6 +280,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   AdminDiagnosticoRoute: typeof AdminDiagnosticoRoute
+  AdminPedidosRoute: typeof AdminPedidosRoute
   AdminResenasRoute: typeof AdminResenasRoute
   AdminSupRoute: typeof AdminSupRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
@@ -397,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminResenasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/pedidos': {
+      id: '/admin/pedidos'
+      path: '/admin/pedidos'
+      fullPath: '/admin/pedidos'
+      preLoaderRoute: typeof AdminPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/diagnostico': {
       id: '/admin/diagnostico'
       path: '/admin/diagnostico'
@@ -439,6 +459,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   AdminDiagnosticoRoute: AdminDiagnosticoRoute,
+  AdminPedidosRoute: AdminPedidosRoute,
   AdminResenasRoute: AdminResenasRoute,
   AdminSupRoute: AdminSupRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
@@ -449,13 +470,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
