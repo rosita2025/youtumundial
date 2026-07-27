@@ -66,6 +66,8 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
       },
       products: snapshot.items.map((item) => ({
         product_id: item.supProductId,
+        variant_id: item.supVariantId,
+        product_sn: item.supVariantSku,
         quantity: item.quantity,
         variant: item.variantTitle,
       })),
