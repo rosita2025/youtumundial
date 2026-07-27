@@ -35,6 +35,7 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
           src={images[selectedIndex].url}
           alt={images[selectedIndex].altText || productTitle}
           className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
         />
 
         {/* Navigation Arrows */}
@@ -93,6 +94,7 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
                 src={image.url}
                 alt={image.altText || `${productTitle} thumbnail ${index + 1}`}
                 className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
               />
             </button>
           ))}

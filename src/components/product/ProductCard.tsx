@@ -33,6 +33,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           alt={product.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
+          referrerPolicy="no-referrer"
         />
         
         {/* Hover image */}
@@ -42,6 +43,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             alt={`${product.title} - alternate view`}
             className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
             loading="lazy"
+            referrerPolicy="no-referrer"
           />
         )}
 

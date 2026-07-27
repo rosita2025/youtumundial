@@ -67,6 +67,7 @@ export function CartDrawer() {
                         src={item.product.images[0]?.url}
                         alt={item.product.title}
                         className="w-20 h-24 object-cover rounded-lg"
+                        referrerPolicy="no-referrer"
                       />
                     </Link>
                     <div className="flex-1 min-w-0">
