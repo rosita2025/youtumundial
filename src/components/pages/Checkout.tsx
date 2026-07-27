@@ -15,7 +15,8 @@ import {
   getTotals,
   type PaymentMethod,
 } from '@/lib/checkout/order';
-import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck } from 'lucide-react';
+import { findCoupon, type Coupon } from '@/lib/checkout/coupons';
+import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
