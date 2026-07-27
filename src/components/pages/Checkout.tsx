@@ -111,18 +111,42 @@ const Checkout = () => {
     };
   });
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (missingCustomer) {
       toast.error('Completá tus datos de envío para continuar.');
       return;
     }
 
     if (isFreeOrder) {
+      const reference = `YTM-${Date.now()}`;
+      try {
+        const result = await createSupOrder({
+          data: {
+            reference,
+            name: customer.name,
+            email: customer.email,
+            country: country.name,
+            address: customer.address,
+            note: coupon ? `Cupón ${coupon.code}` : 'Pedido sin cargo',
+            items: stripeItems.map((item) => ({
+              supProductId: item.supProductId,
+              supVariantId: item.supVariantId,
+              supVariantSku: item.supVariantSku,
+              variantTitle: item.variantTitle,
+              quantity: item.quantity,
+            })),
+          },
+        });
+        if (!result.ok) toast.error(result.message ?? 'No se pudo registrar el pedido en SUP.');
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
       toast.success('¡Gracias por tu compra! Pedido confirmado con tu cupón.');
       clearCart();
       navigate('/checkout/return?free=1');
       return;
     }
+
 
 
     if (method === 'card') {
