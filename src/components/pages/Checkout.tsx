@@ -18,6 +18,8 @@ import {
 import { findCoupon, type Coupon } from '@/lib/checkout/coupons';
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useServerFn } from '@tanstack/react-start';
+import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 
@@ -50,6 +52,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>('card');
   const [showStripe, setShowStripe] = useState(false);
+  const createSupOrder = useServerFn(createDirectSupOrder);
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
@@ -396,7 +399,7 @@ const Checkout = () => {
                 )}
               </div>
 
-              <Button className="w-full mt-6" size="lg" onClick={handlePay}>
+              <Button className="w-full mt-6" size="lg" onClick={() => void handlePay()}>
                 {isFreeOrder
                   ? 'Confirmar pedido gratis'
                   : method === 'yape'
