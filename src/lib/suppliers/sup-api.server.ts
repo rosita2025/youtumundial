@@ -197,6 +197,32 @@ export async function getOrderDetail(id: string) {
   return (payload.data ?? payload) as AnyRecord;
 }
 
+/** Lista los pedidos de tu cuenta en SUP: GET /api/v1/order.json */
+export async function listSupOrders(params: { page?: number; limit?: number } = {}) {
+  const payload = await supRequest<AnyRecord>("/api/v1/order.json", {
+    query: { page: params.page ?? 1, limit: Math.min(Math.max(params.limit ?? 20, 1), 100) },
+  });
+  return pickList(payload);
+}
+
+/** Link de pago del pedido en SUP (para pagarlo con la wallet): POST /api/v1/order/{id}/pay.json */
+export async function getOrderPaymentLink(id: string) {
+  const payload = await supRequest<AnyRecord>(`/api/v1/order/${encodeURIComponent(id)}/pay.json`, {
+    method: "POST",
+  });
+  const data = (payload.data ?? payload) as AnyRecord;
+  const link = data.pay_url ?? data.url ?? data.link ?? data.payment_url;
+  return link ? String(link) : "";
+}
+
+/** Opciones de logística internacional y su costo: POST /api/v2/shipment.json */
+export async function getShipmentOptions(body: Record<string, unknown>) {
+  const payload = await supRequest<AnyRecord>("/api/v2/shipment.json", { method: "POST", body });
+  return pickList(payload);
+}
+
+
+
 /** Países disponibles para envío. */
 export async function listCountries() {
   const payload = await supRequest<AnyRecord>("/api/country.json");

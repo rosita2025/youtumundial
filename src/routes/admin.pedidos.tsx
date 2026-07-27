@@ -5,7 +5,7 @@ import { ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-rea
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { listOrders, type AdminOrder } from "@/lib/admin/orders.functions";
+import { getSupPaymentLink, listOrders, type AdminOrder } from "@/lib/admin/orders.functions";
 
 const SUP_ORDERS_URL = "https://www.supdropshipping.com/member/order";
 const SUP_WALLET_URL = "https://www.supdropshipping.com/member/wallet";
@@ -74,7 +74,24 @@ function OrdersAdmin() {
     void load(environment);
   }, [load, environment]);
 
+  const payLink = useServerFn(getSupPaymentLink);
+  const [paying, setPaying] = useState<string | null>(null);
+
+  async function openPayment(supOrderId: string) {
+    setPaying(supOrderId);
+    try {
+      const result = await payLink({ data: { supOrderId } });
+      if (result.ok && result.url) window.open(result.url, "_blank", "noopener");
+      else setError(result.message ?? "No se pudo abrir el pago en SUP.");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setPaying(null);
+    }
+  }
+
   const pendientes = orders.filter((o) => o.action === "pagar_en_sup" || o.action === "crear_pedido_sup").length;
+
 
   return (
     <main className="container mx-auto max-w-6xl px-4 py-10">
@@ -201,6 +218,17 @@ function OrdersAdmin() {
                     {order.tracking}
                   </span>
                 )}
+                {order.supOrderId && order.action === "pagar_en_sup" && (
+                  <Button
+                    size="sm"
+                    onClick={() => void openPayment(order.supOrderId!)}
+                    disabled={paying === order.supOrderId}
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    {paying === order.supOrderId ? "Abriendo…" : "Pagar al proveedor"}
+                  </Button>
+                )}
+
                 <a
                   className="inline-flex items-center font-medium underline underline-offset-4"
                   href={SUP_ORDERS_URL}
