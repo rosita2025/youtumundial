@@ -54,12 +54,15 @@ function SupAdmin() {
   const [results, setResults] = useState<SupRawProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [stored, setStored] = useState<SupRawProduct[]>([]);
+  const [published, setPublished] = useState<string[]>([]);
 
 
   useEffect(() => {
     getStatus().then(setStatus).catch(() => setStatus(null));
     setStored(readSupCatalog());
+    setPublished(readPublishedIds());
   }, [getStatus]);
+
 
   async function search(nextPage = page) {
     setLoading(true);
