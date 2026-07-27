@@ -29,6 +29,7 @@ import { Route as AdminResenasRouteImport } from './routes/admin.resenas'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
 import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
+import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
 
 const TermsRoute = TermsRouteImport.update({
@@ -132,6 +133,11 @@ const ApiPublicSupSyncTrackingRoute =
     path: '/api/public/sup/sync-tracking',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSupSyncCatalogRoute = ApiPublicSupSyncCatalogRouteImport.update({
+  id: '/api/public/sup/sync-catalog',
+  path: '/api/public/sup/sync-catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSupShippingRoute = ApiPublicSupShippingRouteImport.update({
   id: '/api/public/sup/shipping',
   path: '/api/public/sup/shipping',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
+  '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
 }
 export interface FileRoutesByTo {
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
+  '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
 }
 export interface FileRoutesById {
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
+  '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
 }
 export interface FileRouteTypes {
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/api/public/sup/shipping'
+    | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products'
     | '/api/public/sup/shipping'
+    | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
   id:
     | '__root__'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/api/public/sup/shipping'
+    | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
   fileRoutesById: FileRoutesById
 }
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
+  ApiPublicSupSyncCatalogRoute: typeof ApiPublicSupSyncCatalogRoute
   ApiPublicSupSyncTrackingRoute: typeof ApiPublicSupSyncTrackingRoute
 }
 
@@ -445,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSupSyncTrackingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sup/sync-catalog': {
+      id: '/api/public/sup/sync-catalog'
+      path: '/api/public/sup/sync-catalog'
+      fullPath: '/api/public/sup/sync-catalog'
+      preLoaderRoute: typeof ApiPublicSupSyncCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sup/shipping': {
       id: '/api/public/sup/shipping'
       path: '/api/public/sup/shipping'
@@ -487,18 +507,9 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
+  ApiPublicSupSyncCatalogRoute: ApiPublicSupSyncCatalogRoute,
   ApiPublicSupSyncTrackingRoute: ApiPublicSupSyncTrackingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
