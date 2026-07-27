@@ -146,3 +146,13 @@ export const sendOrderToSup = createServerFn({ method: "POST" })
       return { ok: false as const, error: (error as Error).message };
     }
   });
+
+/** Diagnóstico paso a paso de la conexión con SUP (login, Listed, Imported). */
+export const supHealthCheck = createServerFn({ method: "POST" }).handler(async () => {
+  const { runSupHealthCheck } = await import("./health.server");
+  try {
+    return { ok: true as const, ...(await runSupHealthCheck()) };
+  } catch (error) {
+    return { ok: false as const, steps: [], totalProducts: 0, error: (error as Error).message };
+  }
+});
