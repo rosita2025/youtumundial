@@ -311,7 +311,19 @@ function OrdersAdmin() {
                   <span className="text-muted-foreground">
                     <Truck className="mr-2 inline h-4 w-4" />
                     {order.carrier ? `${order.carrier} · ` : ""}
-                    {order.tracking}
+                    {order.trackingUrl ? (
+                      <a className="underline underline-offset-4" href={order.trackingUrl} target="_blank" rel="noreferrer">
+                        {order.tracking}
+                      </a>
+                    ) : (
+                      order.tracking
+                    )}
+                  </span>
+                )}
+                {order.notifiedAt && (
+                  <span className="text-muted-foreground">
+                    <BellRing className="mr-2 inline h-4 w-4" />
+                    Cliente avisado el {new Date(order.notifiedAt).toLocaleString("es-PE")}
                   </span>
                 )}
                 {order.supOrderId && order.action === "pagar_en_sup" && (
@@ -324,6 +336,17 @@ function OrdersAdmin() {
                     {paying === order.supOrderId ? "Abriendo…" : "Pagar al proveedor"}
                   </Button>
                 )}
+                {order.tracking && !order.notifiedAt && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => void notifyOne(order)}
+                    disabled={busyOrder === order.sessionId}
+                  >
+                    <BellRing className="mr-2 h-4 w-4" />
+                    {busyOrder === order.sessionId ? "Avisando…" : "Avisar al cliente"}
+                  </Button>
+                )}
 
                 <a
                   className="inline-flex items-center font-medium underline underline-offset-4"
@@ -334,6 +357,16 @@ function OrdersAdmin() {
                   Abrir en SUP <ExternalLink className="ml-1 h-3.5 w-3.5" />
                 </a>
               </div>
+
+              {order.notifyPending && !order.notifiedAt && (
+                <p className="mt-2 text-xs text-muted-foreground">Aviso pendiente: {order.notifyPending}</p>
+              )}
+              {order.lastSyncAt && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Última sincronización con SUP: {new Date(order.lastSyncAt).toLocaleString("es-PE")}
+                </p>
+              )}
+
             </li>
           );
         })}
