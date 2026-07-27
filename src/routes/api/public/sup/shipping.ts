@@ -92,7 +92,17 @@ export const Route = createFileRoute("/api/public/sup/shipping")({
           updatedAt: new Date().toISOString(),
         });
 
+        // El webhook dispara la sincronización: guarda el tracking en el pedido
+        // de Stripe y le avisa al cliente si SUP acaba de despachar.
+        try {
+          const { syncSupTracking } = await import("@/lib/suppliers/tracking-sync.server");
+          await syncSupTracking("live");
+        } catch (error) {
+          console.error("SUP webhook: fallo la sincronización", (error as Error).message);
+        }
+
         return Response.json({ received: true });
+
       },
     },
   },
