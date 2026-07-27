@@ -37,14 +37,19 @@ export const Route = createFileRoute("/admin/sup")({
 function SupAdmin() {
   const getStatus = useServerFn(supStatus);
   const getProducts = useServerFn(fetchSupProducts);
+  const importByUrl = useServerFn(importFromSourceUrl);
+  const resyncCatalog = useServerFn(resyncStoreCatalog);
 
   const [status, setStatus] = useState<{ base: string; hasKey: boolean; hasSecret: boolean; hasToken: boolean } | null>(null);
   const [keyword, setKeyword] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [urlLoading, setUrlLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SupRawProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [stored, setStored] = useState<SupRawProduct[]>([]);
+
 
   useEffect(() => {
     getStatus().then(setStatus).catch(() => setStatus(null));
