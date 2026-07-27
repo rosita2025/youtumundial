@@ -61,6 +61,7 @@ const Cart = () => {
                     src={item.product.images[0]?.url}
                     alt={item.product.title}
                     className="w-24 h-32 md:w-32 md:h-40 object-cover rounded-lg"
+                    referrerPolicy="no-referrer"
                   />
                 </Link>
 
