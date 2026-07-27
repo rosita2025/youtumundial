@@ -8,22 +8,22 @@
 import { Product, Collection, FilterOptions, SortOption } from './types';
 import { dummyProducts, dummyCollections } from './dummy-data';
 import { mapSupCatalog, SupRawProduct } from '../suppliers/sup';
+import { readSupCatalog } from '../suppliers/local-catalog';
 import supCatalog from '../suppliers/sup-catalog.json';
-
-let catalogCache: Product[] | null = null;
 
 /**
  * Catálogo de la tienda.
- * Si hay productos importados de SUP Dropshipping (sup-catalog.json) se usan
- * esos; si no, se muestra el catálogo demo.
+ * Prioridad: productos importados desde la Open API de SUP (guardados en el
+ * navegador) → sup-catalog.json → catálogo demo.
  */
 async function getCatalog(): Promise<Product[]> {
-  if (!catalogCache) {
-    const imported = mapSupCatalog(supCatalog as SupRawProduct[]);
-    catalogCache = imported.length > 0 ? imported : dummyProducts;
-  }
-  return catalogCache;
+  const fromApi = readSupCatalog();
+  if (fromApi.length > 0) return mapSupCatalog(fromApi);
+
+  const imported = mapSupCatalog(supCatalog as SupRawProduct[]);
+  return imported.length > 0 ? imported : dummyProducts;
 }
+
 
 
 /**

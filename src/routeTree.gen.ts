@@ -24,6 +24,7 @@ import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as AdminSupRouteImport } from './routes/admin.sup'
 import { Route as AdminResenasRouteImport } from './routes/admin.resenas'
 import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
 
@@ -102,6 +103,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/return',
   getParentRoute: () => CheckoutRoute,
 } as any)
+const AdminSupRoute = AdminSupRouteImport.update({
+  id: '/admin/sup',
+  path: '/admin/sup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminResenasRoute = AdminResenasRouteImport.update({
   id: '/admin/resenas',
   path: '/admin/resenas',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/admin/resenas': typeof AdminResenasRoute
+  '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/admin/resenas': typeof AdminResenasRoute
+  '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/admin/resenas': typeof AdminResenasRoute
+  '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/diagnostico'
     | '/admin/resenas'
+    | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
     | '/products/$slug'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/diagnostico'
     | '/admin/resenas'
+    | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
     | '/products/$slug'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/diagnostico'
     | '/admin/resenas'
+    | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
     | '/products/$slug'
@@ -245,6 +257,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   AdminDiagnosticoRoute: typeof AdminDiagnosticoRoute
   AdminResenasRoute: typeof AdminResenasRoute
+  AdminSupRoute: typeof AdminSupRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/admin/sup': {
+      id: '/admin/sup'
+      path: '/admin/sup'
+      fullPath: '/admin/sup'
+      preLoaderRoute: typeof AdminSupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/resenas': {
       id: '/admin/resenas'
       path: '/admin/resenas'
@@ -400,6 +420,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   AdminDiagnosticoRoute: AdminDiagnosticoRoute,
   AdminResenasRoute: AdminResenasRoute,
+  AdminSupRoute: AdminSupRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
