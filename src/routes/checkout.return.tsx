@@ -21,14 +21,16 @@ export const Route = createFileRoute('/checkout/return')({
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { session_id?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { session_id?: string; free?: string } => ({
     session_id: typeof search.session_id === 'string' ? search.session_id : undefined,
+    free: typeof search.free === 'string' ? search.free : undefined,
   }),
   component: CheckoutReturn,
 });
 
 function CheckoutReturn() {
-  const { session_id: sessionId } = Route.useSearch();
+  const { session_id: sessionId, free } = Route.useSearch();
+  const isFreeOrder = free === '1';
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
   const [result, setResult] = useState<FulfillmentResult | null>(null);
 
