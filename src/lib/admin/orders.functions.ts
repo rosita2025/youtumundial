@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
-import { SUP_ORDER_LIST_URL } from './orders.server';
+import { SUP_ORDER_LIST_URL } from './sup-links';
 import type { AdminOrder } from '@/lib/admin/orders.server';
 
 export type { AdminOrder } from '@/lib/admin/orders.server';

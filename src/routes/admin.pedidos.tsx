@@ -14,8 +14,7 @@ import {
   type AdminOrder,
 } from "@/lib/admin/orders.functions";
 
-const SUP_ORDERS_URL = "https://www.supdropshipping.com/memberCenter?type=6&index=7";
-const SUP_WALLET_URL = "https://www.supdropshipping.com/memberCenter?type=8&index=1";
+import { SUP_ORDER_LIST_URL as SUP_ORDERS_URL, SUP_WALLET_URL } from "@/lib/admin/sup-links";
 /** Cada cuánto se refresca solo el panel (ms). */
 const AUTO_SYNC_MS = 120_000;
 

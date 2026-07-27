@@ -7,6 +7,7 @@
  * cobro → pedido en SUP → pago al proveedor → tracking.
  */
 import { type StripeEnv, createStripeClient } from '@/lib/stripe.server';
+import { SUP_ORDER_LIST_URL } from './sup-links';
 
 export interface AdminOrderLine {
   supProductId: string;
@@ -54,7 +55,7 @@ export interface AdminOrder {
 /** Desde esta fecha los pedidos de SUP se consideran de la tienda Youtumundial. */
 const STORE_START = Date.parse('2026-07-01T00:00:00Z');
 
-export const SUP_ORDER_LIST_URL = 'https://www.supdropshipping.com/memberCenter?type=6&index=7';
+
 
 
 const num = (v: unknown): number | undefined => {
