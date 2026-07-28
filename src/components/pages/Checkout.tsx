@@ -259,7 +259,8 @@ const Checkout = () => {
     quantity: item.quantity,
   }));
 
-  const handlePay = async () => {
+  const handlePay = async (override?: PaymentMethod) => {
+    const chosen = override ?? method;
     // Un solo envío por click: evita pedidos duplicados si se toca dos veces.
     if (payingRef.current) return;
     if (!validation.ok) {
@@ -329,13 +330,13 @@ const Checkout = () => {
 
 
 
-    if (method === 'card') {
+    if (chosen === 'card') {
       setShowStripe(true);
       return;
     }
 
 
-    if (method === 'paypal') {
+    if (chosen === 'paypal') {
       const link = buildPaypalLink(totals.total);
       if (link) {
         window.location.href = link;
@@ -343,7 +344,7 @@ const Checkout = () => {
       }
     }
 
-    if (method === 'yape') {
+    if (chosen === 'yape') {
       // Pago manual desde Perú: registramos el pedido REAL en Shopify como
       // pendiente de pago (precio recalculado en el servidor) y recién después
       // abrimos WhatsApp con la referencia para enviar la captura del Yape.
@@ -440,7 +441,7 @@ const Checkout = () => {
                   type="button"
                   onClick={() => {
                     setMethod('card');
-                    void handlePay();
+                    void handlePay('card');
                   }}
                   className="rounded-md bg-foreground text-background py-3 text-sm font-medium hover:opacity-90 transition-opacity"
                 >
@@ -450,7 +451,7 @@ const Checkout = () => {
                   type="button"
                   onClick={() => {
                     setMethod('card');
-                    void handlePay();
+                    void handlePay('card');
                   }}
                   className="rounded-md border border-border py-3 text-sm font-medium hover:border-primary/50 transition-colors"
                 >
@@ -460,7 +461,7 @@ const Checkout = () => {
                   type="button"
                   onClick={() => {
                     setMethod('paypal');
-                    void handlePay();
+                    void handlePay('paypal');
                   }}
                   className="rounded-md bg-[#ffc439] text-[#003087] py-3 text-sm font-semibold hover:brightness-95 transition-all"
                 >
@@ -475,7 +476,7 @@ const Checkout = () => {
             </section>
 
             <section>
-              <h2 className="font-medium text-lg mb-4">1. Datos de envío</h2>
+              <h2 className="font-medium text-lg mb-4">Contacto y entrega</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nombre *</Label>
@@ -587,7 +588,7 @@ const Checkout = () => {
             </section>
 
             <section>
-              <h2 className="font-medium text-lg mb-4">2. Método de pago</h2>
+              <h2 className="font-medium text-lg mb-4">Método de pago</h2>
               <div className="space-y-3">
                 {methods.map((m) => {
                   const Icon = m.icon;
