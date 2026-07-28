@@ -138,6 +138,12 @@ export function mapSupProduct(raw: SupRawProduct, margin: number = DEFAULT_MARGI
     tags: raw.tags ?? [],
     available: (raw.stock === undefined ? true : raw.stock > 0) && anyVariantInStock,
     createdAt: new Date().toISOString(),
+    origin: {
+      supplier: 'sup',
+      shopId: raw.storeName || String(raw.storeProductId ?? 'sup-member-center'),
+      sourceId: String(raw.id),
+      importedAt: new Date().toISOString(),
+    },
   };
 }
 

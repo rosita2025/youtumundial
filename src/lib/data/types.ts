@@ -22,6 +22,18 @@ export interface ProductVariant {
   }[];
 }
 
+/** Origen auditable de un producto importado. */
+export interface ProductOrigin {
+  /** Proveedor o canal de importación: 'shopify', 'sup', 'local'… */
+  supplier: string;
+  /** Tienda / shop ID desde donde se importó. */
+  shopId: string;
+  /** ID del producto en el origen. */
+  sourceId: string;
+  /** Fecha de importación / sincronización (ISO). */
+  importedAt: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -35,6 +47,7 @@ export interface Product {
   tags: string[];
   available: boolean;
   createdAt: string;
+  origin?: ProductOrigin;
 }
 
 export interface Collection {

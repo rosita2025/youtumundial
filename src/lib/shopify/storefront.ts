@@ -146,6 +146,12 @@ export function mapShopifyProduct(raw: RawProduct): Product {
     tags: raw.tags ?? [],
     available: raw.availableForSale,
     createdAt: raw.createdAt,
+    origin: {
+      supplier: 'shopify',
+      shopId: SHOPIFY_STORE_PERMANENT_DOMAIN,
+      sourceId: raw.id,
+      importedAt: new Date().toISOString(),
+    },
   };
 }
 
