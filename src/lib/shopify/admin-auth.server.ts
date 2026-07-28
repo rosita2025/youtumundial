@@ -81,38 +81,35 @@ async function requestClientCredentialsToken(): Promise<string | null> {
 }
 
 /**
- * Tokens estáticos válidos para el Admin API de Shopify.
- * Solo aceptamos formatos oficiales (`shpat_`, `shpca_`, `shppa_`, `shpss_`).
- * Cualquier otro valor pegado por error se ignora para no romper la sincronización.
+ * Devuelve un token válido del Admin API.
+ *
+ * ÚNICO método soportado: Client ID + Client Secret (client_credentials).
+ * Los tokens estáticos antiguos (`shpat_` y similares, creados en 2023–2024)
+ * ya no se usan: Shopify cambió el modelo de apps y esos tokens quedaron
+ * obsoletos. Si alguien guarda uno, se ignora por completo.
  */
-function staticAdminToken(): string | undefined {
-  const candidates = [
-    env('SHOPIFY_ADMIN_ORDERS_TOKEN'),
-    env('SHOPIFY_ADMIN_AUTOMATION_TOKEN'),
-  ];
-  return candidates.find((t) => !!t && /^shp(at|ca|pa|ss)_/.test(t));
-}
-
-/** Devuelve un token válido del Admin API o `undefined` si no hay ninguno. */
 export async function resolveShopifyAdminToken(): Promise<string | undefined> {
-  // 1. Client credentials (método actual de las apps de Shopify).
-  if (hasShopifyClientCredentials()) {
-    if (cached && Date.now() < cached.expiresAt) return cached.token;
-    if (!inFlight) {
-      inFlight = requestClientCredentialsToken().finally(() => {
-        inFlight = null;
-      });
-    }
-    const token = await inFlight;
-    if (token) return token;
+  if (!hasShopifyClientCredentials()) {
+    throw new Error(
+      'Shopify Admin: faltan SHOPIFY_CLIENT_ID y SHOPIFY_CLIENT_SECRET. ' +
+        'Es el único método soportado (client_credentials); los tokens estáticos antiguos ya no se aceptan.',
+    );
   }
 
-  // 2. Token estático offline, si existe y tiene formato válido.
-  const explicit = staticAdminToken();
-  if (explicit) return explicit;
+  if (cached && Date.now() < cached.expiresAt) return cached.token;
+  if (!inFlight) {
+    inFlight = requestClientCredentialsToken().finally(() => {
+      inFlight = null;
+    });
+  }
+  const token = await inFlight;
+  if (!token) {
+    throw new Error(
+      'Shopify Admin: no se pudo obtener el token con client_credentials. Revisa SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET.',
+    );
+  }
+  return token;
 
-  // 3. Token de la integración (normalmente solo productos).
-  return env('SHOPIFY_ACCESS_TOKEN');
 }
 
 
