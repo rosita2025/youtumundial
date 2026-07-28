@@ -89,9 +89,17 @@ async function requestClientCredentialsToken(): Promise<string | null> {
       return null;
     }
 
+    // Validación estricta: nunca cacheamos ni enviamos un token con formato raro.
+    if (!isValidShopifyAdminToken(token)) {
+      cached = null;
+      console.error('shopify client_credentials: access_token con formato inesperado (descartado)');
+      return null;
+    }
+
     const ttlMs = Math.max(60_000, Number(json.expires_in ?? 3600) * 1000);
     cached = { token, expiresAt: Date.now() + ttlMs - RENEW_MARGIN_MS };
     return token;
+
   } catch (error) {
     console.error('shopify client_credentials error', (error as Error).message);
     return null;
