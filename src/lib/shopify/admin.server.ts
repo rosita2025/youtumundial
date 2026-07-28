@@ -355,7 +355,12 @@ export async function createShopifyOrder(
 
   try {
     // Intento 1: pedido completo, enlazado a las variantes reales.
-    let attemptOpts = { withPhone: Boolean(phone), withAddress: true, withVariant: hasVariants };
+    let attemptOpts = {
+      withPhone: Boolean(phone),
+      withAddress: true,
+      withVariant: hasVariants,
+      withCustomer: Boolean(customerId),
+    };
     let { created, errors } = await send(buildOrder(attemptOpts));
 
     // Reintento automático degradando el dato que Shopify rechazó,
@@ -366,6 +371,11 @@ export async function createShopifyOrder(
           (e.field ?? []).some((f) => f.toLowerCase().includes(needle)) ||
           e.message.toLowerCase().includes(needle),
       );
+
+    if (!created && errors.length && attemptOpts.withCustomer && failedOn('customer')) {
+      attemptOpts = { ...attemptOpts, withCustomer: false };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
+    }
 
     if (!created && errors.length && attemptOpts.withVariant && (failedOn('variant') || failedOn('lineitem'))) {
       attemptOpts = { ...attemptOpts, withVariant: false };
