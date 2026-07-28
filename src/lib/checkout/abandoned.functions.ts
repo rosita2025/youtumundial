@@ -49,7 +49,17 @@ export const saveAbandonedCheckout = createServerFn({ method: 'POST' })
   }))
   .handler(async ({ data }): Promise<AbandonedCheckoutResponse> => {
     const { customerSchema, composeAddress } = await import('./customer');
-    const parsed = customerSchema.safeParse({
+    const { z } = await import('zod');
+
+    // Captura temprana: en cuanto el correo es válido ya guardamos el carrito
+    // abandonado, aunque el resto del formulario esté a medias. Si después el
+    // cliente completa nombre/dirección, el mismo borrador se actualiza.
+    const emailCheck = z.string().trim().email().max(160).safeParse(data.email);
+    if (!emailCheck.success || !data.reference) {
+      return { ok: false, message: 'Datos incompletos.' };
+    }
+
+    const full = customerSchema.safeParse({
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
@@ -61,16 +71,30 @@ export const saveAbandonedCheckout = createServerFn({ method: 'POST' })
       postalCode: data.postalCode,
       countryCode: data.countryCode,
     });
-    if (!parsed.success || !data.reference) {
-      return { ok: false, message: 'Datos incompletos.' };
-    }
+
+    const customer = full.success
+      ? full.data
+      : {
+          firstName: data.firstName.trim(),
+          lastName: data.lastName.trim(),
+          email: emailCheck.data,
+          phone: data.phone.trim(),
+          address1: data.address1.trim(),
+          address2: data.address2.trim(),
+          city: data.city.trim(),
+          province: data.province.trim(),
+          postalCode: data.postalCode.trim(),
+          countryCode: data.countryCode.trim().toUpperCase(),
+        };
+
+    const countryCode = (data.countryCode || '').trim().toUpperCase();
 
     const { priceOrder, normalizeCartLines } = await import('./pricing.server');
     let priced;
     try {
       priced = await priceOrder({
         items: normalizeCartLines(data.items),
-        countryCode: data.countryCode,
+        countryCode: countryCode || 'US',
         couponCode: data.couponCode || undefined,
       });
     } catch {
@@ -80,19 +104,20 @@ export const saveAbandonedCheckout = createServerFn({ method: 'POST' })
     const { syncAbandonedCheckout } = await import('@/lib/shopify/abandoned.server');
     const result = await syncAbandonedCheckout({
       reference: data.reference,
-      email: parsed.data.email,
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
-      phone: parsed.data.phone,
-      address: composeAddress(parsed.data),
-      address1: parsed.data.address1,
-      address2: parsed.data.address2,
-      city: parsed.data.city,
-      province: parsed.data.province,
-      postalCode: parsed.data.postalCode,
-      countryCode: data.countryCode,
+      email: customer.email,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      phone: customer.phone,
+      address: full.success ? composeAddress(full.data) : customer.address1,
+      address1: customer.address1,
+      address2: customer.address2,
+      city: customer.city,
+      province: customer.province,
+      postalCode: customer.postalCode,
+      countryCode,
       currency: 'USD',
       lines: priced.lines.map((line) => ({
+
         title: line.name,
         quantity: line.quantity,
         price: line.amountInCents / 100,

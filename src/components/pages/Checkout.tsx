@@ -148,14 +148,15 @@ const Checkout = () => {
   }, [shippingKey, countryCode, cart.subtotal]);
 
   // Carrito abandonado → Shopify.
-  // Cuando el formulario (correo, nombre, teléfono, país y dirección) ya está
-  // completo pero todavía no se pagó, guardamos el checkout en Shopify como
-  // borrador etiquetado "carrito-abandonado" para poder recuperarlo.
+  // En cuanto el correo es válido guardamos el checkout en Shopify como
+  // borrador etiquetado "carrito-abandonado" (aunque falten datos), y lo
+  // vamos actualizando conforme el cliente completa nombre, teléfono y
+  // dirección. Si cambia de correo, se actualiza el mismo borrador.
   useEffect(() => {
     if (paying) return;
-    if (!shippingKey) return;
-    const check = validateCustomer(customerData);
-    if (!check.ok) return;
+    if (cart.items.length === 0) return;
+    const email = customer.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return;
 
     if (!abandonedRef.current) {
       const stored =
@@ -167,6 +168,7 @@ const Checkout = () => {
       }
     }
     const reference = abandonedRef.current;
+
 
     const timer = window.setTimeout(() => {
       saveAbandoned({
@@ -203,10 +205,11 @@ const Checkout = () => {
     customer.phone,
     addressLine,
     countryCode,
-    shippingKey,
+    cart.items.length,
     coupon?.code,
     paying,
   ]);
+
 
   if (cart.items.length === 0) {
     return (
