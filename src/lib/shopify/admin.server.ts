@@ -20,6 +20,7 @@ import {
   resolveShopifyAdminToken,
   resetShopifyAdminToken,
   hasShopifyClientCredentials,
+  isValidShopifyAdminToken,
 } from './admin-auth.server';
 
 const ADMIN_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`;
@@ -46,7 +47,13 @@ async function adminRequest<T = any>(
   retry = true,
 ): Promise<T> {
   const token = await adminToken();
-  if (!token) throw new Error('Credenciales de Shopify Admin no configuradas');
+  // Validación estricta antes de enviar nada a Shopify: un token con formato
+  // inesperado nunca sale del servidor.
+  if (!isValidShopifyAdminToken(token)) {
+    resetShopifyAdminToken();
+    throw new Error('Credenciales de Shopify Admin inválidas o no configuradas');
+  }
+
 
   assertAllowedShopifyUrl(ADMIN_URL);
 
