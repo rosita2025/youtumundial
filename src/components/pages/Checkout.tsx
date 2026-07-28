@@ -384,16 +384,6 @@ const Checkout = () => {
                 >
                   Google Pay / Apple Pay
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMethod('paypal');
-                    void handlePay('paypal');
-                  }}
-                  className="rounded-md bg-[#ffc439] text-[#003087] py-3 text-sm font-semibold hover:brightness-95 transition-all"
-                >
-                  PayPal
-                </button>
               </div>
               <div className="flex items-center gap-4 my-6">
                 <span className="h-px flex-1 bg-border" />
