@@ -181,6 +181,10 @@ const ORDER_BY_TAG = `
 export async function findShopifyOrderByReference(
   reference: string,
 ): Promise<ShopifyOrderResult | null> {
+  // Sin permiso de lectura de pedidos no se consulta nada.
+  const gate = await requireShopifyScope('read_orders');
+  if (!gate.ok) return null;
+
   try {
     const data = await adminRequest<{
       orders: { edges: { node: { id: string; name: string } }[] };
@@ -194,10 +198,6 @@ export async function findShopifyOrderByReference(
   }
 }
 
-/**
- * Crea el pedido en Shopify con reintentos automáticos y sin duplicar:
- * antes de cada intento comprueba si ya existe un pedido con esa referencia.
- */
 export async function createShopifyOrderIdempotent(
   input: ShopifyOrderInput,
 ): Promise<ShopifyOrderResult> {
