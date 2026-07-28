@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
-import { dummyProducts, dummyCollections } from "@/lib/data/dummy-data";
+import { getCollections, getProducts } from "@/lib/data/data-provider";
 
 // TODO: replace with your project URL once a project name or custom domain is set.
 const BASE_URL = "";
@@ -22,17 +22,21 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
+        const [collections, products] = await Promise.all([
+          getCollections().catch(() => []),
+          getProducts().catch(() => []),
+        ]);
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/products", changefreq: "daily", priority: "0.9" },
           { path: "/search", changefreq: "monthly", priority: "0.4" },
           { path: "/cart", changefreq: "monthly", priority: "0.3" },
-          ...dummyCollections.map((c) => ({
+          ...collections.map((c) => ({
             path: `/collections/${c.slug}`,
             changefreq: "weekly" as const,
             priority: "0.8",
           })),
-          ...dummyProducts.map((p) => ({
+          ...products.map((p) => ({
             path: `/products/${p.slug}`,
             changefreq: "weekly" as const,
             priority: "0.7",
