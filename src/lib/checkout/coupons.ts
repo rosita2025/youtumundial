@@ -62,11 +62,23 @@ export function findCoupon(
   subtotal: number,
   extra: Coupon[] = [],
 ): CouponResult {
-  const code = input.trim().toUpperCase();
+  const norm = (s: string) => s.trim().toUpperCase().replace(/[\s-]+/g, '');
+  const code = norm(input);
   if (!code) return { ok: false, message: 'Escribí un código de cupón.' };
 
-  const coupon = [...extra, ...coupons].find((c) => c.code === code && c.active !== false);
-  if (!coupon) return { ok: false, message: 'Ese cupón no existe o ya venció.' };
+  const coupon = [...extra, ...coupons].find((c) => norm(c.code) === code && c.active !== false);
+  if (!coupon) {
+    // PRUEBA100 quedó desactivado a propósito: un 100% público deja que
+    // cualquiera pida mercadería física gratis. Se usa el código de prueba privado.
+    return {
+      ok: false,
+      message:
+        code === 'PRUEBA100'
+          ? 'PRUEBA100 fue desactivado por seguridad. Usá tu código de prueba privado.'
+          : 'Ese cupón no existe o ya venció.',
+    };
+  }
+
 
   if (coupon.minSubtotal && subtotal < coupon.minSubtotal) {
     return {
