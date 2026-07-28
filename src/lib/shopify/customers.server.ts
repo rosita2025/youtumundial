@@ -147,8 +147,17 @@ async function upsertShopifyCustomerNow(
 ): Promise<ShopifyCustomerResult> {
   const email = String(input.email).trim().toLowerCase();
 
+  const { recordSync } = await import('@/lib/observability/sync-audit.server');
+  const startedAt = Date.now();
+
   const gate = await requireShopifyScope('write_customers');
-  if (!gate.ok) return { ok: false, message: gate.message };
+  if (!gate.ok) {
+    await recordSync({
+      entity: 'customer', action: 'upsert', status: 'skipped',
+      email, cause: gate.message,
+    });
+    return { ok: false, message: gate.message };
+  }
 
   const payload = buildInput({ ...input, email });
 
@@ -173,12 +182,23 @@ async function upsertShopifyCustomerNow(
 
       const updated = data?.customerUpdate?.customer;
       if (!updated) {
-        console.warn('upsertShopifyCustomer(update)', data?.customerUpdate?.userErrors);
+        const cause =
+          (data?.customerUpdate?.userErrors ?? []).map((e) => e.message).join(', ') ||
+          'Shopify rechazó la actualización del cliente.';
+        // Shopify rechazó la actualización: se audita y se alerta al admin.
+        await recordSync({
+          entity: 'customer', action: 'update', status: 'rejected',
+          email, ids: { customerId }, cause, durationMs: Date.now() - startedAt,
+        });
         // El cliente existe aunque la actualización falle: lo devolvemos igual.
         customerCache.set(email, customerId);
         return { ok: true, customerId, created: false };
       }
       customerCache.set(email, updated.id);
+      await recordSync({
+        entity: 'customer', action: 'update', status: 'ok',
+        email, ids: { customerId: updated.id }, durationMs: Date.now() - startedAt,
+      });
       return { ok: true, customerId: updated.id, created: false };
     }
 
@@ -200,15 +220,33 @@ async function upsertShopifyCustomerNow(
       const existing = retry?.customers?.edges?.[0]?.node?.id;
       if (existing) {
         customerCache.set(email, existing);
+        await recordSync({
+          entity: 'customer', action: 'create', status: 'ok',
+          email, ids: { customerId: existing }, cause: 'Ya existía (carrera resuelta).',
+          durationMs: Date.now() - startedAt, silent: true,
+        });
         return { ok: true, customerId: existing, created: false };
       }
+      await recordSync({
+        entity: 'customer', action: 'create', status: 'rejected',
+        email,
+        cause: errors.map((e) => e.message).join(', ') || 'Shopify rechazó la creación del cliente.',
+        durationMs: Date.now() - startedAt,
+      });
       return { ok: false, message: 'No se pudo registrar el cliente en Shopify.' };
     }
 
     customerCache.set(email, created.id);
+    await recordSync({
+      entity: 'customer', action: 'create', status: 'ok',
+      email, ids: { customerId: created.id }, durationMs: Date.now() - startedAt,
+    });
     return { ok: true, customerId: created.id, created: true };
   } catch (error) {
-    console.error('upsertShopifyCustomer', (error as Error).message);
+    await recordSync({
+      entity: 'customer', action: 'upsert', status: 'error',
+      email, cause: (error as Error).message, durationMs: Date.now() - startedAt,
+    });
     return { ok: false, message: 'No se pudo sincronizar el cliente con Shopify.' };
   }
 }
