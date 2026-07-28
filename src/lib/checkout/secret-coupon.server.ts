@@ -23,5 +23,6 @@ export function getSecretTestCoupon(): Coupon | null {
 export function isFreeOrderAllowed(couponCode?: string | null): boolean {
   const secret = getSecretTestCoupon();
   if (!secret || !couponCode) return false;
-  return couponCode.trim().toUpperCase() === secret.code;
+  const norm = (s: string) => s.trim().toUpperCase().replace(/[\s-]+/g, '');
+  return norm(couponCode) === norm(secret.code);
 }
