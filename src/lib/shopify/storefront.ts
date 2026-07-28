@@ -8,6 +8,7 @@
  */
 
 import type { Product, ProductVariant } from '../data/types';
+import { cleanDescription } from '../data/description';
 import { assertAllowedShopifyUrl } from '../security/connection-audit';
 
 export const SHOPIFY_API_VERSION = '2025-07';
@@ -131,7 +132,7 @@ export function mapShopifyProduct(raw: RawProduct): Product {
     id: raw.id,
     slug: raw.handle,
     title: raw.title,
-    description: raw.description ?? '',
+    description: cleanDescription(raw.description),
     price,
     compareAtPrice: compare > price ? compare : undefined,
     images: raw.images.edges.map((e, i) => ({

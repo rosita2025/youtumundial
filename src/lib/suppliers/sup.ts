@@ -7,6 +7,7 @@
  */
 
 import { Product, ProductVariant } from '../data/types';
+import { cleanDescription } from '../data/description';
 
 /** Margen por defecto aplicado sobre el costo de SUP (60%). */
 export const DEFAULT_MARGIN = 0.6;
@@ -130,7 +131,7 @@ export function mapSupProduct(raw: SupRawProduct, margin: number = DEFAULT_MARGI
     id: `sup-${raw.id}`,
     slug: slugify(raw.name),
     title: raw.name,
-    description: raw.description ?? '',
+    description: cleanDescription(raw.description),
     price,
     images,
     variants,

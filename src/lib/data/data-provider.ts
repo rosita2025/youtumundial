@@ -15,8 +15,15 @@ import { readPublishedIds } from '../suppliers/published-store';
 import supCatalog from '../suppliers/sup-catalog.json';
 import { fetchShopifyProducts } from '../shopify/storefront';
 
-const CACHE_TTL = 60 * 1000;
+// Cache corta: los cambios de título/descripción hechos en Shopify se ven casi
+// al instante en la tienda.
+const CACHE_TTL = 30 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
+
+/** Fuerza releer el catálogo de Shopify en la próxima consulta. */
+export function invalidateCatalogCache(): void {
+  catalogCache = null;
+}
 
 
 /**
