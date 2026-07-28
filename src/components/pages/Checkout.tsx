@@ -54,6 +54,7 @@ const Checkout = () => {
   const [method, setMethod] = useState<PaymentMethod>('card');
   const [showStripe, setShowStripe] = useState(false);
   const createSupOrder = useServerFn(createDirectSupOrder);
+  const checkCoupon = useServerFn(validateCoupon);
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
