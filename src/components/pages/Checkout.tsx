@@ -96,26 +96,12 @@ const Checkout = () => {
     setShowStripe(false);
   };
 
-  // El descuento se reparte proporcionalmente entre los ítems para Stripe.
-  const discountFactor =
-    cart.subtotal > 0 ? Math.max(0, cart.subtotal - totals.discount) / cart.subtotal : 1;
-
-  const stripeItems = cart.items.map((item) => {
-    const supMatch = /^sup-(.+)$/.exec(String(item.product.id));
-    const variantMatch = /^sup-[^-]+-(.+)$/.exec(String(item.variant.id));
-    // Con el catálogo en Shopify el ID ya no trae el código de SUP: el SKU de
-    // la variante (importado desde SUP) es la referencia para el proveedor.
-    const sku = item.variant.sku || undefined;
-    return {
-      name: `${item.product.title} — ${item.variant.title}`,
-      amountInCents: Math.max(1, Math.round(item.variant.price * discountFactor * 100)),
-      quantity: item.quantity,
-      supProductId: supMatch ? supMatch[1] : sku,
-      variantTitle: item.variant.title,
-      supVariantId: variantMatch ? variantMatch[1] : undefined,
-      supVariantSku: sku,
-    };
-  });
+  // El navegador solo manda variante + cantidad: el precio, el descuento y el
+  // envío se recalculan en el servidor con el catálogo real.
+  const cartLines = cart.items.map((item) => ({
+    variantId: String(item.variant.id),
+    quantity: item.quantity,
+  }));
 
   const handlePay = async () => {
     if (missingCustomer) {
@@ -131,21 +117,19 @@ const Checkout = () => {
             reference,
             name: customer.name,
             email: customer.email,
-            country: country.name,
+            countryCode,
             address: customer.address,
-            note: coupon ? `Cupón ${coupon.code}` : 'Pedido sin cargo',
-            items: stripeItems.map((item) => ({
-              supProductId: item.supProductId,
-              supVariantId: item.supVariantId,
-              supVariantSku: item.supVariantSku,
-              variantTitle: item.variantTitle,
-              quantity: item.quantity,
-            })),
+            couponCode: coupon?.code,
+            items: cartLines,
           },
         });
-        if (!result.ok) toast.error(result.message ?? 'No se pudo registrar el pedido en SUP.');
+        if (!result.ok) {
+          toast.error(result.message ?? 'No se pudo registrar el pedido.');
+          return;
+        }
       } catch (e) {
         toast.error((e as Error).message);
+        return;
       }
       toast.success('¡Gracias por tu compra! Pedido confirmado con tu cupón.');
       clearCart();
@@ -309,8 +293,9 @@ const Checkout = () => {
               {method === 'card' && showStripe && (
                 <div className="mt-6 rounded-lg border border-border p-4">
                   <StripeCartCheckout
-                    items={stripeItems}
-                    shippingInCents={Math.round(totals.shipping * 100)}
+                    items={cartLines}
+                    countryCode={countryCode}
+                    couponCode={coupon?.code}
                     customerEmail={customer.email}
                     returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
                   />
