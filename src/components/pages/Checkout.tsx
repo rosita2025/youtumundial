@@ -31,6 +31,8 @@ import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'luci
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
 import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
+import { createManualOrder } from '@/lib/checkout/manual-order.functions';
+
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 
