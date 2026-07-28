@@ -242,6 +242,9 @@ export async function readOrderSnapshot(
       | undefined,
     items,
     amountTotal: (session.amount_total ?? 0) / 100,
+    currency: (session.currency ?? 'usd').toUpperCase(),
+    shopifyOrderId: metadata.shopify_order_id || undefined,
+    confirmationSent: metadata.confirmation_sent === '1',
   };
 }
 
@@ -250,4 +253,19 @@ export async function markSessionFulfilled(sessionId: string, env: StripeEnv, su
   const stripe = createStripeClient(env);
   await stripe.checkout.sessions.update(sessionId, { metadata: { sup_order_id: supOrderId } });
 }
+
+/** Guarda marcas de proceso en la sesión (Shopify, email enviado, pedido pendiente). */
+export async function markSessionMeta(
+  sessionId: string,
+  env: StripeEnv,
+  patch: Record<string, string>,
+) {
+  try {
+    const stripe = createStripeClient(env);
+    await stripe.checkout.sessions.update(sessionId, { metadata: patch });
+  } catch (error) {
+    console.error('markSessionMeta', sessionId, (error as Error).message);
+  }
+}
+
 
