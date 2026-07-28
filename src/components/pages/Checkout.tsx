@@ -79,15 +79,26 @@ const Checkout = () => {
   const missingCustomer = !customer.name || !customer.email || !customer.address;
   const isFreeOrder = totals.total < 0.5;
 
-  const applyCoupon = () => {
-    const result = findCoupon(couponInput, cart.subtotal);
-    if (!result.ok) {
-      toast.error(result.message);
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) {
+      toast.error('Escribí un código de cupón.');
       return;
     }
-    setCoupon(result.coupon);
-    setShowStripe(false);
-    toast.success(`Cupón aplicado: ${result.coupon.label}`);
+    try {
+      // El cupón se valida en el servidor: los códigos privados no viajan al navegador.
+      const result = await checkCoupon({
+        data: { code: couponInput, subtotal: cart.subtotal },
+      });
+      if (!result.ok || !result.coupon) {
+        toast.error(result.message ?? 'Ese cupón no existe o ya venció.');
+        return;
+      }
+      setCoupon(result.coupon);
+      setShowStripe(false);
+      toast.success(`Cupón aplicado: ${result.coupon.label}`);
+    } catch {
+      toast.error('No pudimos validar el cupón. Probá de nuevo.');
+    }
   };
 
   const removeCoupon = () => {
