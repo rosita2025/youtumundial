@@ -26,11 +26,11 @@ export async function runPostPaymentTasks(params: {
 
   // 1) Pedido en Shopify (una sola vez).
   if (!snapshot.shopifyOrderId && snapshot.items.length) {
-    const { createShopifyOrder } = await import('@/lib/shopify/admin.server');
+    const { createShopifyOrderIdempotent } = await import('@/lib/shopify/admin.server');
     const totalQty = snapshot.items.reduce((sum, i) => sum + i.quantity, 0) || 1;
     // El snapshot no guarda el precio por línea: repartimos el total cobrado.
     const unit = snapshot.amountTotal / totalQty;
-    const result = await createShopifyOrder({
+    const result = await createShopifyOrderIdempotent({
       reference: sessionId,
       email: snapshot.email,
       name: snapshot.name,
@@ -44,6 +44,7 @@ export async function runPostPaymentTasks(params: {
         sku: item.supVariantSku,
       })),
     });
+
     if (result.ok && result.orderId) {
       patch.shopify_order_id = result.orderId;
       if (result.orderName) {
