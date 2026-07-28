@@ -362,28 +362,16 @@ const Checkout = () => {
           <div className="lg:col-span-2 space-y-8">
             <section className="text-center">
               <p className="text-sm text-muted-foreground mb-3">Pago exprés</p>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMethod('card');
-                    void handlePay('card');
-                  }}
-                  className="rounded-md bg-foreground text-background py-3 text-sm font-medium hover:opacity-90 transition-opacity"
-                >
-                  Link
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMethod('card');
-                    void handlePay('card');
-                  }}
-                  className="rounded-md border border-border py-3 text-sm font-medium hover:border-primary/50 transition-colors"
-                >
-                  Google Pay / Apple Pay
-                </button>
-              </div>
+              <ExpressPayButtons
+                amount={totals.total}
+                countryCode={countryCode}
+                disabled={loading}
+                onPay={() => {
+                  setMethod('card');
+                  void handlePay('card');
+                }}
+              />
+
               <div className="flex items-center gap-4 my-6">
                 <span className="h-px flex-1 bg-border" />
                 <span className="text-xs text-muted-foreground uppercase">o</span>
