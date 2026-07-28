@@ -168,29 +168,50 @@ export async function getProductBySku(sku: string): Promise<{ product: Product; 
   return bySlug ? { product: bySlug, variantId: bySlug.variants[0]?.id ?? '' } : null;
 }
 
+/** Título legible a partir de un slug de categoría. */
+const titleize = (slug: string) =>
+  slug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
 /**
- * Get all collections
+ * Colecciones REALES: se arman con las categorías de los productos que están
+ * importados en tu catálogo. Si un producto no trae categoría, no inventamos
+ * colecciones de demo.
  */
 export async function getCollections(): Promise<Collection[]> {
-  // TODO: Replace with Shopify API call
-  // if (SHOPIFY_ENABLED) {
-  //   return shopifyClient.getCollections();
-  // }
+  const catalog = await getCatalog();
+  const map = new Map<string, Product[]>();
+  for (const product of catalog) {
+    for (const slug of product.collections) {
+      const key = String(slug).trim().toLowerCase();
+      if (!key) continue;
+      map.set(key, [...(map.get(key) ?? []), product]);
+    }
+  }
 
-  return dummyCollections;
+  return [...map.entries()].map(([slug, products]) => ({
+    id: `col-${slug}`,
+    slug,
+    title: titleize(slug),
+    description: '',
+    image: products[0]?.images[0] ?? {
+      id: `col-${slug}-img`,
+      url: '',
+      altText: titleize(slug),
+      width: 800,
+      height: 1000,
+    },
+    productCount: products.length,
+  }));
 }
 
 /**
  * Get a single collection by slug
  */
 export async function getCollection(slug: string): Promise<Collection | null> {
-  // TODO: Replace with Shopify API call
-  // if (SHOPIFY_ENABLED) {
-  //   return shopifyClient.getCollection(slug);
-  // }
-
-  return dummyCollections.find(c => c.slug === slug) || null;
+  const collections = await getCollections();
+  return collections.find(c => c.slug === slug) || null;
 }
+
 
 /**
  * Get products for a specific collection
