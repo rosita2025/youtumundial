@@ -8,6 +8,7 @@
  */
 
 import type { Product, ProductVariant } from '../data/types';
+import { assertAllowedShopifyUrl } from '../security/connection-audit';
 
 export const SHOPIFY_API_VERSION = '2025-07';
 export const SHOPIFY_STORE_PERMANENT_DOMAIN = 'youtumundial-4ndozgzu.myshopify.com';
@@ -18,6 +19,9 @@ export async function storefrontApiRequest<T = any>(
   query: string,
   variables: Record<string, unknown> = {},
 ): Promise<T | undefined> {
+  // Auditoría: nunca hablamos con otra tienda que no sea la propia.
+  assertAllowedShopifyUrl(SHOPIFY_STOREFRONT_URL);
+
   const response = await fetch(SHOPIFY_STOREFRONT_URL, {
     method: 'POST',
     headers: {

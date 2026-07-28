@@ -14,6 +14,8 @@
  *   SUP_ACCESS_TOKEN    (opcional: si SUP te entrega el token ya generado)
  */
 
+import { assertAllowedSupplierUrl } from "../security/connection-audit";
+
 interface TokenCache {
   token: string;
   expiresAt: number;
@@ -32,7 +34,10 @@ function baseUrl(): string {
     /developer\.supdropshipping\.com/i.test(configured) ||
     /\/mock\//i.test(configured) ||
     /\.json$/i.test(configured);
-  return isDocsOrMock ? SUP_DEFAULT_BASE : configured;
+  const resolved = isDocsOrMock ? SUP_DEFAULT_BASE : configured;
+  // Auditoría: solo se acepta el host del proveedor autorizado.
+  assertAllowedSupplierUrl(resolved);
+  return resolved;
 }
 
 
