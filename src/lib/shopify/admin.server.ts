@@ -4,9 +4,11 @@
  * Se usa para registrar en Shopify los pedidos que se cobran con el checkout
  * propio (Stripe), así el inventario y los reportes de la tienda quedan al día.
  *
- * El token vive en `SHOPIFY_ACCESS_TOKEN` y nunca sale del servidor. Si la app
- * privada no tiene permiso `write_orders`, la función no rompe la compra:
- * devuelve `{ ok: false }` y el pedido igual queda cobrado y despachado.
+ * El acceso se obtiene con `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET`
+ * (client_credentials) y nunca sale del servidor. Si la app no tiene permiso
+ * `write_orders`, la función no rompe la compra: devuelve `{ ok: false }` y el
+ * pedido igual queda cobrado y despachado.
+
  */
 
 import {
