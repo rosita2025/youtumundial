@@ -12,9 +12,7 @@ export function CheckoutShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
-          <Link to="/" aria-label="Volver a la tienda">
-            <Logo />
-          </Link>
+          <Logo />
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Lock className="h-3.5 w-3.5" /> Pago seguro cifrado
           </span>
