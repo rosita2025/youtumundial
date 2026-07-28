@@ -15,6 +15,7 @@ import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as SeguimientoRouteImport } from './routes/seguimiento'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as OrigenesRouteImport } from './routes/origenes'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -59,6 +60,11 @@ const SearchRoute = SearchRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrigenesRoute = OrigenesRouteImport.update({
+  id: '/origenes',
+  path: '/origenes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DisclaimerRoute = DisclaimerRouteImport.update({
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/origenes': typeof OrigenesRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/seguimiento': typeof SeguimientoRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/origenes': typeof OrigenesRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/seguimiento': typeof SeguimientoRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/contact': typeof ContactRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/origenes': typeof OrigenesRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/seguimiento': typeof SeguimientoRoute
@@ -218,6 +227,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/disclaimer'
+    | '/origenes'
     | '/privacy'
     | '/search'
     | '/seguimiento'
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/disclaimer'
+    | '/origenes'
     | '/privacy'
     | '/search'
     | '/seguimiento'
@@ -264,6 +275,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/disclaimer'
+    | '/origenes'
     | '/privacy'
     | '/search'
     | '/seguimiento'
@@ -288,6 +300,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   ContactRoute: typeof ContactRoute
   DisclaimerRoute: typeof DisclaimerRoute
+  OrigenesRoute: typeof OrigenesRoute
   PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
   SeguimientoRoute: typeof SeguimientoRoute
@@ -346,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/origenes': {
+      id: '/origenes'
+      path: '/origenes'
+      fullPath: '/origenes'
+      preLoaderRoute: typeof OrigenesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/disclaimer': {
@@ -475,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   ContactRoute: ContactRoute,
   DisclaimerRoute: DisclaimerRoute,
+  OrigenesRoute: OrigenesRoute,
   PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
   SeguimientoRoute: SeguimientoRoute,
@@ -493,3 +514,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
