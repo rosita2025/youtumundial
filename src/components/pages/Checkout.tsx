@@ -59,7 +59,9 @@ const Checkout = () => {
   const fetchShipping = useServerFn(getShippingQuote);
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
-  const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
+  const [customer, setCustomer] = useState<CustomerForm>(emptyCustomer);
+  const [errors, setErrors] = useState<CustomerErrors>({});
+
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<Coupon | null>(null);
 
