@@ -105,7 +105,10 @@ export interface ShopifyOrderInput {
     /** Precio unitario en la moneda del pedido. */
     price: number;
     sku?: string;
+    /** GID de la variante real de Shopify, si ya se conoce. */
+    variantId?: string;
   }[];
+
   note?: string;
   /** Estado de pago del pedido en Shopify. Por defecto PAID (cobro ya hecho). */
   financialStatus?: 'PAID' | 'PENDING';
