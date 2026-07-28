@@ -648,7 +648,7 @@ const Checkout = () => {
                     : isFreeOrder
                       ? 'Confirmar pedido gratis'
                       : method === 'yape'
-                        ? 'Confirmar pedido por WhatsApp'
+                        ? 'Registrar pedido y pagar con Yape'
                         : 'Pagar ahora'}
               </Button>
 
