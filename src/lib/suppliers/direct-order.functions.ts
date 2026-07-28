@@ -37,6 +37,11 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
     const { priceOrder, normalizeCartLines } = await import('@/lib/checkout/pricing.server');
     const { shippingCountries } = await import('@/lib/checkout/config');
 
+    // Este endpoint despacha sin cobrar: queda cerrado salvo que lo habilites.
+    if (process.env.ALLOW_FREE_TEST_ORDERS !== 'true') {
+      return { ok: false, message: 'Este pedido requiere pago. Elegí un método de pago.' };
+    }
+
     let priced;
     try {
       priced = await priceOrder({
