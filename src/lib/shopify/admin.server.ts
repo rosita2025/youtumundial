@@ -102,6 +102,10 @@ export interface ShopifyOrderResult {
 export async function createShopifyOrder(
   input: ShopifyOrderInput,
 ): Promise<ShopifyOrderResult> {
+  // Verificación automática de permisos antes de cualquier acción de pedido.
+  const gate = await requireShopifyScope('write_orders');
+  if (!gate.ok) return { ok: false, message: gate.message };
+
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
   const shippingAddress = input.address
     ? {
