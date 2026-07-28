@@ -78,12 +78,22 @@ async function requestClientCredentialsToken(): Promise<string | null> {
   }
 }
 
+/**
+ * Tokens estáticos válidos para el Admin API de Shopify.
+ * Solo aceptamos formatos oficiales (`shpat_`, `shpca_`, `shppa_`, `shpss_`).
+ * Cualquier otro valor pegado por error se ignora para no romper la sincronización.
+ */
+function staticAdminToken(): string | undefined {
+  const candidates = [
+    env('SHOPIFY_ADMIN_ORDERS_TOKEN'),
+    env('SHOPIFY_ADMIN_AUTOMATION_TOKEN'),
+  ];
+  return candidates.find((t) => !!t && /^shp(at|ca|pa|ss)_/.test(t));
+}
+
 /** Devuelve un token válido del Admin API o `undefined` si no hay ninguno. */
 export async function resolveShopifyAdminToken(): Promise<string | undefined> {
-  const explicit = env('SHOPIFY_ADMIN_AUTOMATION_TOKEN') ?? env('SHOPIFY_ADMIN_ORDERS_TOKEN');
-  if (explicit) return explicit;
-
-
+  // 1. Client credentials (método actual de las apps de Shopify).
   if (hasShopifyClientCredentials()) {
     if (cached && Date.now() < cached.expiresAt) return cached.token;
     if (!inFlight) {
@@ -95,8 +105,14 @@ export async function resolveShopifyAdminToken(): Promise<string | undefined> {
     if (token) return token;
   }
 
+  // 2. Token estático offline, si existe y tiene formato válido.
+  const explicit = staticAdminToken();
+  if (explicit) return explicit;
+
+  // 3. Token de la integración (normalmente solo productos).
   return env('SHOPIFY_ACCESS_TOKEN');
 }
+
 
 /** Fuerza renovar el token temporal (por ejemplo tras un 401 de Shopify). */
 export function resetShopifyAdminToken() {
