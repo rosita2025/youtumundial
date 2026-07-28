@@ -38,6 +38,22 @@ export function hasShopifyClientCredentials(): boolean {
   return Boolean(env('SHOPIFY_CLIENT_ID') && env('SHOPIFY_CLIENT_SECRET'));
 }
 
+/**
+ * Validación estricta del token del Admin API.
+ *
+ * Aceptamos únicamente los formatos oficiales que emite Shopify hoy:
+ * `shpat_`, `shpca_`, `shpss_`, `shppa_`, `shpua_` seguidos de 24+ caracteres
+ * hexadecimales o alfanuméricos seguros. Cualquier otra cosa (valor pegado por
+ * error, HTML de una página de error, JSON, espacios, comillas, credenciales
+ * confundidas) se rechaza sin usarse.
+ */
+const ADMIN_TOKEN_PATTERN = /^shp(at|ca|ss|pa|ua)_[A-Za-z0-9]{24,255}$/;
+
+export function isValidShopifyAdminToken(token: unknown): token is string {
+  return typeof token === 'string' && ADMIN_TOKEN_PATTERN.test(token);
+}
+
+
 async function requestClientCredentialsToken(): Promise<string | null> {
   const clientId = env('SHOPIFY_CLIENT_ID');
   const clientSecret = env('SHOPIFY_CLIENT_SECRET');
