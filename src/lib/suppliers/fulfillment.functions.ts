@@ -7,6 +7,8 @@ export interface FulfillmentResult {
 
   paid: boolean;
   supOrderId?: string;
+  /** Número visible del pedido en Shopify (ej. #1001). */
+  shopifyOrderNumber?: string;
   status?: string;
   tracking?: string;
   carrier?: string;
@@ -44,15 +46,20 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
 
     // Ya despachado: solo leemos estado y tracking.
     if (snapshot.supOrderId) {
-      await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
-      return { ...(await readTracking(snapshot.supOrderId, getOrderDetail)), paid: true };
+      const post = await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
+      return {
+        ...(await readTracking(snapshot.supOrderId, getOrderDetail)),
+        paid: true,
+        shopifyOrderNumber: post.shopifyOrderName,
+      };
     }
 
     if (!snapshot.items.length) {
-      await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
+      const post = await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
       return {
         ok: true,
         paid: true,
+        shopifyOrderNumber: post.shopifyOrderName,
         message: 'Pago confirmado. Este pedido se prepara de forma manual (no tiene productos de SUP).',
       };
     }
@@ -83,13 +90,13 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
     // El pago ya se cobró: pase lo que pase con el proveedor, el pedido se
     // registra en Shopify y el cliente recibe un email.
     const finishDelayed = async (message: string): Promise<FulfillmentResult> => {
-      await runPostPaymentTasks({
+      const post = await runPostPaymentTasks({
         sessionId: data.sessionId,
         environment: data.environment,
         snapshot,
         delayed: true,
       });
-      return { ok: true, paid: true, pending: true, message };
+      return { ok: true, paid: true, pending: true, message, shopifyOrderNumber: post.shopifyOrderName };
     };
 
     try {
@@ -103,8 +110,12 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
         return finishDelayed('Pago confirmado. Estamos terminando de confirmar el envío con el proveedor.');
       }
       await markSessionFulfilled(data.sessionId, data.environment, supOrderId);
-      await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
-      return { ...(await readTracking(supOrderId, getOrderDetail)), paid: true };
+      const post = await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
+      return {
+        ...(await readTracking(supOrderId, getOrderDetail)),
+        paid: true,
+        shopifyOrderNumber: post.shopifyOrderName,
+      };
     } catch (error) {
       // El detalle crudo del proveedor queda solo en los logs del servidor.
       console.error('fulfillSupOrder', data.sessionId, (error as Error).message);

@@ -78,12 +78,17 @@ function CheckoutReturn() {
 
         {sessionId && state === 'done' && result && (
           <div className="rounded-lg border border-border p-5 text-left text-sm space-y-2 mb-8">
+            {result.shopifyOrderNumber && (
+              <p className="text-base font-semibold">
+                Pedido {result.shopifyOrderNumber}
+              </p>
+            )}
             {result.supOrderId ? (
               <>
                 <p className="flex items-center gap-2 font-medium">
                   <PackageCheck className="h-4 w-4" /> Pedido enviado al proveedor
                 </p>
-                <p className="text-muted-foreground">N° de pedido: {result.supOrderId}</p>
+                <p className="text-muted-foreground">N° con el proveedor: {result.supOrderId}</p>
                 {result.status && <p className="text-muted-foreground">Estado: {result.status}</p>}
                 {result.tracking && (
                   <p className="flex items-center gap-2">
