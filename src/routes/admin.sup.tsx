@@ -35,7 +35,11 @@ export const Route = createFileRoute("/admin/sup")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: SupAdmin,
+  component: () => (
+    <AdminGate>
+      <SupAdmin />
+    </AdminGate>
+  ),
 });
 
 function SupAdmin() {

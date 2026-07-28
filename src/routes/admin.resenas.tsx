@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { AdminGate, getAdminToken } from "@/components/admin/AdminGate";
 import { Upload, Download, Copy, AlertTriangle, CheckCircle2, FileJson, Trash2, Link2, Loader2, Rocket, ClipboardPaste } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,11 @@ import { logImport } from "@/lib/reviews/import-log";
 
 
 export const Route = createFileRoute("/admin/resenas")({
-  component: AdminReviewsPage,
+  component: () => (
+    <AdminGate>
+      <AdminReviewsPage />
+    </AdminGate>
+  ),
   head: () => ({
     meta: [
       { title: "Importar reseñas 1688 | Panel Youtumundial" },
@@ -193,7 +198,7 @@ function AdminReviewsPage() {
       if (cookieValue) sessionStorage.setItem("1688_cookie", cookieValue);
       else sessionStorage.removeItem("1688_cookie");
       const payload = {
-        data: { url: url.trim(), slug: urlSlug.trim(), cookie: cookieValue, limit: all ? 200 : maxReviews },
+        data: { url: url.trim(), slug: urlSlug.trim(), cookie: cookieValue, limit: all ? 200 : maxReviews, adminToken: getAdminToken() },
       };
       const res = all ? await syncAll(payload) : await scrape(payload);
 
