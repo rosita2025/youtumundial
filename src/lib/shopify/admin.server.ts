@@ -182,6 +182,11 @@ export async function findShopifyOrderByReference(
 export async function createShopifyOrderIdempotent(
   input: ShopifyOrderInput,
 ): Promise<ShopifyOrderResult> {
+  const scopes = await ensureShopifyScopes();
+  if (!scopes.ok && scopes.missing.includes('write_orders')) {
+    return { ok: false, message: scopes.message ?? 'Falta el permiso write_orders en Shopify.' };
+  }
+
   const existing = await findShopifyOrderByReference(input.reference);
   if (existing) return existing;
 
@@ -206,3 +211,83 @@ export async function createShopifyOrderIdempotent(
   }
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Permisos (scopes) de la app privada de Shopify                      */
+/* ------------------------------------------------------------------ */
+
+/** Permisos mínimos que necesita la tienda propia. */
+export const REQUIRED_SHOPIFY_SCOPES = [
+  'read_products',
+  'read_orders',
+  'write_orders',
+] as const;
+
+const APP_SCOPES = `
+  query AppScopes {
+    currentAppInstallation {
+      accessScopes { handle }
+    }
+  }
+`;
+
+export interface ShopifyScopeReport {
+  ok: boolean;
+  configured: boolean;
+  granted: string[];
+  missing: string[];
+  message?: string;
+}
+
+/**
+ * Consulta a Shopify qué permisos tiene realmente el token del servidor.
+ * No expone el token: solo devuelve la lista de scopes concedidos y faltantes.
+ */
+export async function checkShopifyAdminScopes(): Promise<ShopifyScopeReport> {
+  if (!process.env.SHOPIFY_ACCESS_TOKEN) {
+    return {
+      ok: false,
+      configured: false,
+      granted: [],
+      missing: [...REQUIRED_SHOPIFY_SCOPES],
+      message: 'SHOPIFY_ACCESS_TOKEN no está configurado en el servidor.',
+    };
+  }
+
+  try {
+    const data = await adminRequest<{
+      currentAppInstallation: { accessScopes: { handle: string }[] } | null;
+    }>(APP_SCOPES);
+
+    const granted = (data?.currentAppInstallation?.accessScopes ?? []).map((s) => s.handle);
+    const missing = REQUIRED_SHOPIFY_SCOPES.filter((scope) => !granted.includes(scope));
+    return {
+      ok: missing.length === 0,
+      configured: true,
+      granted,
+      missing,
+      message: missing.length
+        ? `Faltan permisos en la app privada de Shopify: ${missing.join(', ')}`
+        : undefined,
+    };
+  } catch (error) {
+    console.error('checkShopifyAdminScopes', (error as Error).message);
+    return {
+      ok: false,
+      configured: true,
+      granted: [],
+      missing: [...REQUIRED_SHOPIFY_SCOPES],
+      message: 'No se pudo verificar los permisos del Admin API de Shopify.',
+    };
+  }
+}
+
+/** Cache corta para no consultar los permisos en cada pedido. */
+let scopeCache: { at: number; report: ShopifyScopeReport } | null = null;
+
+export async function ensureShopifyScopes(): Promise<ShopifyScopeReport> {
+  if (scopeCache && Date.now() - scopeCache.at < 5 * 60_000) return scopeCache.report;
+  const report = await checkShopifyAdminScopes();
+  scopeCache = { at: Date.now(), report };
+  return report;
+}
