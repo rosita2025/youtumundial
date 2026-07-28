@@ -105,7 +105,7 @@ export async function createShopifyOrder(
   const order = {
     email: input.email || undefined,
     phone: input.phone || undefined,
-    tags: ['youtumundial-checkout', 'stripe'],
+    tags: ['youtumundial-checkout', 'stripe', referenceTag(input.reference)],
     note: input.note ?? `Pedido del checkout propio · ${input.reference}`,
     financialStatus: 'PAID',
     ...(shippingAddress && { shippingAddress, billingAddress: shippingAddress }),
@@ -141,3 +141,68 @@ export async function createShopifyOrder(
     return { ok: false, message: 'No se pudo registrar el pedido en Shopify.' };
   }
 }
+
+/** Etiqueta única del pedido: permite encontrarlo de nuevo y no duplicarlo. */
+function referenceTag(reference: string) {
+  return `ref-${reference.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60)}`;
+}
+
+const ORDER_BY_TAG = `
+  query OrderByTag($query: String!) {
+    orders(first: 1, query: $query) {
+      edges { node { id name } }
+    }
+  }
+`;
+
+/**
+ * Busca un pedido ya creado con la misma referencia.
+ * Es la red de seguridad de los reintentos: si el pedido existe, no se crea otro.
+ */
+export async function findShopifyOrderByReference(
+  reference: string,
+): Promise<ShopifyOrderResult | null> {
+  try {
+    const data = await adminRequest<{
+      orders: { edges: { node: { id: string; name: string } }[] };
+    }>(ORDER_BY_TAG, { query: `tag:'${referenceTag(reference)}'` });
+    const node = data?.orders?.edges?.[0]?.node;
+    return node ? { ok: true, orderId: node.id, orderName: node.name } : null;
+  } catch (error) {
+    // Sin permiso `read_orders` no podemos verificar: lo tratamos como "no existe".
+    console.warn('findShopifyOrderByReference', reference, (error as Error).message);
+    return null;
+  }
+}
+
+/**
+ * Crea el pedido en Shopify con reintentos automáticos y sin duplicar:
+ * antes de cada intento comprueba si ya existe un pedido con esa referencia.
+ */
+export async function createShopifyOrderIdempotent(
+  input: ShopifyOrderInput,
+): Promise<ShopifyOrderResult> {
+  const existing = await findShopifyOrderByReference(input.reference);
+  if (existing) return existing;
+
+  const { withRetry } = await import('@/lib/utils/retry');
+  try {
+    return await withRetry(
+      async (attempt) => {
+        if (attempt > 1) {
+          const already = await findShopifyOrderByReference(input.reference);
+          if (already) return already;
+        }
+        const result = await createShopifyOrder(input);
+        if (!result.ok) throw new Error(result.message ?? 'Shopify rechazó el pedido');
+        return result;
+      },
+      { attempts: 3, baseDelayMs: 800, label: `createShopifyOrder ${input.reference}` },
+    );
+  } catch (error) {
+    const late = await findShopifyOrderByReference(input.reference);
+    if (late) return late;
+    return { ok: false, message: (error as Error).message };
+  }
+}
+
