@@ -19,6 +19,10 @@ import { type Coupon } from '@/lib/checkout/coupons';
 import { validateCoupon } from '@/lib/checkout/coupon.functions';
 import { getShippingQuote, type ShippingQuoteResult } from '@/lib/checkout/shipping.functions';
 import {
+  saveAbandonedCheckout,
+  clearAbandonedCheckout,
+} from '@/lib/checkout/abandoned.functions';
+import {
   emptyCustomer,
   fullName,
   toE164,
@@ -73,6 +77,9 @@ const Checkout = () => {
   const createManual = useServerFn(createManualOrder);
   const checkCoupon = useServerFn(validateCoupon);
   const fetchShipping = useServerFn(getShippingQuote);
+  const saveAbandoned = useServerFn(saveAbandonedCheckout);
+  const clearAbandoned = useServerFn(clearAbandonedCheckout);
+  const abandonedRef = useRef<string | null>(null);
 
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
@@ -134,6 +141,62 @@ const Checkout = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shippingKey, countryCode, cart.subtotal]);
+
+  // Carrito abandonado → Shopify.
+  // Cuando el formulario (correo, nombre, teléfono, país y dirección) ya está
+  // completo pero todavía no se pagó, guardamos el checkout en Shopify como
+  // borrador etiquetado "carrito-abandonado" para poder recuperarlo.
+  useEffect(() => {
+    if (paying) return;
+    if (!shippingKey) return;
+    const check = validateCustomer(customer);
+    if (!check.ok) return;
+
+    if (!abandonedRef.current) {
+      const stored =
+        typeof window !== 'undefined' ? window.sessionStorage.getItem('ytm-abandoned-ref') : null;
+      const reference = stored || `ABND-${Date.now()}`;
+      abandonedRef.current = reference;
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem('ytm-abandoned-ref', reference);
+      }
+    }
+    const reference = abandonedRef.current;
+
+    const timer = window.setTimeout(() => {
+      saveAbandoned({
+        data: {
+          reference,
+          firstName: customer.firstName,
+          lastName: customer.lastName,
+          email: customer.email,
+          phone: customer.phone,
+          countryCode,
+          address: customer.address,
+          couponCode: coupon?.code,
+          items: cart.items.map((i) => ({
+            variantId: String(i.variant.id),
+            quantity: i.quantity,
+          })),
+        },
+      }).catch(() => {
+        // Silencioso: nunca debe molestar al cliente que está comprando.
+      });
+    }, 2500);
+
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    customer.firstName,
+    customer.lastName,
+    customer.email,
+    customer.phone,
+    customer.address,
+    countryCode,
+    shippingKey,
+    coupon?.code,
+    paying,
+  ]);
 
   if (cart.items.length === 0) {
     return (
@@ -248,6 +311,14 @@ const Checkout = () => {
         return;
       }
 
+      const finishedRef = abandonedRef.current;
+      if (finishedRef) {
+        clearAbandoned({ data: { reference: finishedRef } }).catch(() => {});
+        abandonedRef.current = null;
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.removeItem('ytm-abandoned-ref');
+        }
+      }
       clearCart();
       navigate(
         freeOrderNumber
@@ -326,6 +397,14 @@ const Checkout = () => {
         '_blank',
         'noopener,noreferrer',
       );
+      const finishedRef = abandonedRef.current;
+      if (finishedRef) {
+        clearAbandoned({ data: { reference: finishedRef } }).catch(() => {});
+        abandonedRef.current = null;
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.removeItem('ytm-abandoned-ref');
+        }
+      }
       clearCart();
       navigate(
         `/checkout/return?manual=1&reference=${encodeURIComponent(reference)}` +
