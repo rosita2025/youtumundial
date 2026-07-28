@@ -15,7 +15,8 @@ import {
   getTotals,
   type PaymentMethod,
 } from '@/lib/checkout/order';
-import { findCoupon, type Coupon } from '@/lib/checkout/coupons';
+import { type Coupon } from '@/lib/checkout/coupons';
+import { validateCoupon } from '@/lib/checkout/coupon.functions';
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
