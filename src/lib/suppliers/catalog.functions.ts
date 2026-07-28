@@ -12,6 +12,8 @@ export const fetchStoreCatalog = createServerFn({ method: "GET" }).handler(async
     const products = await syncPublishedCatalog(SUP_PUBLISHED_IDS);
     return { ok: true as const, products };
   } catch (error) {
-    return { ok: false as const, products: [], error: (error as Error).message };
+    console.error("fetchStoreCatalog", (error as Error).message);
+    return { ok: false as const, products: [], error: "No pudimos cargar el catálogo en este momento." };
   }
+
 });
