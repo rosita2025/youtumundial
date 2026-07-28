@@ -23,17 +23,33 @@ export const Route = createFileRoute('/checkout/return')({
   }),
   validateSearch: (
     search: Record<string, unknown>,
-  ): { session_id?: string; free?: string; order?: string } => ({
+  ): {
+    session_id?: string;
+    free?: string;
+    order?: string;
+    manual?: string;
+    reference?: string;
+  } => ({
     session_id: typeof search.session_id === 'string' ? search.session_id : undefined,
     free: typeof search.free === 'string' ? search.free : undefined,
     order: typeof search.order === 'string' ? search.order.slice(0, 20) : undefined,
+    manual: typeof search.manual === 'string' ? search.manual : undefined,
+    reference: typeof search.reference === 'string' ? search.reference.slice(0, 60) : undefined,
   }),
   component: CheckoutReturn,
 });
 
 function CheckoutReturn() {
-  const { session_id: sessionId, free, order: freeOrderNumber } = Route.useSearch();
+  const {
+    session_id: sessionId,
+    free,
+    order: freeOrderNumber,
+    manual,
+    reference,
+  } = Route.useSearch();
   const isFreeOrder = free === '1';
+  const isManualOrder = manual === '1';
+
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
   const [result, setResult] = useState<FulfillmentResult | null>(null);
   const [resyncing, setResyncing] = useState(false);
