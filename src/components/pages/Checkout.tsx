@@ -762,9 +762,7 @@ const Checkout = () => {
                     ? 'Completá el pago abajo'
                     : isFreeOrder
                       ? 'Confirmar pedido gratis'
-                      : method === 'yape'
-                        ? 'Registrar pedido y pagar con Yape'
-                        : 'Pagar ahora'}
+                      : 'Pagar ahora'}
               </Button>
 
 
