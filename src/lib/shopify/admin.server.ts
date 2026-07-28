@@ -281,7 +281,15 @@ export async function createShopifyOrder(
         return {
           // Con `variantId` el pedido queda enlazado al producto real de la
           // tienda: se ve la foto, la variante y descuenta el inventario.
-          ...(variantId ? { variantId } : { title: line.title.slice(0, 250), sku: line.sku || undefined }),
+          ...(variantId
+            ? { variantId }
+            : {
+                title: line.title.slice(0, 250),
+                sku: line.sku || undefined,
+                // Sin esto Shopify marca "Shipping not required" y el pedido
+                // no puede enviarse a Sup Dropshipping.
+                requiresShipping: true,
+              }),
           quantity: line.quantity,
           priceSet: {
             shopMoney: {
