@@ -588,11 +588,15 @@ const Checkout = () => {
                 disabled={missingCustomer || paying || (method === 'card' && showStripe)}
                 onClick={() => void handlePay()}
               >
-                {isFreeOrder
-                  ? 'Confirmar pedido gratis'
-                  : method === 'yape'
-                    ? 'Confirmar pedido por WhatsApp'
-                    : 'Pagar ahora'}
+                {paying
+                  ? 'Procesando…'
+                  : method === 'card' && showStripe
+                    ? 'Completá el pago abajo'
+                    : isFreeOrder
+                      ? 'Confirmar pedido gratis'
+                      : method === 'yape'
+                        ? 'Confirmar pedido por WhatsApp'
+                        : 'Pagar ahora'}
               </Button>
 
 
