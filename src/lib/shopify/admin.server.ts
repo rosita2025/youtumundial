@@ -116,6 +116,21 @@ export interface ShopifyOrderResult {
   message?: string;
 }
 
+/**
+ * Normaliza el teléfono a formato E.164.
+ * Shopify rechaza el pedido entero ("Phone is invalid") si el número no es
+ * válido, así que si no cumple el formato lo omitimos en vez de fallar.
+ */
+function normalizePhone(raw?: string): string | undefined {
+  const digits = String(raw ?? '').replace(/[^\d+]/g, '');
+  if (!digits) return undefined;
+  const e164 = digits.startsWith('+') ? `+${digits.slice(1).replace(/\D/g, '')}` : undefined;
+  if (!e164) return undefined;
+  const numeric = e164.slice(1);
+  if (numeric.length < 8 || numeric.length > 15) return undefined;
+  return e164;
+}
+
 /** Registra el pedido pagado en Shopify (no cobra: el cobro ya lo hizo Stripe). */
 export async function createShopifyOrder(
   input: ShopifyOrderInput,
@@ -125,52 +140,92 @@ export async function createShopifyOrder(
   if (!gate.ok) return { ok: false, message: gate.message };
 
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
-  const shippingAddress = input.address
-    ? {
-        firstName: firstName || 'Cliente',
-        lastName: rest.join(' ') || 'Youtumundial',
-        address1: input.address.line1 ?? '',
-        address2: input.address.line2 ?? '',
-        city: input.address.city ?? '',
-        provinceCode: input.address.state ?? undefined,
-        zip: input.address.postal_code ?? '',
-        countryCode: input.address.country ?? undefined,
-        phone: input.phone || undefined,
-      }
-    : undefined;
+  const phone = normalizePhone(input.phone);
 
-  const order = {
-    email: input.email || undefined,
-    phone: input.phone || undefined,
-    tags: ['youtumundial-checkout', 'stripe', referenceTag(input.reference)],
-    note: input.note ?? `Pedido del checkout propio · ${input.reference}`,
-    financialStatus: 'PAID',
-    ...(shippingAddress && { shippingAddress, billingAddress: shippingAddress }),
-    lineItems: input.lines.map((line) => ({
-      title: line.title.slice(0, 250),
-      quantity: line.quantity,
-      sku: line.sku || undefined,
-      priceSet: {
-        shopMoney: { amount: line.price.toFixed(2), currencyCode: input.currency },
-      },
-    })),
+  const buildOrder = (opts: { withPhone: boolean; withAddress: boolean }) => {
+    const shippingAddress =
+      input.address && opts.withAddress
+        ? {
+            firstName: firstName || 'Cliente',
+            lastName: rest.join(' ') || 'Youtumundial',
+            address1: input.address.line1 ?? '',
+            address2: input.address.line2 ?? '',
+            city: input.address.city ?? '',
+            provinceCode: input.address.state ?? undefined,
+            zip: input.address.postal_code ?? '',
+            countryCode: input.address.country ?? undefined,
+            ...(opts.withPhone && phone ? { phone } : {}),
+          }
+        : undefined;
+
+    return {
+      email: input.email || undefined,
+      ...(opts.withPhone && phone ? { phone } : {}),
+      tags: ['youtumundial-checkout', 'stripe', referenceTag(input.reference)],
+      note: input.note ?? `Pedido del checkout propio · ${input.reference}`,
+      financialStatus: 'PAID',
+      ...(shippingAddress && { shippingAddress, billingAddress: shippingAddress }),
+      lineItems: input.lines.map((line) => ({
+        title: line.title.slice(0, 250),
+        quantity: line.quantity,
+        sku: line.sku || undefined,
+        priceSet: {
+          shopMoney: {
+            amount: line.price.toFixed(2),
+            currencyCode: (input.currency || 'USD').toUpperCase(),
+          },
+        },
+      })),
+    };
   };
 
-  try {
+  const send = async (order: ReturnType<typeof buildOrder>) => {
     const data = await adminRequest<{
       orderCreate: {
         order: { id: string; name: string } | null;
         userErrors: { field: string[] | null; message: string }[];
       };
     }>(ORDER_CREATE, { order });
+    return {
+      created: data?.orderCreate?.order ?? null,
+      errors: data?.orderCreate?.userErrors ?? [],
+    };
+  };
 
-    const errors = data?.orderCreate?.userErrors ?? [];
-    if (errors.length) {
-      console.error('createShopifyOrder userErrors', input.reference, errors);
-      return { ok: false, message: errors.map((e) => e.message).join(', ') };
+  try {
+    // Intento 1: pedido completo.
+    let attemptOpts = { withPhone: Boolean(phone), withAddress: true };
+    let { created, errors } = await send(buildOrder(attemptOpts));
+
+    // Reintento automático degradando el dato que Shopify rechazó,
+    // para que el pedido siempre quede registrado con su número.
+    const failedOn = (needle: string) =>
+      errors.some(
+        (e) =>
+          (e.field ?? []).some((f) => f.toLowerCase().includes(needle)) ||
+          e.message.toLowerCase().includes(needle),
+      );
+
+    if (!created && errors.length && (failedOn('phone') || attemptOpts.withPhone)) {
+      attemptOpts = { withPhone: false, withAddress: true };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
-    const created = data?.orderCreate?.order;
-    if (!created) return { ok: false, message: 'Shopify no devolvió el pedido.' };
+
+    if (!created && errors.length && (failedOn('address') || failedOn('zip') || failedOn('province') || failedOn('country'))) {
+      attemptOpts = { withPhone: false, withAddress: false };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
+    }
+
+    if (!created) {
+      console.error('createShopifyOrder userErrors', input.reference, errors);
+      return {
+        ok: false,
+        message: errors.length
+          ? errors.map((e) => e.message).join(', ')
+          : 'Shopify no devolvió el pedido.',
+      };
+    }
+
     return { ok: true, orderId: created.id, orderName: created.name };
   } catch (error) {
     // El detalle queda en los logs del servidor: no rompemos la compra.
@@ -178,6 +233,7 @@ export async function createShopifyOrder(
     return { ok: false, message: 'No se pudo registrar el pedido en Shopify.' };
   }
 }
+
 
 /** Etiqueta única del pedido: permite encontrarlo de nuevo y no duplicarlo. */
 function referenceTag(reference: string) {
