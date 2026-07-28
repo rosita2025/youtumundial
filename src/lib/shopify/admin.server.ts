@@ -107,7 +107,12 @@ export interface ShopifyOrderInput {
     sku?: string;
   }[];
   note?: string;
+  /** Estado de pago del pedido en Shopify. Por defecto PAID (cobro ya hecho). */
+  financialStatus?: 'PAID' | 'PENDING';
+  /** Etiquetas extra (además de las de la tienda y la referencia). */
+  extraTags?: string[];
 }
+
 
 export interface ShopifyOrderResult {
   ok: boolean;
