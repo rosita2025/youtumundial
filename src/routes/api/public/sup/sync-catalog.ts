@@ -49,7 +49,8 @@ async function handle(request: Request) {
     });
   } catch (error) {
     console.error("sync-catalog", (error as Error).message);
-    return Response.json({ ok: false, message: (error as Error).message }, { status: 500 });
+    // Sin detalles internos en la respuesta: el motivo queda solo en los logs.
+    return Response.json({ ok: false, message: "Sync failed" }, { status: 500 });
   }
 }
 

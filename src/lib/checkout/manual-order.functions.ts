@@ -39,7 +39,7 @@ export const createManualOrder = createServerFn({ method: 'POST' })
     countryCode: String(input?.countryCode ?? '').slice(0, 5),
     address: String(input?.address ?? '').slice(0, 300),
     couponCode: String(input?.couponCode ?? '').slice(0, 40),
-    items: Array.isArray(input?.items) ? input.items : [],
+    items: Array.isArray(input?.items) ? input.items.slice(0, 30) : [],
   }))
   .handler(async ({ data }): Promise<ManualOrderResult> => {
     const { priceOrder, normalizeCartLines } = await import('./pricing.server');
@@ -53,7 +53,9 @@ export const createManualOrder = createServerFn({ method: 'POST' })
         couponCode: data.couponCode || undefined,
       });
     } catch (error) {
-      return { ok: false, message: (error as Error).message };
+      // El detalle queda solo en los logs del servidor.
+      console.error('createManualOrder:price', (error as Error).message);
+      return { ok: false, message: 'No se pudo calcular el pedido. Revisá tu carrito.' };
     }
 
     // El pago manual es para pedidos con importe real. Un total en cero solo
