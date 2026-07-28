@@ -559,19 +559,90 @@ const Checkout = () => {
                   )}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">Dirección completa *</Label>
+                  <Label htmlFor="address1">Dirección (calle y número) *</Label>
                   <Input
-                    id="address"
-                    autoComplete="street-address"
-                    maxLength={300}
-                    value={addressLine}
-                    onChange={(e) => updateCustomer('address', e.target.value)}
-                    onBlur={() => setErrors(validateCustomer(customer).errors)}
-                    aria-invalid={Boolean(errors.address)}
-                    placeholder="Calle, número, ciudad, código postal"
+                    id="address1"
+                    autoComplete="address-line1"
+                    maxLength={200}
+                    value={customer.address1}
+                    onChange={(e) => updateCustomer('address1', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.address1)}
+                    placeholder="Av. Siempre Viva 742"
                   />
-                  {errors.address && <p className="text-xs text-destructive">{errors.address}</p>}
+                  {errors.address1 && (
+                    <p className="text-xs text-destructive">{errors.address1}</p>
+                  )}
                 </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="address2">Departamento, piso, referencia (opcional)</Label>
+                  <Input
+                    id="address2"
+                    autoComplete="address-line2"
+                    maxLength={120}
+                    value={customer.address2 ?? ''}
+                    onChange={(e) => updateCustomer('address2', e.target.value)}
+                    aria-invalid={Boolean(errors.address2)}
+                    placeholder="Dpto. 302 / Torre B"
+                  />
+                  {errors.address2 && (
+                    <p className="text-xs text-destructive">{errors.address2}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ciudad *</Label>
+                  <Input
+                    id="city"
+                    autoComplete="address-level2"
+                    maxLength={80}
+                    value={customer.city}
+                    onChange={(e) => updateCustomer('city', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.city)}
+                    placeholder="Lima"
+                  />
+                  {errors.city && <p className="text-xs text-destructive">{errors.city}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="province">
+                    Estado / Provincia {countryCode === 'US' || countryCode === 'CA' ? '*' : '(opcional)'}
+                  </Label>
+                  <Input
+                    id="province"
+                    autoComplete="address-level1"
+                    maxLength={80}
+                    value={customer.province ?? ''}
+                    onChange={(e) => updateCustomer('province', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.province)}
+                    placeholder={countryCode === 'US' ? 'FL' : 'Lima'}
+                  />
+                  {errors.province && (
+                    <p className="text-xs text-destructive">{errors.province}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Código postal *</Label>
+                  <Input
+                    id="postalCode"
+                    autoComplete="postal-code"
+                    maxLength={12}
+                    value={customer.postalCode}
+                    onChange={(e) => updateCustomer('postalCode', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.postalCode)}
+                    placeholder={countryCode === 'US' ? '33101' : '15001'}
+                  />
+                  {errors.postalCode && (
+                    <p className="text-xs text-destructive">{errors.postalCode}</p>
+                  )}
+                </div>
+                <div className="space-y-2 flex items-end">
+                  <p className="text-xs text-muted-foreground">
+                    País de destino: <strong>{country.name}</strong> (se elige abajo).
+                  </p>
+                </div>
+
               </div>
 
 
