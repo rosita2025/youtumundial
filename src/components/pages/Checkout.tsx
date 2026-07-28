@@ -9,7 +9,6 @@ import { formatPrice } from '@/lib/utils/format';
 import { checkoutConfig, shippingCountries } from '@/lib/checkout/config';
 import {
   
-  buildPaypalLink,
   buildWhatsappOrderLink,
   getTotals,
   type PaymentMethod,
@@ -31,7 +30,7 @@ import {
   type CustomerForm,
 } from '@/lib/checkout/customer';
 
-import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
+import { CreditCard, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
 import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
