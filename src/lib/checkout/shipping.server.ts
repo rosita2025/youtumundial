@@ -12,7 +12,7 @@
  */
 
 import { storefrontApiRequest } from '@/lib/shopify/storefront';
-import { shippingCountries, FREE_SHIPPING_THRESHOLD } from './config';
+import { marketForCountry, FREE_SHIPPING_THRESHOLD } from './config';
 
 export interface ShippingQuote {
   countryCode: string;
@@ -76,13 +76,12 @@ type QuoteResponse = {
 };
 
 function fallbackQuote(countryCode: string): ShippingQuote {
-  const country =
-    shippingCountries.find((c) => c.code === countryCode) ?? shippingCountries[0];
+  const market = marketForCountry(countryCode);
   return {
-    countryCode: country.code,
-    amount: country.shipping,
+    countryCode: countryCode.toUpperCase().slice(0, 2),
+    amount: market.shipping,
     currencyCode: 'USD',
-    title: `Envío internacional a ${country.name}`,
+    title: `${market.name} · ${market.service}`,
     fromShopify: false,
   };
 }
@@ -154,14 +153,19 @@ export async function quoteShipping(params: {
 
     if (!priced.length) return fallbackQuote(countryCode);
 
-    // La opción más económica es la que ofrecemos por defecto.
+    // Cada mercado de Shopify tiene su propio servicio (EE.UU. → Express,
+    // Canadá → Economy, Internacional → Standard). Elegimos la opción que
+    // coincide con el servicio del mercado; si no aparece, la más económica.
+    const market = marketForCountry(countryCode);
+    const service = market.service.toLowerCase();
     priced.sort((a, b) => a.amount - b.amount);
-    const best = priced[0];
+    const best =
+      priced.find((o) => (o.title || '').toLowerCase().includes(service)) ?? priced[0];
     const quote: ShippingQuote = {
       countryCode,
       amount: Math.round(best.amount * 100) / 100,
       currencyCode: best.currencyCode,
-      title: best.title || `Envío a ${countryCode}`,
+      title: best.title ? `${market.name} · ${best.title}` : `${market.name} · ${market.service}`,
       fromShopify: true,
     };
     cache.set(key, { quote, at: Date.now() });
