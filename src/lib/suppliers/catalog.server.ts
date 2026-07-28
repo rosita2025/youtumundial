@@ -12,9 +12,9 @@ import {
   getProductVariants,
   listMemberImportQueue,
   listMemberListedProducts,
-  listProducts,
 } from "./sup-api.server";
 import { normalizeSupProduct, normalizeSupProducts } from "./normalize";
+import { filterOwnedSupProducts, isOwnedSupProductId, sanitizeOwnedSupProduct } from "./sup-selection";
 import type { SupRawProduct } from "./sup";
 
 const TTL_MS = 3 * 60 * 1000;
@@ -35,7 +35,7 @@ async function fetchOne(id: string): Promise<SupRawProduct | null> {
       id: (detail as Record<string, unknown>).id ?? id,
       variants: variants.length ? variants : (detail as Record<string, unknown>).variants,
     });
-    return raw.name ? raw : null;
+    return sanitizeOwnedSupProduct(raw);
   } catch {
     return null;
   }
@@ -69,26 +69,17 @@ export async function syncPublishedCatalog(ids: string[], force = false): Promis
     products = [];
   }
 
-  if (products.length === 0) {
-    try {
-      products = normalizeSupProducts(await listProducts({ page: 1, pageSize: 24 }));
-    } catch {
-      products = [];
-    }
+  // Validación estricta: solo IDs/SKUs/variantes que pertenecen al catálogo propio.
+  const wanted = ids.map(String).filter((id) => isOwnedSupProductId(id));
+  let owned = filterOwnedSupProducts(products).filter((p) => wanted.includes(String(p.id)));
+
+  const missing = wanted.filter((id) => !owned.some((p) => String(p.id) === id));
+  if (missing.length > 0) {
+    const extra = await Promise.all(missing.map((id) => fetchOne(id)));
+    owned = owned.concat(extra.filter((p): p is SupRawProduct => p !== null));
   }
 
-  // Con selección manual mostramos SOLO esos productos (los demás son de otras
-  // cuentas/pruebas y no deben aparecer en la tienda).
-  if (ids.length > 0) {
-    const wanted = new Set(ids.map(String));
-    const filtered = products.filter((p) => wanted.has(String(p.id)));
-    const missing = ids.map(String).filter((id) => !filtered.some((p) => String(p.id) === id));
-    if (missing.length > 0) {
-      const extra = await Promise.all(missing.map((id) => fetchOne(id)));
-      filtered.push(...extra.filter((p): p is SupRawProduct => p !== null));
-    }
-    products = filtered;
-  }
+  products = owned;
 
   cache = { at: Date.now(), products };
   return products;
