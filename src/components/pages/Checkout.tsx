@@ -787,7 +787,7 @@ const Checkout = () => {
           </aside>
         </div>
       </div>
-    </Layout>
+    </CheckoutShell>
   );
 };
 
