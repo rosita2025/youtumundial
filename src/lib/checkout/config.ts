@@ -39,14 +39,84 @@ export interface ShippingCountry {
   shipping: number;
   /** Días hábiles estimados. */
   eta: string;
+  /** Mercado de Shopify al que pertenece el país. */
+  market: ShippingMarketKey;
+}
+
+/**
+ * Mercados de envío tal como están configurados en Shopify
+ * (Shipping and delivery → Shipping options):
+ *   United States → Express | Canada → Economy | Internacional → Standard
+ * Cada mercado tiene su propio servicio y su propia tarifa; nunca se comparte
+ * un precio único entre países.
+ */
+export type ShippingMarketKey = 'US' | 'CA' | 'INTL';
+
+export interface ShippingMarket {
+  key: ShippingMarketKey;
+  /** Nombre del mercado en Shopify. */
+  name: string;
+  /** Servicio de envío que ofrece ese mercado en Shopify. */
+  service: 'Express' | 'Economy' | 'Standard';
+  /** Tarifa de respaldo en USD si Shopify no responde. */
+  shipping: number;
+  eta: string;
+}
+
+export const shippingMarkets: Record<ShippingMarketKey, ShippingMarket> = {
+  US: { key: 'US', name: 'United States', service: 'Express', shipping: 14.9, eta: '5-9 días' },
+  CA: { key: 'CA', name: 'Canada', service: 'Economy', shipping: 9.9, eta: '10-18 días' },
+  INTL: {
+    key: 'INTL',
+    name: 'Internacional',
+    service: 'Standard',
+    shipping: 11.9,
+    eta: '8-15 días',
+  },
+};
+
+export function marketForCountry(countryCode: string): ShippingMarket {
+  const code = (countryCode || '').toUpperCase();
+  if (code === 'US') return shippingMarkets.US;
+  if (code === 'CA') return shippingMarkets.CA;
+  return shippingMarkets.INTL;
 }
 
 export const shippingCountries: ShippingCountry[] = [
-  { code: 'PE', name: 'Perú', flag: '🇵🇪', shipping: 5, eta: '5-10 días' },
-  { code: 'US', name: 'Estados Unidos', flag: '🇺🇸', shipping: 9, eta: '8-15 días' },
-  { code: 'CA', name: 'Canadá', flag: '🇨🇦', shipping: 12, eta: '10-18 días' },
-  { code: 'GB', name: 'Reino Unido', flag: '🇬🇧', shipping: 12, eta: '10-18 días' },
+  {
+    code: 'PE',
+    name: 'Perú',
+    flag: '🇵🇪',
+    shipping: shippingMarkets.INTL.shipping,
+    eta: shippingMarkets.INTL.eta,
+    market: 'INTL',
+  },
+  {
+    code: 'US',
+    name: 'Estados Unidos',
+    flag: '🇺🇸',
+    shipping: shippingMarkets.US.shipping,
+    eta: shippingMarkets.US.eta,
+    market: 'US',
+  },
+  {
+    code: 'CA',
+    name: 'Canadá',
+    flag: '🇨🇦',
+    shipping: shippingMarkets.CA.shipping,
+    eta: shippingMarkets.CA.eta,
+    market: 'CA',
+  },
+  {
+    code: 'GB',
+    name: 'Reino Unido',
+    flag: '🇬🇧',
+    shipping: shippingMarkets.INTL.shipping,
+    eta: shippingMarkets.INTL.eta,
+    market: 'INTL',
+  },
 ];
 
 /** Umbral de envío gratis (USD). */
 export const FREE_SHIPPING_THRESHOLD = 100;
+
