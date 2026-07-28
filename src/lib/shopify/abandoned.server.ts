@@ -181,8 +181,10 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /**
  * Crea o actualiza el carrito abandonado en Shopify.
  *
- * Es idempotente: una sola referencia = un solo borrador (no duplica), porque
- * antes de crear siempre se busca el borrador existente por su etiqueta.
+ * Doble protección contra duplicados:
+ *  - Clave de idempotencia por referencia + contenido: las llamadas repetidas
+ *    del checkout (debounce, reintentos, reenvíos) no crean varios borradores.
+ *  - Búsqueda del borrador existente por etiqueta antes de crear.
  * Ante fallos transitorios reintenta hasta 3 veces con espera creciente y, si
  * aun así falla, deja la causa en el log y avisa al administrador.
  */
@@ -192,6 +194,17 @@ export async function syncAbandonedCheckout(
   if (!input.email || input.lines.length === 0) {
     return { ok: false, message: 'Datos insuficientes.' };
   }
+
+  const { withIdempotency, idempotencyKey } = await import('@/lib/utils/idempotency.server');
+  return withIdempotency(idempotencyKey('shopify-draft', input.reference, input), () =>
+    syncAbandonedCheckoutNow(input),
+  );
+}
+
+async function syncAbandonedCheckoutNow(
+  input: AbandonedCheckoutInput,
+): Promise<AbandonedResult> {
+
   if (!(await canWriteDrafts())) {
     const message = 'La app de Shopify no tiene el permiso "write_draft_orders".';
     const { alertAdmin } = await import('@/lib/notifications/admin-alert.server');
