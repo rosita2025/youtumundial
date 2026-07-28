@@ -1,3 +1,4 @@
+import { AdminGate } from "@/components/admin/AdminGate";
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, CheckCircle2, Info, Wrench, RefreshCw, Search } from "lucide-react";
@@ -12,7 +13,11 @@ import { readLocalReviews, writeLocalReviews } from "@/lib/reviews/local-store";
 import { diagnoseSlug, diagnoseStore, remapSlug } from "@/lib/reviews/diagnose";
 
 export const Route = createFileRoute("/admin/diagnostico")({
-  component: AdminDiagnosticoPage,
+  component: () => (
+    <AdminGate>
+      <AdminDiagnosticoPage />
+    </AdminGate>
+  ),
   head: () => ({
     meta: [
       { title: "Diagnóstico de reseñas | Panel Youtumundial" },

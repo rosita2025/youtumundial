@@ -1,20 +1,29 @@
 import { createServerFn } from "@tanstack/react-start";
 
+const readToken = (value: unknown) => String(value ?? "").slice(0, 200);
+
 /** Estado de las credenciales de SUP configuradas en el proyecto. */
-export const supStatus = createServerFn({ method: "GET" }).handler(async () => {
-  const { supCredentialsStatus } = await import("./sup-api.server");
-  return supCredentialsStatus();
-});
+export const supStatus = createServerFn({ method: "POST" })
+  .inputValidator((input: { adminToken?: string }) => ({ adminToken: readToken(input?.adminToken) }))
+  .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
+    const { supCredentialsStatus } = await import("./sup-api.server");
+    return supCredentialsStatus();
+  });
 
 /** Trae productos del catálogo de SUP ya normalizados para la tienda. */
 export const fetchSupProducts = createServerFn({ method: "POST" })
-  .inputValidator((input: { page?: number; pageSize?: number; keyword?: string; categoryId?: string }) => ({
+  .inputValidator((input: { page?: number; pageSize?: number; keyword?: string; categoryId?: string; adminToken?: string }) => ({
+    adminToken: readToken(input?.adminToken),
     page: Math.max(1, Math.round(Number(input?.page) || 1)),
     pageSize: Math.min(100, Math.max(1, Math.round(Number(input?.pageSize) || 20))),
     keyword: String(input?.keyword ?? "").trim().slice(0, 200),
     categoryId: String(input?.categoryId ?? "").trim().slice(0, 100),
   }))
   .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
     const { listProducts } = await import("./sup-api.server");
     const { normalizeSupProducts } = await import("./normalize");
     try {
@@ -32,13 +41,16 @@ export const fetchSupProducts = createServerFn({ method: "POST" })
 
 /** Trae lo que ya está en tu Member Center: Imported Queue y productos Listed. */
 export const fetchSupMemberProducts = createServerFn({ method: "POST" })
-  .inputValidator((input: { page?: number; pageSize?: number; keyword?: string; source?: "queue" | "listed" | "all" }) => ({
+  .inputValidator((input: { page?: number; pageSize?: number; keyword?: string; source?: "queue" | "listed" | "all"; adminToken?: string }) => ({
+    adminToken: readToken(input?.adminToken),
     page: Math.max(1, Math.round(Number(input?.page) || 1)),
     pageSize: Math.min(100, Math.max(1, Math.round(Number(input?.pageSize) || 20))),
     keyword: String(input?.keyword ?? "").trim().slice(0, 200),
     source: input?.source === "queue" || input?.source === "listed" ? input.source : "all",
   }))
   .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
     const { listMemberImportQueue, listMemberListedProducts } = await import("./sup-api.server");
     const { normalizeSupProducts } = await import("./normalize");
     try {
@@ -64,10 +76,13 @@ export const fetchSupMemberProducts = createServerFn({ method: "POST" })
 
 /** Importa desde una URL de 1688 / AliExpress / Alibaba buscando el producto en SUP. */
 export const importFromSourceUrl = createServerFn({ method: "POST" })
-  .inputValidator((input: { url?: string }) => ({
+  .inputValidator((input: { url?: string; adminToken?: string }) => ({
+    adminToken: readToken(input?.adminToken),
     url: String(input?.url ?? "").trim().slice(0, 1000),
   }))
   .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
     if (!data.url) return { ok: false as const, products: [], error: "Pegá la URL del producto." };
     const { findBySourceUrl } = await import("./sourcing.server");
     try {
@@ -93,7 +108,11 @@ export const importFromSourceUrl = createServerFn({ method: "POST" })
   });
 
 /** Fuerza la resincronización del catálogo público (precio, stock, fotos, talles). */
-export const resyncStoreCatalog = createServerFn({ method: "POST" }).handler(async () => {
+export const resyncStoreCatalog = createServerFn({ method: "POST" })
+  .inputValidator((input: { adminToken?: string }) => ({ adminToken: readToken(input?.adminToken) }))
+  .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
   const { SUP_PUBLISHED_IDS } = await import("./sup-selection");
   const { syncPublishedCatalog } = await import("./catalog.server");
   try {
@@ -106,10 +125,13 @@ export const resyncStoreCatalog = createServerFn({ method: "POST" }).handler(asy
 
 /** Estado de envío de un pedido: primero el webhook, si no consulta SUP. */
 export const getShipmentTracking = createServerFn({ method: "POST" })
-  .inputValidator((input: { supOrderId?: string }) => ({
+  .inputValidator((input: { supOrderId?: string; adminToken?: string }) => ({
+    adminToken: readToken(input?.adminToken),
     supOrderId: String(input?.supOrderId ?? "").trim().slice(0, 100),
   }))
   .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
     if (!data.supOrderId) return { ok: false as const, error: "Falta el número de pedido." };
     const { getShipmentStatus } = await import("./shipment-store.server");
     const live = getShipmentStatus(data.supOrderId);
@@ -135,8 +157,10 @@ export const getShipmentTracking = createServerFn({ method: "POST" })
 
 /** Envía un pedido de la tienda a SUP para que lo despachen. */
 export const sendOrderToSup = createServerFn({ method: "POST" })
-  .inputValidator((input: { order: unknown }) => ({ order: input?.order ?? null }))
+  .inputValidator((input: { order: unknown; adminToken?: string }) => ({ order: input?.order ?? null, adminToken: readToken(input?.adminToken) }))
   .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
     if (!data.order) throw new Error("Falta el pedido a enviar.");
     const { createPurchaseOrder } = await import("./sup-api.server");
     try {
@@ -148,7 +172,11 @@ export const sendOrderToSup = createServerFn({ method: "POST" })
   });
 
 /** Diagnóstico paso a paso de la conexión con SUP (login, Listed, Imported). */
-export const supHealthCheck = createServerFn({ method: "POST" }).handler(async () => {
+export const supHealthCheck = createServerFn({ method: "POST" })
+  .inputValidator((input: { adminToken?: string }) => ({ adminToken: readToken(input?.adminToken) }))
+  .handler(async ({ data }) => {
+    const { assertAdmin } = await import('@/lib/admin/guard.server');
+    assertAdmin(data.adminToken);
   const { runSupHealthCheck } = await import("./health.server");
   try {
     return { ok: true as const, ...(await runSupHealthCheck()) };

@@ -3,23 +3,18 @@ import { getStripe, getStripeEnvironment } from '@/lib/stripe';
 import { createCartCheckout } from '@/utils/payments.functions';
 
 interface StripeCartCheckoutProps {
-  items: {
-    name: string;
-    amountInCents: number;
-    quantity: number;
-    supProductId?: string;
-    variantTitle?: string;
-    supVariantId?: string;
-    supVariantSku?: string;
-  }[];
-  shippingInCents: number;
+  /** Solo variante y cantidad: el precio real lo calcula el servidor. */
+  items: { variantId: string; quantity: number }[];
+  countryCode: string;
+  couponCode?: string;
   customerEmail?: string;
   returnUrl: string;
 }
 
 export function StripeCartCheckout({
   items,
-  shippingInCents,
+  countryCode,
+  couponCode,
   customerEmail,
   returnUrl,
 }: StripeCartCheckoutProps) {
@@ -27,7 +22,8 @@ export function StripeCartCheckout({
     const result = await createCartCheckout({
       data: {
         items,
-        shippingInCents,
+        countryCode,
+        couponCode,
         customerEmail,
         returnUrl,
         environment: getStripeEnvironment(),

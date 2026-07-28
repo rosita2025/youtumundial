@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { AdminGate, getAdminToken } from "@/components/admin/AdminGate";
 import { BellRing, ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,11 @@ export const Route = createFileRoute("/admin/pedidos")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: OrdersAdmin,
+  component: () => (
+    <AdminGate>
+      <OrdersAdmin />
+    </AdminGate>
+  ),
 });
 
 const ACTION_LABEL: Record<AdminOrder["action"], { text: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -76,7 +81,7 @@ function OrdersAdmin() {
       setLoading(true);
       setError(null);
       try {
-        const result = await fetchOrders({ data: { environment: env } });
+        const result = await fetchOrders({ data: { environment: env, adminToken: getAdminToken() } });
         if (!result.ok) setError(result.message ?? "No se pudieron leer los pedidos.");
         setOrders(result.orders);
       } catch (e) {
@@ -94,7 +99,7 @@ function OrdersAdmin() {
     async (env: "live" | "sandbox", silent = false) => {
       setSyncing(true);
       try {
-        const result = await runSync({ data: { environment: env } });
+        const result = await runSync({ data: { environment: env, adminToken: getAdminToken() } });
         if (!result.ok) {
           if (!silent) setError(result.message ?? "No se pudo sincronizar con SUP.");
         } else if (!silent) {
@@ -128,7 +133,7 @@ function OrdersAdmin() {
   async function openPayment(supOrderId: string) {
     setPaying(supOrderId);
     try {
-      const result = await payLink({ data: { supOrderId } });
+      const result = await payLink({ data: { supOrderId, adminToken: getAdminToken() } });
       if (result.ok && result.url) window.open(result.url, "_blank", "noopener");
       else setError(result.message ?? "No se pudo abrir el pago en SUP.");
     } catch (e) {
@@ -142,7 +147,7 @@ function OrdersAdmin() {
     setBusyOrder(order.sessionId);
     setError(null);
     try {
-      const result = await sendNotice({ data: { sessionId: order.sessionId, environment } });
+      const result = await sendNotice({ data: { sessionId: order.sessionId, environment, adminToken: getAdminToken() } });
       if (result.ok) {
         setNotice(result.message);
         await load(environment);
@@ -156,7 +161,7 @@ function OrdersAdmin() {
         );
         window.open(`mailto:${order.email}?subject=${subject}&body=${body}`, "_blank", "noopener");
         setNotice(`${result.message} Te abrí el email listo para enviar.`);
-        await setNotified({ data: { sessionId: order.sessionId, environment } });
+        await setNotified({ data: { sessionId: order.sessionId, environment, adminToken: getAdminToken() } });
         await load(environment);
       }
     } catch (e) {

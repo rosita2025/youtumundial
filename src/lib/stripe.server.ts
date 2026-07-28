@@ -90,8 +90,10 @@ export interface CheckoutLineInput {
 }
 
 export interface CartCheckoutInput {
-  items: CheckoutLineInput[];
-  shippingInCents: number;
+  /** Solo variante + cantidad: el precio lo calcula el servidor. */
+  items: { variantId: string; quantity: number }[];
+  countryCode: string;
+  couponCode?: string;
   customerEmail?: string;
   returnUrl: string;
   environment: StripeEnv;
@@ -120,7 +122,16 @@ function buildOrderMetadata(items: CheckoutLineInput[]): Record<string, string> 
 export async function createCartSession(data: CartCheckoutInput) {
   const stripe = createStripeClient(data.environment);
 
-  const line_items = data.items.map((item) => ({
+  // Precios, descuento y envío se recalculan en el servidor con el catálogo real.
+  const { priceOrder } = await import('@/lib/checkout/pricing.server');
+  const priced = await priceOrder({
+    items: data.items,
+    countryCode: data.countryCode,
+    couponCode: data.couponCode,
+  });
+  const shippingInCents = Math.round(priced.shipping * 100);
+
+  const line_items = priced.lines.map((item) => ({
     price_data: {
       currency: 'usd',
       product_data: { name: item.name },
@@ -129,12 +140,12 @@ export async function createCartSession(data: CartCheckoutInput) {
     quantity: item.quantity,
   }));
 
-  if (data.shippingInCents > 0) {
+  if (shippingInCents > 0) {
     line_items.push({
       price_data: {
         currency: 'usd',
         product_data: { name: 'Envío internacional' },
-        unit_amount: data.shippingInCents,
+        unit_amount: shippingInCents,
       },
       quantity: 1,
     });
@@ -149,7 +160,7 @@ export async function createCartSession(data: CartCheckoutInput) {
     // Necesitamos la dirección real para despachar el pedido en SUP.
     shipping_address_collection: { allowed_countries: SHIPPING_COUNTRIES },
     phone_number_collection: { enabled: true },
-    metadata: buildOrderMetadata(data.items),
+    metadata: buildOrderMetadata(priced.lines),
     ...(data.customerEmail && { customer_email: data.customerEmail }),
   } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
 
