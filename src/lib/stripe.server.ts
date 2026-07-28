@@ -192,8 +192,11 @@ export interface StripeOrderSnapshot {
   currency: string;
   /** Pedido ya registrado en Shopify (idempotencia). */
   shopifyOrderId?: string;
+  /** Número visible del pedido en Shopify (ej. #1001). */
+  shopifyOrderName?: string;
   /** Email de confirmación ya enviado (idempotencia). */
   confirmationSent?: boolean;
+
 }
 
 
@@ -244,7 +247,9 @@ export async function readOrderSnapshot(
     amountTotal: (session.amount_total ?? 0) / 100,
     currency: (session.currency ?? 'usd').toUpperCase(),
     shopifyOrderId: metadata.shopify_order_id || undefined,
+    shopifyOrderName: metadata.shopify_order_name || undefined,
     confirmationSent: metadata.confirmation_sent === '1',
+
   };
 }
 
