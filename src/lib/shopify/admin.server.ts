@@ -198,13 +198,17 @@ export async function findShopifyOrderByReference(
   }
 }
 
+/**
+ * Crea el pedido en Shopify con reintentos automáticos y sin duplicar:
+ * antes de cada intento comprueba si ya existe un pedido con esa referencia.
+ */
 export async function createShopifyOrderIdempotent(
   input: ShopifyOrderInput,
 ): Promise<ShopifyOrderResult> {
-  const scopes = await ensureShopifyScopes();
-  if (!scopes.ok && scopes.missing.includes('write_orders')) {
-    return { ok: false, message: scopes.message ?? 'Falta el permiso write_orders en Shopify.' };
-  }
+  // Verificación automática de permisos (lectura + creación de pedidos).
+  const gate = await requireShopifyOrderAccess();
+  if (!gate.ok) return { ok: false, message: gate.message };
+
 
   const existing = await findShopifyOrderByReference(input.reference);
   if (existing) return existing;
