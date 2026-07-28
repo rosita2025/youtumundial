@@ -1,22 +1,14 @@
 import { createServerFn } from '@tanstack/react-start';
 
-export interface DirectOrderItem {
-  supProductId?: string;
-  supVariantId?: string;
-  supVariantSku?: string;
-  variantTitle?: string;
-  quantity: number;
-}
-
 export interface DirectOrderInput {
   reference: string;
   name: string;
   email: string;
   phone?: string;
-  country: string;
+  countryCode: string;
   address: string;
-  note?: string;
-  items: DirectOrderItem[];
+  couponCode?: string;
+  items: { variantId: string; quantity: number }[];
 }
 
 export interface DirectOrderResult {
@@ -26,50 +18,61 @@ export interface DirectOrderResult {
 }
 
 /**
- * Crea el pedido en SUP Dropshipping para compras que no pasan por Stripe
- * (cupón del 100%, Yape/Plin, PayPal manual). Así aparecen en /admin/pedidos.
+ * Crea el pedido en SUP Dropshipping para compras sin cargo (cupón del 100%).
+ * El servidor recalcula el total con el catálogo y el cupón reales: si el
+ * pedido no da $0 se rechaza, así nadie puede pedir mercadería gratis.
  */
 export const createDirectSupOrder = createServerFn({ method: 'POST' })
-  .inputValidator((input: DirectOrderInput) => {
-    const items = (input?.items ?? [])
-      .filter((i) => i && i.supProductId)
-      .map((i) => ({
-        supProductId: String(i.supProductId),
-        supVariantId: i.supVariantId ? String(i.supVariantId) : undefined,
-        supVariantSku: i.supVariantSku ? String(i.supVariantSku) : undefined,
-        variantTitle: String(i.variantTitle ?? ''),
-        quantity: Math.max(1, Number(i.quantity) || 1),
-      }));
-    return {
-      reference: String(input?.reference ?? '').slice(0, 60) || `YTM-${Date.now()}`,
-      name: String(input?.name ?? '').slice(0, 120),
-      email: String(input?.email ?? '').slice(0, 160),
-      phone: String(input?.phone ?? '').slice(0, 40),
-      country: String(input?.country ?? '').slice(0, 60),
-      address: String(input?.address ?? '').slice(0, 300),
-      note: String(input?.note ?? '').slice(0, 200),
-      items,
-    };
-  })
+  .inputValidator((input: DirectOrderInput) => ({
+    reference: String(input?.reference ?? '').slice(0, 60) || `YTM-${Date.now()}`,
+    name: String(input?.name ?? '').slice(0, 120),
+    email: String(input?.email ?? '').slice(0, 160),
+    phone: String(input?.phone ?? '').slice(0, 40),
+    countryCode: String(input?.countryCode ?? '').slice(0, 5),
+    address: String(input?.address ?? '').slice(0, 300),
+    couponCode: String(input?.couponCode ?? '').slice(0, 40),
+    items: Array.isArray(input?.items) ? input.items : [],
+  }))
   .handler(async ({ data }): Promise<DirectOrderResult> => {
-    if (!data.items.length) {
+    const { priceOrder, normalizeCartLines } = await import('@/lib/checkout/pricing.server');
+    const { shippingCountries } = await import('@/lib/checkout/config');
+
+    let priced;
+    try {
+      priced = await priceOrder({
+        items: normalizeCartLines(data.items),
+        countryCode: data.countryCode,
+        couponCode: data.couponCode || undefined,
+      });
+    } catch (error) {
+      return { ok: false, message: (error as Error).message };
+    }
+
+    // Solo se despacha sin pago si el total real, calculado acá, es cero.
+    if (priced.total >= 0.5) {
+      return { ok: false, message: 'Este pedido requiere pago. Elegí un método de pago.' };
+    }
+
+    const supItems = priced.lines.filter((line) => line.supProductId);
+    if (!supItems.length) {
       return { ok: false, message: 'El pedido no tiene productos de SUP.' };
     }
 
+    const country = shippingCountries.find((c) => c.code === data.countryCode);
     const { createPurchaseOrder } = await import('./sup-api.server');
 
     try {
       const result = (await createPurchaseOrder({
-        remark: `Youtumundial · ${data.note || data.reference}`,
+        remark: `Youtumundial · ${data.reference}`,
         out_trade_no: data.reference,
         consignee: {
           name: data.name || 'Cliente Youtumundial',
           phone: data.phone,
           email: data.email,
-          country: data.country,
+          country: country?.name ?? data.countryCode,
           address: data.address,
         },
-        products: data.items.map((item) => ({
+        products: supItems.map((item) => ({
           product_id: item.supProductId,
           variant_id: item.supVariantId,
           product_sn: item.supVariantSku,
@@ -85,6 +88,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       }
       return { ok: true, supOrderId };
     } catch (error) {
-      return { ok: false, message: (error as Error).message };
+      console.error('createDirectSupOrder', (error as Error).message);
+      return { ok: false, message: 'No se pudo registrar el pedido con el proveedor.' };
     }
   });
