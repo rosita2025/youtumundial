@@ -205,10 +205,11 @@ const Checkout = () => {
     customer.phone,
     addressLine,
     countryCode,
-    shippingKey,
+    cart.items.length,
     coupon?.code,
     paying,
   ]);
+
 
   if (cart.items.length === 0) {
     return (
