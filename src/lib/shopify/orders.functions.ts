@@ -13,22 +13,30 @@ export const listShopifyOrders = createServerFn({ method: 'POST' })
     limit: Math.min(Math.max(Number(input?.limit) || 25, 1), 100),
     adminToken: readToken(input?.adminToken),
   }))
-  .handler(async ({ data }): Promise<{ ok: boolean; orders: ShopifyOrder[]; error?: string }> => {
+  .handler(async ({ data }): Promise<{ ok: boolean; orders: ShopifyOrder[]; error?: string; source?: 'shopify' | 'sup' }> => {
     const { assertAdmin } = await import('@/lib/admin/guard.server');
     assertAdmin(data.adminToken);
 
     try {
       const { listShopifyAdminOrders } = await import('./admin.server');
-      return { ok: true, orders: await listShopifyAdminOrders(data.limit) };
+      return { ok: true, orders: await listShopifyAdminOrders(data.limit), source: 'shopify' };
     } catch (error) {
       const { ShopifyScopeError } = await import('./admin.server');
       if (error instanceof ShopifyScopeError) {
-        return {
-          ok: false,
-          orders: [],
-          error:
-            'Shopify no permite leer pedidos con los permisos actuales. Activá el permiso "read_orders" (Configuración → Apps y canales de venta → Desarrollar apps → Ámbitos de la Admin API) y volvé a sincronizar.',
-        };
+        // Shopify no da permiso de pedidos: usamos las credenciales de la API
+        // de SUP (usuario y contraseña), que sí permiten leer pedidos.
+        try {
+          const { listSupOrdersForPanel } = await import('./orders-fallback.server');
+          return { ok: true, orders: await listSupOrdersForPanel(data.limit), source: 'sup' };
+        } catch (supError) {
+          console.error('SUP orders fallback failed:', supError);
+          return {
+            ok: false,
+            orders: [],
+            error:
+              'Shopify no permite leer pedidos con los permisos actuales y tampoco respondió la API de SUP. Activá el permiso "read_orders" en Shopify o revisá el usuario y contraseña de SUP.',
+          };
+        }
       }
       // Nunca devolvemos el detalle interno del proveedor al navegador.
       console.error('Shopify orders sync failed:', error);

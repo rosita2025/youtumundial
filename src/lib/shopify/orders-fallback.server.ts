@@ -31,26 +31,28 @@ export async function listSupOrdersForPanel(limit: number): Promise<ShopifyOrder
       email: str(consignee.email),
       phone: str(consignee.phone),
       country: str(consignee.country),
+      countryCode: str(consignee.country_code ?? consignee.countryCode),
       address: [consignee.address, consignee.city, consignee.province, consignee.zip_code]
         .map(str)
         .filter(Boolean)
         .join(', '),
       total: num(row.amount ?? row.total_price ?? row.goods_amount),
       currency: 'USD',
-      financialStatus: str(row.statusInfo ?? row.status_text) || undefined,
-      fulfillmentStatus: str(row.tracking_number) ? 'Enviado' : undefined,
+      financialStatus: str(row.statusInfo ?? row.status_text),
+      fulfillmentStatus: str(row.tracking_number) ? 'Enviado' : '',
       lines: products.length
         ? products.map((p) => ({
             title: str(p.title ?? p.product_name ?? p.name ?? row.order_title) || 'Producto',
-            variantTitle: str(p.variant ?? p.variant_name) || undefined,
+            variantTitle: str(p.variant ?? p.variant_name),
             quantity: Number(p.quantity) || 1,
-            sku: str(p.sku ?? p.product_id ?? p.id) || undefined,
+            sku: str(p.sku ?? p.product_id ?? p.id),
           }))
         : [
             {
               title: str(row.order_title) || 'Producto',
+              variantTitle: '',
               quantity: Number(row.goods_num) || 1,
-              sku: str(row.order_sn) || undefined,
+              sku: str(row.order_sn),
             },
           ],
     };

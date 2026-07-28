@@ -21,13 +21,15 @@ export function ShopifyOrdersPanel() {
   const [orders, setOrders] = useState<ShopifyOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<'shopify' | 'sup' | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetchOrders({ data: { limit: 25, adminToken: getAdminToken() } });
-      if (!res.ok) setError(res.error ?? 'No se pudieron leer los pedidos de Shopify.');
+      if (!res.ok) setError(res.error ?? 'No se pudieron leer los pedidos.');
+      setSource(res.source ?? null);
       setOrders(res.orders);
     } catch {
       setError('No se pudieron leer los pedidos de Shopify.');
@@ -45,11 +47,18 @@ export function ShopifyOrdersPanel() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-medium">
-            <ShoppingBag className="h-5 w-5" /> Pedidos sincronizados de Shopify
+            <ShoppingBag className="h-5 w-5" /> Pedidos sincronizados
           </h2>
           <p className="text-sm text-muted-foreground">
             Nombre, correo, dirección, país y los productos con su SKU (el mismo código que usás en SUP).
           </p>
+          {source && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {source === 'shopify'
+                ? 'Fuente: Shopify Admin.'
+                : 'Fuente: API de SUP (usuario y contraseña). Shopify no tiene el permiso de pedidos activado.'}
+            </p>
+          )}
         </div>
         <Button size="sm" variant="outline" onClick={() => void load()} disabled={loading}>
           <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -61,7 +70,7 @@ export function ShopifyOrdersPanel() {
 
       {!error && !loading && !orders.length && (
         <p className="rounded-md border p-6 text-sm text-muted-foreground">
-          Todavía no hay pedidos en tu tienda de Shopify.
+          Todavía no hay pedidos para mostrar.
         </p>
       )}
 
