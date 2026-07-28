@@ -303,6 +303,7 @@ const Checkout = () => {
             address: addressLine,
 
             couponCode: coupon?.code,
+            abandonedReference: abandonedRef.current ?? undefined,
             items: cartLines,
           },
         });
@@ -377,6 +378,7 @@ const Checkout = () => {
             countryCode,
             address: addressLine,
             couponCode: coupon?.code,
+            abandonedReference: abandonedRef.current ?? undefined,
             items: cartLines,
           },
         });
