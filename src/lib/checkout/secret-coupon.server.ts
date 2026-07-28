@@ -20,18 +20,15 @@ export function getSecretTestCoupon(): Coupon | null {
   };
 }
 
-/** Solo el cupón secreto puede dejar un pedido en $0. */
+/** Solo el cupón secreto del servidor puede dejar un pedido en $0. */
 export function isFreeOrderAllowed(couponCode?: string | null): boolean {
   const norm = (s: string) => s.trim().toUpperCase().replace(/[\s-]+/g, '');
   if (!couponCode) return false;
 
-  // 1) Cupón de prueba secreto (solo servidor).
+  // Único camino permitido: el cupón de prueba secreto (variable de entorno
+  // del servidor). Ningún cupón público/sincronizado de Shopify puede dejar
+  // un pedido físico en $0, porque generaría costo real con el proveedor.
   const secret = getSecretTestCoupon();
-  if (secret && norm(couponCode) === norm(secret.code)) return true;
-
-  // 2) Cupón del 100% creado en Shopify y sincronizado acá: solo mientras
-  //    esté dentro de su ventana de vigencia (ver shopify-coupons.ts).
-  const shopify = findShopifyCoupon(couponCode);
-  return Boolean(shopify && shopify.percentOff === 100);
+  return Boolean(secret && norm(couponCode) === norm(secret.code));
 }
 
