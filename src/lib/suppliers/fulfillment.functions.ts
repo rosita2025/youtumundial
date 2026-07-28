@@ -29,7 +29,7 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
   })
   .handler(async ({ data }): Promise<FulfillmentResult> => {
     const { readOrderSnapshot, markSessionFulfilled } = await import('@/lib/stripe.server');
-    const { createPurchaseOrder, getOrderDetail } = await import('./sup-api.server');
+    const { getOrderDetail } = await import('./sup-api.server');
 
     let snapshot;
     try {
@@ -99,28 +99,27 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
       return { ok: true, paid: true, pending: true, message, shopifyOrderNumber: post.shopifyOrderName };
     };
 
-    try {
-      const result = (await createPurchaseOrder(payload)) as Record<string, unknown>;
-      const body = (result.data ?? result) as Record<string, unknown>;
-      const supOrderId = String(
-        body.order_id ?? body.id ?? body.order_sn ?? body.order_no ?? '',
+    // Reintentos automáticos + búsqueda previa por referencia: si el pedido ya
+    // existe en SUP no se crea otro.
+    const { createPurchaseOrderIdempotent } = await import('./sup-api.server');
+    const created = await createPurchaseOrderIdempotent(data.sessionId, payload);
+    if (!created.ok || !created.supOrderId) {
+      return finishDelayed(
+        'Pago confirmado. Estamos terminando de confirmar el envío con el proveedor.',
       );
-      if (!supOrderId) {
-        console.warn('fulfillSupOrder: SUP sin order_id', data.sessionId);
-        return finishDelayed('Pago confirmado. Estamos terminando de confirmar el envío con el proveedor.');
-      }
-      await markSessionFulfilled(data.sessionId, data.environment, supOrderId);
-      const post = await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
-      return {
-        ...(await readTracking(supOrderId, getOrderDetail)),
-        paid: true,
-        shopifyOrderNumber: post.shopifyOrderName,
-      };
-    } catch (error) {
-      // El detalle crudo del proveedor queda solo en los logs del servidor.
-      console.error('fulfillSupOrder', data.sessionId, (error as Error).message);
-      return finishDelayed('Pago confirmado. Estamos terminando de confirmar el envío con el proveedor.');
     }
+    await markSessionFulfilled(data.sessionId, data.environment, created.supOrderId);
+    const post = await runPostPaymentTasks({
+      sessionId: data.sessionId,
+      environment: data.environment,
+      snapshot,
+    });
+    return {
+      ...(await readTracking(created.supOrderId, getOrderDetail)),
+      paid: true,
+      shopifyOrderNumber: post.shopifyOrderName,
+    };
+
   });
 
 
