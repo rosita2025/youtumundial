@@ -464,6 +464,8 @@ const Checkout = () => {
                     countryCode={countryCode}
                     couponCode={coupon?.code}
                     customerEmail={customer.email}
+                    customerName={customerName}
+                    customerPhone={customerPhone}
                     returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
                   />
                 </div>
@@ -566,7 +568,12 @@ const Checkout = () => {
                 )}
               </div>
 
-              <Button className="w-full mt-6" size="lg" onClick={() => void handlePay()}>
+              <Button
+                className="w-full mt-6"
+                size="lg"
+                disabled={missingCustomer}
+                onClick={() => void handlePay()}
+              >
                 {isFreeOrder
                   ? 'Confirmar pedido gratis'
                   : method === 'yape'
