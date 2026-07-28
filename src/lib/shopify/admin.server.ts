@@ -275,7 +275,12 @@ export async function createShopifyOrder(
 
 
 
-  const buildOrder = (opts: { withPhone: boolean; withAddress: boolean; withVariant: boolean }) => {
+  const buildOrder = (opts: {
+    withPhone: boolean;
+    withAddress: boolean;
+    withVariant: boolean;
+    withCustomer?: boolean;
+  }) => {
     const shippingAddress =
       input.address && opts.withAddress
         ? {
@@ -293,6 +298,10 @@ export async function createShopifyOrder(
 
     return {
       email: input.email || undefined,
+      // Enlaza el pedido con la ficha del cliente en Shopify.
+      ...(customerId && opts.withCustomer !== false
+        ? { customer: { toAssociate: customerId } }
+        : {}),
       ...(opts.withPhone && phone ? { phone } : {}),
       tags: [
         'youtumundial-checkout',
