@@ -10,7 +10,7 @@
 import { fetchShopifyProducts } from '@/lib/shopify/storefront';
 import { fetchStoreCatalog } from '@/lib/suppliers/catalog.functions';
 import { findCoupon, couponDiscount, type Coupon } from './coupons';
-import { shippingCountries, FREE_SHIPPING_THRESHOLD } from './config';
+import { shippingCountries } from './config';
 import type { Product } from '@/lib/data/types';
 
 export interface CartLineRequest {
