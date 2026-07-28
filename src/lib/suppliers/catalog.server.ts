@@ -17,7 +17,7 @@ import {
 import { normalizeSupProduct, normalizeSupProducts } from "./normalize";
 import type { SupRawProduct } from "./sup";
 
-const TTL_MS = 10 * 60 * 1000;
+const TTL_MS = 3 * 60 * 1000;
 
 let cache: { at: number; products: SupRawProduct[] } | null = null;
 
