@@ -129,20 +129,22 @@ function buildDraftInput(input: AbandonedCheckoutInput) {
       `Carrito abandonado del checkout propio · ${input.reference}` +
       (input.countryCode ? ` · país ${input.countryCode}` : ''),
     ...(shippingAddress ? { shippingAddress, billingAddress: shippingAddress } : {}),
-    lineItems: input.lines.map((line) => ({
-      ...(line.variantId?.startsWith('gid://shopify/ProductVariant/')
-        ? { variantId: line.variantId }
-        : {
-            title: line.title.slice(0, 250),
-            sku: line.sku || undefined,
-            requiresShipping: true,
-            originalUnitPrice: line.price.toFixed(2),
-          }),
-      quantity: line.quantity,
-      ...(line.variantId?.startsWith('gid://shopify/ProductVariant/')
-        ? {}
-        : { originalUnitPriceWithCurrency: { amount: line.price.toFixed(2), currencyCode: currency } }),
-    })),
+    lineItems: input.lines.map((line) => {
+      const isRealVariant = Boolean(line.variantId?.startsWith('gid://shopify/ProductVariant/'));
+      if (isRealVariant) {
+        return { variantId: line.variantId, quantity: line.quantity };
+      }
+      return {
+        title: line.title.slice(0, 250),
+        sku: line.sku || undefined,
+        requiresShipping: true,
+        quantity: line.quantity,
+        originalUnitPriceWithCurrency: {
+          amount: line.price.toFixed(2),
+          currencyCode: currency,
+        },
+      };
+    }),
   };
 }
 
