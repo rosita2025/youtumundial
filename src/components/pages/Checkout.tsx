@@ -190,8 +190,9 @@ const Checkout = () => {
   }));
 
   const handlePay = async () => {
-    if (missingCustomer) {
-      toast.error('Completá tus datos de envío para continuar.');
+    if (!validation.ok) {
+      setErrors(validation.errors);
+      toast.error('Completá todos tus datos de envío para continuar.');
       return;
     }
 
@@ -203,10 +204,12 @@ const Checkout = () => {
         const result = await createSupOrder({
           data: {
             reference,
-            name: customer.name,
+            name: customerName,
             email: customer.email,
+            phone: customerPhone,
             countryCode,
             address: customer.address,
+
             couponCode: coupon?.code,
             items: cartLines,
           },
