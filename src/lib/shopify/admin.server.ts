@@ -145,8 +145,20 @@ function normalizePhone(raw?: string): string | undefined {
 
 const VARIANT_BY_SKU = `
   query VariantBySku($query: String!) {
-    productVariants(first: 1, query: $query) {
-      edges { node { id } }
+    productVariants(first: 10, query: $query) {
+      edges { node { id sku } }
+    }
+  }
+`;
+
+const PRODUCT_VARIANTS_BY_SKU = `
+  query ProductBySku($query: String!) {
+    products(first: 5, query: $query) {
+      edges {
+        node {
+          variants(first: 100) { edges { node { id sku } } }
+        }
+      }
     }
   }
 `;
@@ -154,29 +166,65 @@ const VARIANT_BY_SKU = `
 /** Cache en memoria: SKU → GID de variante (o null si no existe). */
 const skuVariantCache = new Map<string, string | null>();
 
+const sameSku = (a?: string | null, b?: string | null) =>
+  String(a ?? '').trim().toLowerCase() === String(b ?? '').trim().toLowerCase();
+
 /**
  * Busca la variante real de Shopify por SKU para que el pedido quede enlazado
  * al producto (con su foto y su inventario) en vez de crear una línea suelta.
- * Si no se encuentra o falla la consulta, devolvemos undefined y el pedido se
- * crea igual con la línea personalizada.
+ * Sin la variante real, Sup Dropshipping no reconoce la línea y el pedido no
+ * se sincroniza, por eso probamos varias consultas antes de rendirnos.
  */
 async function resolveVariantIdBySku(sku?: string): Promise<string | undefined> {
   const clean = String(sku ?? '').trim();
   if (!clean) return undefined;
   if (skuVariantCache.has(clean)) return skuVariantCache.get(clean) ?? undefined;
 
-  try {
-    const data = await adminRequest<{
-      productVariants: { edges: { node: { id: string } }[] };
-    }>(VARIANT_BY_SKU, { query: `sku:'${clean.replace(/['\\]/g, '')}'` });
-    const id = data?.productVariants?.edges?.[0]?.node?.id ?? null;
-    skuVariantCache.set(clean, id);
-    return id ?? undefined;
-  } catch (error) {
-    console.warn('resolveVariantIdBySku', clean, (error as Error).message);
-    return undefined;
+  const safe = clean.replace(/["'\\]/g, '');
+  let found: string | null = null;
+
+  // 1) Búsqueda directa por variante (comillas dobles: el SKU lleva guiones).
+  for (const query of [`sku:"${safe}"`, `sku:${safe}`]) {
+    if (found) break;
+    try {
+      const data = await adminRequest<{
+        productVariants: { edges: { node: { id: string; sku: string | null } }[] };
+      }>(VARIANT_BY_SKU, { query });
+      const edges = data?.productVariants?.edges ?? [];
+      found =
+        edges.find((e) => sameSku(e.node.sku, clean))?.node.id ??
+        (edges.length === 1 ? edges[0].node.id : null);
+    } catch (error) {
+      console.warn('resolveVariantIdBySku(variant)', clean, (error as Error).message);
+    }
   }
+
+  // 2) Respaldo: buscar el producto por SKU y comparar sus variantes.
+  if (!found) {
+    try {
+      const data = await adminRequest<{
+        products: {
+          edges: {
+            node: { variants: { edges: { node: { id: string; sku: string | null } }[] } };
+          }[];
+        };
+      }>(PRODUCT_VARIANTS_BY_SKU, { query: `sku:"${safe}"` });
+      for (const product of data?.products?.edges ?? []) {
+        const match = product.node.variants.edges.find((v) => sameSku(v.node.sku, clean));
+        if (match) {
+          found = match.node.id;
+          break;
+        }
+      }
+    } catch (error) {
+      console.warn('resolveVariantIdBySku(product)', clean, (error as Error).message);
+    }
+  }
+
+  skuVariantCache.set(clean, found);
+  return found ?? undefined;
 }
+
 
 /** Registra el pedido pagado en Shopify (no cobra: el cobro ya lo hizo Stripe). */
 export async function createShopifyOrder(
@@ -233,7 +281,15 @@ export async function createShopifyOrder(
         return {
           // Con `variantId` el pedido queda enlazado al producto real de la
           // tienda: se ve la foto, la variante y descuenta el inventario.
-          ...(variantId ? { variantId } : { title: line.title.slice(0, 250), sku: line.sku || undefined }),
+          ...(variantId
+            ? { variantId }
+            : {
+                title: line.title.slice(0, 250),
+                sku: line.sku || undefined,
+                // Sin esto Shopify marca "Shipping not required" y el pedido
+                // no puede enviarse a Sup Dropshipping.
+                requiresShipping: true,
+              }),
           quantity: line.quantity,
           priceSet: {
             shopMoney: {
