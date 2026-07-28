@@ -94,10 +94,18 @@ function CheckoutReturn() {
                 )}
               </>
             ) : (
-              <p className="text-muted-foreground">
-                {result.message ?? 'Estamos preparando tu pedido manualmente.'}
-              </p>
+              <div className="space-y-1">
+                <p className="text-muted-foreground">
+                  {result.message ?? 'Estamos preparando tu pedido manualmente.'}
+                </p>
+                {result.pending && (
+                  <p className="text-muted-foreground">
+                    Te enviamos un email con el detalle y te avisamos apenas salga el envío.
+                  </p>
+                )}
+              </div>
             )}
+
           </div>
         )}
 
