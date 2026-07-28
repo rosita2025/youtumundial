@@ -2,6 +2,9 @@ import { createServerFn } from '@tanstack/react-start';
 
 export interface FulfillmentResult {
   ok: boolean;
+  /** El pago entró pero el proveedor todavía no confirmó el pedido. */
+  pending?: boolean;
+
   paid: boolean;
   supOrderId?: string;
   status?: string;
