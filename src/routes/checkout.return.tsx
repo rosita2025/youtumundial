@@ -21,15 +21,18 @@ export const Route = createFileRoute('/checkout/return')({
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { session_id?: string; free?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { session_id?: string; free?: string; order?: string } => ({
     session_id: typeof search.session_id === 'string' ? search.session_id : undefined,
     free: typeof search.free === 'string' ? search.free : undefined,
+    order: typeof search.order === 'string' ? search.order.slice(0, 20) : undefined,
   }),
   component: CheckoutReturn,
 });
 
 function CheckoutReturn() {
-  const { session_id: sessionId, free } = Route.useSearch();
+  const { session_id: sessionId, free, order: freeOrderNumber } = Route.useSearch();
   const isFreeOrder = free === '1';
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
   const [result, setResult] = useState<FulfillmentResult | null>(null);
@@ -68,6 +71,15 @@ function CheckoutReturn() {
               : 'Si creés que hubo un error, escribinos y lo revisamos.'}
         </p>
 
+
+        {isFreeOrder && freeOrderNumber && (
+          <div className="rounded-lg border border-border p-5 text-left text-sm mb-8">
+            <p className="text-base font-semibold">Pedido {freeOrderNumber}</p>
+            <p className="text-muted-foreground">
+              Ya quedó registrado en la tienda. Te escribimos con el seguimiento del envío.
+            </p>
+          </div>
+        )}
 
         {sessionId && state === 'loading' && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">

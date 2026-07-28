@@ -14,6 +14,8 @@ export interface DirectOrderInput {
 export interface DirectOrderResult {
   ok: boolean;
   supOrderId?: string;
+  /** Número visible del pedido en Shopify (ej. #1001). */
+  shopifyOrderNumber?: string;
   /** El pedido quedó registrado en la tienda pero todavía no en SUP. */
   pending?: boolean;
   message?: string;
@@ -70,6 +72,26 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
     const country = shippingCountries.find((c) => c.code === data.countryCode);
     const { createPurchaseOrder } = await import('./sup-api.server');
 
+    // Los pedidos con cupón también se registran en Shopify (total 0) para que
+    // la tienda tenga el pedido, el cliente y el número visible (#1001).
+    const { createShopifyOrder } = await import('@/lib/shopify/admin.server');
+    const shopifyResult = await createShopifyOrder({
+      reference: data.reference,
+      email: data.email,
+      name: data.name,
+      phone: data.phone,
+      currency: 'USD',
+      address: { line1: data.address, country: data.countryCode },
+      note: `Pedido con cupón ${data.couponCode || 'promocional'} · ${data.reference}`,
+      lines: priced.lines.map((line) => ({
+        title: line.variantTitle || 'Producto Youtumundial',
+        quantity: line.quantity,
+        price: 0,
+        sku: line.supVariantSku,
+      })),
+    });
+    const shopifyOrderNumber = shopifyResult.ok ? shopifyResult.orderName : undefined;
+
     try {
       const result = (await createPurchaseOrder({
         remark: `Youtumundial · ${data.reference}`,
@@ -98,10 +120,11 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
         return {
           ok: true,
           pending: true,
+          shopifyOrderNumber,
           message: 'Pedido registrado. Lo confirmamos con el proveedor en breve.',
         };
       }
-      return { ok: true, supOrderId };
+      return { ok: true, supOrderId, shopifyOrderNumber };
     } catch (error) {
       // El detalle queda solo en los logs del servidor (puede traer credenciales
       // o respuestas crudas del proveedor).
@@ -111,6 +134,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       return {
         ok: true,
         pending: true,
+        shopifyOrderNumber,
         message: 'Pedido registrado. Lo confirmamos con el proveedor en breve.',
       };
     }
