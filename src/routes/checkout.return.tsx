@@ -37,6 +37,7 @@ function CheckoutReturn() {
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
   const [result, setResult] = useState<FulfillmentResult | null>(null);
   const [resyncing, setResyncing] = useState(false);
+  const [autoTries, setAutoTries] = useState(0);
 
   const resync = () => {
     if (!sessionId || resyncing) return;
@@ -67,6 +68,26 @@ function CheckoutReturn() {
     };
   }, [sessionId]);
 
+  // Reintento automático: si Shopify todavía no devolvió el número de pedido,
+  // volvemos a pedirlo (la creación es idempotente, no duplica pedidos).
+  useEffect(() => {
+    if (!sessionId || state !== 'done' || resyncing) return;
+    if (result?.shopifyOrderNumber) return;
+    if (autoTries >= 3) return;
+    const timer = setTimeout(() => {
+      setAutoTries((n) => n + 1);
+      setResyncing(true);
+      fulfillSupOrder({ data: { sessionId, environment: getStripeEnvironment() } })
+        .then((res) => setResult(res))
+        .catch(() => undefined)
+        .finally(() => setResyncing(false));
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
+
+  const orderNumber = isFreeOrder ? freeOrderNumber : result?.shopifyOrderNumber;
+
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-24 text-center max-w-xl">
@@ -82,12 +103,19 @@ function CheckoutReturn() {
         </p>
 
 
-        {isFreeOrder && freeOrderNumber && (
-          <div className="rounded-lg border border-border p-5 text-left text-sm mb-8">
-            <p className="text-base font-semibold">Pedido {freeOrderNumber}</p>
-            <p className="text-muted-foreground">
-              Ya quedó registrado en la tienda. Te escribimos con el seguimiento del envío.
+        {(sessionId || isFreeOrder) && (
+          <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-6 mb-8">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
+              Número de pedido
             </p>
+            {orderNumber ? (
+              <p className="font-display text-4xl font-bold">{orderNumber}</p>
+            ) : (
+              <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generando tu número de pedido…
+              </p>
+            )}
           </div>
         )}
 
@@ -100,11 +128,7 @@ function CheckoutReturn() {
 
         {sessionId && state === 'done' && result && (
           <div className="rounded-lg border border-border p-5 text-left text-sm space-y-2 mb-8">
-            {result.shopifyOrderNumber && (
-              <p className="text-base font-semibold">
-                Pedido {result.shopifyOrderNumber}
-              </p>
-            )}
+
             {result.supOrderId ? (
               <>
                 <p className="flex items-center gap-2 font-medium">
