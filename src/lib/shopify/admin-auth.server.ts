@@ -8,12 +8,14 @@
  * Los tokens estáticos antiguos (`shpat_`, `shpca_`, `shppa_`, `shpss_`) ya no
  * se aceptan: Shopify cambió el modelo de apps y quedaron obsoletos.
  *
-
-
+ * Todo token recibido pasa por una validación estricta de formato antes de
+ * usarse o cachearse. Si el formato es inesperado, se descarta (no se envía a
+ * Shopify ni se guarda) y la operación falla de forma controlada.
  *
  * Ningún valor se registra en logs ni se envía al navegador. El token temporal
  * se guarda solo en memoria del worker y se renueva antes de expirar.
  */
+
 
 import { SHOPIFY_STORE_PERMANENT_DOMAIN } from './storefront';
 import { assertAllowedShopifyUrl } from '../security/connection-audit';
