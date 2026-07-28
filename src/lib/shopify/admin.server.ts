@@ -463,6 +463,9 @@ export const REQUIRED_SHOPIFY_SCOPES = [
   // Carritos abandonados del checkout propio (Orders → Drafts).
   'read_draft_orders',
   'write_draft_orders',
+  // Sincronización automática de compradores (Clientes → Customers).
+  'read_customers',
+  'write_customers',
 ] as const;
 
 const APP_SCOPES = `
