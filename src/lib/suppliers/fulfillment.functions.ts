@@ -2,6 +2,9 @@ import { createServerFn } from '@tanstack/react-start';
 
 export interface FulfillmentResult {
   ok: boolean;
+  /** El pago entró pero el proveedor todavía no confirmó el pedido. */
+  pending?: boolean;
+
   paid: boolean;
   supOrderId?: string;
   status?: string;
@@ -37,12 +40,16 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
       return { ok: false, paid: false, message: 'El pago todavía no está confirmado.' };
     }
 
+    const { runPostPaymentTasks } = await import('@/lib/orders/post-payment.server');
+
     // Ya despachado: solo leemos estado y tracking.
     if (snapshot.supOrderId) {
+      await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
       return { ...(await readTracking(snapshot.supOrderId, getOrderDetail)), paid: true };
     }
 
     if (!snapshot.items.length) {
+      await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
       return {
         ok: true,
         paid: true,
@@ -73,6 +80,18 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
       })),
     };
 
+    // El pago ya se cobró: pase lo que pase con el proveedor, el pedido se
+    // registra en Shopify y el cliente recibe un email.
+    const finishDelayed = async (message: string): Promise<FulfillmentResult> => {
+      await runPostPaymentTasks({
+        sessionId: data.sessionId,
+        environment: data.environment,
+        snapshot,
+        delayed: true,
+      });
+      return { ok: true, paid: true, pending: true, message };
+    };
+
     try {
       const result = (await createPurchaseOrder(payload)) as Record<string, unknown>;
       const body = (result.data ?? result) as Record<string, unknown>;
@@ -80,18 +99,19 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
         body.order_id ?? body.id ?? body.order_sn ?? body.order_no ?? '',
       );
       if (!supOrderId) {
-        return {
-          ok: false,
-          paid: true,
-          message: `SUP no devolvió un número de pedido: ${JSON.stringify(result).slice(0, 300)}`,
-        };
+        console.warn('fulfillSupOrder: SUP sin order_id', data.sessionId);
+        return finishDelayed('Pago confirmado. Estamos terminando de confirmar el envío con el proveedor.');
       }
       await markSessionFulfilled(data.sessionId, data.environment, supOrderId);
+      await runPostPaymentTasks({ sessionId: data.sessionId, environment: data.environment, snapshot });
       return { ...(await readTracking(supOrderId, getOrderDetail)), paid: true };
     } catch (error) {
-      return { ok: false, paid: true, message: (error as Error).message };
+      // El detalle crudo del proveedor queda solo en los logs del servidor.
+      console.error('fulfillSupOrder', data.sessionId, (error as Error).message);
+      return finishDelayed('Pago confirmado. Estamos terminando de confirmar el envío con el proveedor.');
     }
   });
+
 
 async function readTracking(
   supOrderId: string,
