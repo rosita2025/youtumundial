@@ -177,6 +177,7 @@ const Checkout = () => {
     if (isFreeOrder) {
       const reference = `YTM-${Date.now()}`;
       try {
+        // Número visible del pedido en Shopify, para mostrarlo al cliente.
         const result = await createSupOrder({
           data: {
             reference,
@@ -192,6 +193,7 @@ const Checkout = () => {
           toast.error(result.message ?? 'No se pudo registrar el pedido.');
           return;
         }
+        freeOrderNumber = result.shopifyOrderNumber;
         if (result.pending) {
           toast.success('¡Gracias por tu compra! Pedido registrado, lo confirmamos en breve.');
         } else {
@@ -203,7 +205,11 @@ const Checkout = () => {
       }
 
       clearCart();
-      navigate('/checkout/return?free=1');
+      navigate(
+        freeOrderNumber
+          ? `/checkout/return?free=1&order=${encodeURIComponent(freeOrderNumber)}`
+          : '/checkout/return?free=1',
+      );
       return;
     }
 
