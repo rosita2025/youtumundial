@@ -200,7 +200,7 @@ export async function createShopifyOrder(
 
 
 
-  const buildOrder = (opts: { withPhone: boolean; withAddress: boolean }) => {
+  const buildOrder = (opts: { withPhone: boolean; withAddress: boolean; withVariant: boolean }) => {
     const shippingAddress =
       input.address && opts.withAddress
         ? {
@@ -228,17 +228,21 @@ export async function createShopifyOrder(
       financialStatus: input.financialStatus ?? 'PAID',
 
       ...(shippingAddress && { shippingAddress, billingAddress: shippingAddress }),
-      lineItems: input.lines.map((line) => ({
-        title: line.title.slice(0, 250),
-        quantity: line.quantity,
-        sku: line.sku || undefined,
-        priceSet: {
-          shopMoney: {
-            amount: line.price.toFixed(2),
-            currencyCode: (input.currency || 'USD').toUpperCase(),
+      lineItems: input.lines.map((line, index) => {
+        const variantId = opts.withVariant ? resolvedVariants[index] : undefined;
+        return {
+          // Con `variantId` el pedido queda enlazado al producto real de la
+          // tienda: se ve la foto, la variante y descuenta el inventario.
+          ...(variantId ? { variantId } : { title: line.title.slice(0, 250), sku: line.sku || undefined }),
+          quantity: line.quantity,
+          priceSet: {
+            shopMoney: {
+              amount: line.price.toFixed(2),
+              currencyCode: (input.currency || 'USD').toUpperCase(),
+            },
           },
-        },
-      })),
+        };
+      }),
     };
   };
 
@@ -255,9 +259,11 @@ export async function createShopifyOrder(
     };
   };
 
+  const hasVariants = resolvedVariants.some(Boolean);
+
   try {
-    // Intento 1: pedido completo.
-    let attemptOpts = { withPhone: Boolean(phone), withAddress: true };
+    // Intento 1: pedido completo, enlazado a las variantes reales.
+    let attemptOpts = { withPhone: Boolean(phone), withAddress: true, withVariant: hasVariants };
     let { created, errors } = await send(buildOrder(attemptOpts));
 
     // Reintento automático degradando el dato que Shopify rechazó,
@@ -269,15 +275,26 @@ export async function createShopifyOrder(
           e.message.toLowerCase().includes(needle),
       );
 
+    if (!created && errors.length && attemptOpts.withVariant && (failedOn('variant') || failedOn('lineitem'))) {
+      attemptOpts = { ...attemptOpts, withVariant: false };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
+    }
+
     if (!created && errors.length && (failedOn('phone') || attemptOpts.withPhone)) {
-      attemptOpts = { withPhone: false, withAddress: true };
+      attemptOpts = { ...attemptOpts, withPhone: false, withAddress: true };
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
 
     if (!created && errors.length && (failedOn('address') || failedOn('zip') || failedOn('province') || failedOn('country'))) {
-      attemptOpts = { withPhone: false, withAddress: false };
+      attemptOpts = { ...attemptOpts, withPhone: false, withAddress: false };
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
+
+    if (!created && errors.length && attemptOpts.withVariant) {
+      attemptOpts = { ...attemptOpts, withVariant: false };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
+    }
+
 
     if (!created) {
       console.error('createShopifyOrder userErrors', input.reference, errors);
