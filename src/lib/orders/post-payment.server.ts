@@ -18,10 +18,11 @@ export async function runPostPaymentTasks(params: {
   snapshot: StripeOrderSnapshot;
   /** true cuando SUP no confirmó el pedido y queda pendiente. */
   delayed?: boolean;
-}) {
+}): Promise<{ shopifyOrderName?: string }> {
   const { snapshot, sessionId, environment } = params;
   const { markSessionMeta } = await import('@/lib/stripe.server');
   const patch: Record<string, string> = {};
+  let shopifyOrderName = snapshot.shopifyOrderName;
 
   // 1) Pedido en Shopify (una sola vez).
   if (!snapshot.shopifyOrderId && snapshot.items.length) {
@@ -43,7 +44,13 @@ export async function runPostPaymentTasks(params: {
         sku: item.supVariantSku,
       })),
     });
-    if (result.ok && result.orderId) patch.shopify_order_id = result.orderId;
+    if (result.ok && result.orderId) {
+      patch.shopify_order_id = result.orderId;
+      if (result.orderName) {
+        patch.shopify_order_name = result.orderName;
+        shopifyOrderName = result.orderName;
+      }
+    }
   }
 
   // 2) Email al cliente (confirmación o aviso de demora), una sola vez.
@@ -68,4 +75,6 @@ export async function runPostPaymentTasks(params: {
 
   if (params.delayed) patch.sup_pending = '1';
   if (Object.keys(patch).length) await markSessionMeta(sessionId, environment, patch);
+
+  return { shopifyOrderName };
 }
