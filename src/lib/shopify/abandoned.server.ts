@@ -204,6 +204,29 @@ export async function syncAbandonedCheckout(
     return { ok: false, message };
   }
 
+  // Sincroniza el correo del comprador con Clientes de Shopify aunque el
+  // carrito quede abandonado (permite recuperación por correo desde Shopify).
+  try {
+    const { upsertShopifyCustomer } = await import('./customers.server');
+    await upsertShopifyCustomer({
+      email: input.email,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      phone: input.phone,
+      address: {
+        line1: input.address1 || input.address,
+        line2: input.address2,
+        city: input.city,
+        state: input.province,
+        postal_code: input.postalCode,
+        country: input.countryCode,
+      },
+      extraTags: ['carrito-abandonado'],
+    });
+  } catch (error) {
+    console.warn('syncAbandonedCheckout(customer)', (error as Error).message);
+  }
+
   const draftInput = buildDraftInput(input);
   let lastCause = 'Motivo desconocido.';
   let operation: 'crear' | 'actualizar' = 'crear';

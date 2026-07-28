@@ -243,6 +243,27 @@ export async function createShopifyOrder(
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
   const phone = normalizePhone(input.phone);
 
+  // Sincronización automática del comprador con Clientes de Shopify:
+  // así el correo del checkout propio queda registrado y Shopify envía
+  // los correos automáticos del pedido. Nunca bloquea la compra.
+  let customerId: string | undefined;
+  if (input.email) {
+    try {
+      const { upsertShopifyCustomer } = await import('./customers.server');
+      const customer = await upsertShopifyCustomer({
+        email: input.email,
+        firstName: firstName || undefined,
+        lastName: rest.join(' ') || undefined,
+        phone: input.phone,
+        address: input.address,
+        extraTags: ['comprador'],
+      });
+      customerId = customer.customerId;
+    } catch (error) {
+      console.warn('createShopifyOrder(customer)', (error as Error).message);
+    }
+  }
+
   // Resolvemos las variantes reales (por SKU) una sola vez por pedido.
   const resolvedVariants = await Promise.all(
     input.lines.map(async (line) =>
@@ -254,7 +275,12 @@ export async function createShopifyOrder(
 
 
 
-  const buildOrder = (opts: { withPhone: boolean; withAddress: boolean; withVariant: boolean }) => {
+  const buildOrder = (opts: {
+    withPhone: boolean;
+    withAddress: boolean;
+    withVariant: boolean;
+    withCustomer?: boolean;
+  }) => {
     const shippingAddress =
       input.address && opts.withAddress
         ? {
@@ -272,6 +298,10 @@ export async function createShopifyOrder(
 
     return {
       email: input.email || undefined,
+      // Enlaza el pedido con la ficha del cliente en Shopify.
+      ...(customerId && opts.withCustomer !== false
+        ? { customer: { toAssociate: customerId } }
+        : {}),
       ...(opts.withPhone && phone ? { phone } : {}),
       tags: [
         'youtumundial-checkout',
@@ -325,7 +355,12 @@ export async function createShopifyOrder(
 
   try {
     // Intento 1: pedido completo, enlazado a las variantes reales.
-    let attemptOpts = { withPhone: Boolean(phone), withAddress: true, withVariant: hasVariants };
+    let attemptOpts = {
+      withPhone: Boolean(phone),
+      withAddress: true,
+      withVariant: hasVariants,
+      withCustomer: Boolean(customerId),
+    };
     let { created, errors } = await send(buildOrder(attemptOpts));
 
     // Reintento automático degradando el dato que Shopify rechazó,
@@ -336,6 +371,11 @@ export async function createShopifyOrder(
           (e.field ?? []).some((f) => f.toLowerCase().includes(needle)) ||
           e.message.toLowerCase().includes(needle),
       );
+
+    if (!created && errors.length && attemptOpts.withCustomer && failedOn('customer')) {
+      attemptOpts = { ...attemptOpts, withCustomer: false };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
+    }
 
     if (!created && errors.length && attemptOpts.withVariant && (failedOn('variant') || failedOn('lineitem'))) {
       attemptOpts = { ...attemptOpts, withVariant: false };
@@ -463,6 +503,9 @@ export const REQUIRED_SHOPIFY_SCOPES = [
   // Carritos abandonados del checkout propio (Orders → Drafts).
   'read_draft_orders',
   'write_draft_orders',
+  // Sincronización automática de compradores (Clientes → Customers).
+  'read_customers',
+  'write_customers',
 ] as const;
 
 const APP_SCOPES = `
