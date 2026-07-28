@@ -14,6 +14,7 @@ import { fetchStoreCatalog } from '../suppliers/catalog.functions';
 import { SUP_MARGIN } from '../suppliers/sup-selection';
 import { readPublishedIds } from '../suppliers/published-store';
 import supCatalog from '../suppliers/sup-catalog.json';
+import { fetchShopifyProducts } from '../shopify/storefront';
 
 const CACHE_TTL = 5 * 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
