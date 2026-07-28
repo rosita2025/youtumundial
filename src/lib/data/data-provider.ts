@@ -239,12 +239,15 @@ export async function getFeaturedProducts(limit: number = 8): Promise<Product[]>
 }
 
 /**
- * Get new arrivals
+ * Novedades: lo último importado. Si no hay una colección "new-arrivals",
+ * mostramos los productos más nuevos del catálogo real.
  */
 export async function getNewArrivals(limit: number = 4): Promise<Product[]> {
-  const products = await getProducts({ collection: 'new-arrivals' }, 'newest');
+  const tagged = await getProducts({ collection: 'new-arrivals' }, 'newest');
+  const products = tagged.length > 0 ? tagged : await getProducts(undefined, 'newest');
   return products.slice(0, limit);
 }
+
 
 /**
  * Get related products (same collection, excluding current)
