@@ -1,14 +1,14 @@
 /**
  * Shopify Storefront API — catálogo de Youtumundial.
  *
- * Los productos se import { cleanDescription } from '@/lib/data/description';
-importan desde SUP Dropshipping hacia Shopify (imágenes en
+ * Los productos se importan desde SUP Dropshipping hacia Shopify (imágenes en
  * el CDN de Shopify, variantes limpias, precio de venta). La tienda lee ese
  * catálogo por la Storefront API, y el SKU de cada variante conserva el código
  * de SUP para poder crear el pedido al proveedor después del pago.
  */
 
 import type { Product, ProductVariant } from '../data/types';
+import { cleanDescription } from '../data/description';
 import { assertAllowedShopifyUrl } from '../security/connection-audit';
 
 export const SHOPIFY_API_VERSION = '2025-07';

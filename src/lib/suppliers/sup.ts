@@ -130,7 +130,7 @@ export function mapSupProduct(raw: SupRawProduct, margin: number = DEFAULT_MARGI
     id: `sup-${raw.id}`,
     slug: slugify(raw.name),
     title: raw.name,
-    description: raw.description ?? '',
+    description: cleanDescription(raw.description),
     price,
     images,
     variants,
