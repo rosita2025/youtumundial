@@ -199,7 +199,7 @@ const Checkout = () => {
 
   if (cart.items.length === 0) {
     return (
-      <Layout>
+      <CheckoutShell>
         <div className="container mx-auto px-4 py-24 text-center">
           <h1 className="font-display text-3xl mb-4">Tu carrito está vacío</h1>
           <p className="text-muted-foreground mb-8">Agregá prendas antes de pasar por caja.</p>
@@ -207,7 +207,7 @@ const Checkout = () => {
             <Link to="/products">Ver productos</Link>
           </Button>
         </div>
-      </Layout>
+      </CheckoutShell>
     );
   }
 
