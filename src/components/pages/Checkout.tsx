@@ -190,6 +190,8 @@ const Checkout = () => {
   }));
 
   const handlePay = async () => {
+    // Un solo envío por click: evita pedidos duplicados si se toca dos veces.
+    if (payingRef.current) return;
     if (!validation.ok) {
       setErrors(validation.errors);
       toast.error('Completá todos tus datos de envío para continuar.');
@@ -197,8 +199,13 @@ const Checkout = () => {
     }
 
     if (isFreeOrder) {
-      const reference = `YTM-${Date.now()}`;
+      // Referencia estable por intento: si se reintenta, el servidor la
+      // reconoce y no crea un segundo pedido en Shopify.
+      if (!freeReferenceRef.current) freeReferenceRef.current = `YTM-${Date.now()}`;
+      const reference = freeReferenceRef.current;
       let freeOrderNumber: string | undefined;
+      payingRef.current = true;
+      setPaying(true);
       try {
         // Número visible del pedido en Shopify, para mostrarlo al cliente.
         const result = await createSupOrder({
@@ -216,6 +223,8 @@ const Checkout = () => {
         });
         if (!result.ok) {
           toast.error(result.message ?? 'No se pudo registrar el pedido.');
+          payingRef.current = false;
+          setPaying(false);
           return;
         }
         freeOrderNumber = result.shopifyOrderNumber;
@@ -226,6 +235,8 @@ const Checkout = () => {
         }
       } catch (e) {
         toast.error((e as Error).message);
+        payingRef.current = false;
+        setPaying(false);
         return;
       }
 
@@ -571,7 +582,7 @@ const Checkout = () => {
               <Button
                 className="w-full mt-6"
                 size="lg"
-                disabled={missingCustomer}
+                disabled={missingCustomer || paying || (method === 'card' && showStripe)}
                 onClick={() => void handlePay()}
               >
                 {isFreeOrder
