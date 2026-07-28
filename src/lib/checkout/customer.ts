@@ -158,3 +158,34 @@ export function toE164(phone: string): string {
 export function fullName(value: Pick<CustomerForm, 'firstName' | 'lastName'>): string {
   return `${value.firstName} ${value.lastName}`.trim();
 }
+
+/**
+ * Validación mínima de los datos de envío que llegan al servidor en los
+ * pedidos (Yape/manual, SUP directo). El navegador ya valida campo por campo,
+ * pero acá volvemos a exigir lo indispensable para poder despachar: nombre,
+ * correo, teléfono, dirección con calle/ciudad/código postal y país.
+ */
+export function validateShippingSnapshot(input: {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  countryCode?: string;
+}): { ok: boolean; message?: string } {
+  const name = String(input.name ?? '').trim();
+  const email = String(input.email ?? '').trim();
+  const phone = String(input.phone ?? '').trim();
+  const address = String(input.address ?? '').trim();
+  const country = String(input.countryCode ?? '').trim();
+
+  if (name.length < 3 || !name.includes(' ')) return { ok: false, message: 'Falta el nombre y apellido.' };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 160) {
+    return { ok: false, message: 'El correo no es válido.' };
+  }
+  if (phone.replace(/\D/g, '').length < 8) return { ok: false, message: 'Falta un teléfono válido.' };
+  if (address.length < 12 || address.split(',').filter((p) => p.trim()).length < 3) {
+    return { ok: false, message: 'Falta la dirección completa (calle, ciudad, código postal y país).' };
+  }
+  if (!/^[A-Za-z]{2}$/.test(country)) return { ok: false, message: 'Falta el país de destino.' };
+  return { ok: true };
+}

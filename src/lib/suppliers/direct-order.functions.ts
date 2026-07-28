@@ -39,6 +39,13 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
     items: Array.isArray(input?.items) ? input.items : [],
   }))
   .handler(async ({ data }): Promise<DirectOrderResult> => {
+
+    // Segunda barrera: los datos de envío se revalidan en el servidor.
+    const { validateShippingSnapshot } = await import('@/lib/checkout/customer');
+    const shippingCheck = validateShippingSnapshot(data);
+    if (!shippingCheck.ok) {
+      return { ok: false, message: shippingCheck.message };
+    }
     const { priceOrder, normalizeCartLines } = await import('@/lib/checkout/pricing.server');
     const { shippingCountries } = await import('@/lib/checkout/config');
     const { isFreeOrderAllowed } = await import('@/lib/checkout/secret-coupon.server');
