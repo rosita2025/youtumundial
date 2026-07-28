@@ -92,7 +92,9 @@ export const createManualOrder = createServerFn({ method: 'POST' })
         quantity: line.quantity,
         price: line.amountInCents / 100,
         sku: line.supVariantSku,
+        variantId: line.shopifyVariantId,
       })),
+
     });
 
     if (!shopify.ok) {
