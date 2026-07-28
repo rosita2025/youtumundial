@@ -243,6 +243,27 @@ export async function createShopifyOrder(
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
   const phone = normalizePhone(input.phone);
 
+  // Sincronización automática del comprador con Clientes de Shopify:
+  // así el correo del checkout propio queda registrado y Shopify envía
+  // los correos automáticos del pedido. Nunca bloquea la compra.
+  let customerId: string | undefined;
+  if (input.email) {
+    try {
+      const { upsertShopifyCustomer } = await import('./customers.server');
+      const customer = await upsertShopifyCustomer({
+        email: input.email,
+        firstName: firstName || undefined,
+        lastName: rest.join(' ') || undefined,
+        phone: input.phone,
+        address: input.address,
+        extraTags: ['comprador'],
+      });
+      customerId = customer.customerId;
+    } catch (error) {
+      console.warn('createShopifyOrder(customer)', (error as Error).message);
+    }
+  }
+
   // Resolvemos las variantes reales (por SKU) una sola vez por pedido.
   const resolvedVariants = await Promise.all(
     input.lines.map(async (line) =>
