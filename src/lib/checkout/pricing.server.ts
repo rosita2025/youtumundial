@@ -116,7 +116,9 @@ export async function priceOrder(params: {
 
   let coupon: Coupon | null = null;
   if (params.couponCode) {
-    const result = findCoupon(params.couponCode, subtotal);
+    const { getSecretTestCoupon } = await import('./secret-coupon.server');
+    const secret = getSecretTestCoupon();
+    const result = findCoupon(params.couponCode, subtotal, secret ? [secret] : []);
     if (!result.ok) throw new Error(result.message);
     coupon = result.coupon;
   }
@@ -130,9 +132,12 @@ export async function priceOrder(params: {
   const total = Math.round((discounted + shipping) * 100) / 100;
 
   // Defensa en profundidad: un pedido de $0 despacha mercadería real y la pagás
-  // vos en la wallet de SUP. Solo se permite si lo habilitás a propósito.
-  if (total < 0.5 && process.env.ALLOW_FREE_TEST_ORDERS !== 'true') {
-    throw new Error('Este cupón no está disponible en este momento.');
+  // vos en la wallet de SUP. Solo lo permite el cupón de prueba secreto.
+  if (total < 0.5) {
+    const { isFreeOrderAllowed } = await import('./secret-coupon.server');
+    if (!isFreeOrderAllowed(coupon?.code)) {
+      throw new Error('Este cupón no está disponible en este momento.');
+    }
   }
 
   // El descuento se reparte proporcionalmente entre las líneas para Stripe.
