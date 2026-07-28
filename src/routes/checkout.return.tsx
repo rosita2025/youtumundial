@@ -101,25 +101,33 @@ function CheckoutReturn() {
     return () => clearTimeout(timer);
   }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
 
-  const orderNumber = isFreeOrder ? freeOrderNumber : result?.shopifyOrderNumber;
+  const orderNumber =
+    isFreeOrder || isManualOrder ? freeOrderNumber : result?.shopifyOrderNumber;
+  const confirmed = Boolean(sessionId) || isFreeOrder || isManualOrder;
 
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-24 text-center max-w-xl">
         <h1 className="font-display text-3xl md:text-4xl mb-4">
-          {sessionId || isFreeOrder ? '¡Gracias por tu compra!' : 'No encontramos tu pago'}
+          {isManualOrder
+            ? '¡Pedido registrado!'
+            : confirmed
+              ? '¡Gracias por tu compra!'
+              : 'No encontramos tu pago'}
         </h1>
         <p className="text-muted-foreground mb-8">
-          {isFreeOrder
-            ? 'Tu pedido con cupón quedó confirmado automáticamente. Te escribimos por email con el seguimiento del envío.'
-            : sessionId
-              ? 'Recibimos tu pago y ya estamos preparando el envío. Te escribimos por email con el seguimiento.'
-              : 'Si creés que hubo un error, escribinos y lo revisamos.'}
+          {isManualOrder
+            ? 'Tu pedido quedó registrado como pendiente de pago. Enviános la captura de tu Yape o Plin por WhatsApp y lo confirmamos para despacharlo.'
+            : isFreeOrder
+              ? 'Tu pedido con cupón quedó confirmado automáticamente. Te escribimos por email con el seguimiento del envío.'
+              : sessionId
+                ? 'Recibimos tu pago y ya estamos preparando el envío. Te escribimos por email con el seguimiento.'
+                : 'Si creés que hubo un error, escribinos y lo revisamos.'}
         </p>
 
 
-        {(sessionId || isFreeOrder) && (
+        {confirmed && (
           <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-6 mb-8">
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
               Número de pedido
@@ -132,8 +140,12 @@ function CheckoutReturn() {
                 Generando tu número de pedido…
               </p>
             )}
+            {isManualOrder && reference && (
+              <p className="mt-2 text-xs text-muted-foreground">Referencia: {reference}</p>
+            )}
           </div>
         )}
+
 
         {sessionId && state === 'loading' && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
