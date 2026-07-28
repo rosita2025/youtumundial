@@ -63,7 +63,9 @@ async function loadCatalog(): Promise<Product[]> {
   }
   try {
     const res = await fetchStoreCatalog();
-    return res.products ?? [];
+    const { mapSupCatalog, filterInStock } = await import('@/lib/suppliers/sup');
+    const { SUP_MARGIN } = await import('@/lib/suppliers/sup-selection');
+    return filterInStock(mapSupCatalog(res.products as never[], SUP_MARGIN));
   } catch {
     return [];
   }
