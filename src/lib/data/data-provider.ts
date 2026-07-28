@@ -12,7 +12,6 @@ import { readSupCatalog } from '../suppliers/local-catalog';
 import { fetchStoreCatalog } from '../suppliers/catalog.functions';
 import { SUP_MARGIN } from '../suppliers/sup-selection';
 import { readPublishedIds } from '../suppliers/published-store';
-import { filterAuthorizedOrigins } from '../suppliers/origins';
 import supCatalog from '../suppliers/sup-catalog.json';
 import { fetchShopifyProducts } from '../shopify/storefront';
 
@@ -43,7 +42,7 @@ function applyPublishedSelection(products: Product[]): Product[] {
  */
 async function getCatalog(): Promise<Product[]> {
   if (catalogCache && Date.now() - catalogCache.at < CACHE_TTL) {
-    return filterAuthorizedOrigins(catalogCache.products);
+    return catalogCache.products;
   }
 
   // 1) Shopify: catálogo publicado (los productos de SUP se importan acá).
@@ -51,7 +50,7 @@ async function getCatalog(): Promise<Product[]> {
     const shopifyProducts = filterInStock(await fetchShopifyProducts(100));
     if (shopifyProducts.length > 0) {
       catalogCache = { at: Date.now(), products: shopifyProducts };
-      return filterAuthorizedOrigins(shopifyProducts);
+      return shopifyProducts;
     }
   } catch {
     // seguimos con SUP en vivo
@@ -63,7 +62,7 @@ async function getCatalog(): Promise<Product[]> {
       const products = applyPublishedSelection(filterInStock(mapSupCatalog(res.products as SupRawProduct[], SUP_MARGIN)));
       if (products.length > 0) {
         catalogCache = { at: Date.now(), products };
-        return filterAuthorizedOrigins(products);
+        return products;
       }
     }
   } catch {
@@ -73,13 +72,11 @@ async function getCatalog(): Promise<Product[]> {
   const fromBrowser = readSupCatalog();
   if (fromBrowser.length > 0) {
     const products = applyPublishedSelection(filterInStock(mapSupCatalog(fromBrowser, SUP_MARGIN)));
-    if (products.length > 0) return filterAuthorizedOrigins(products);
+    if (products.length > 0) return products;
   }
 
   // Sin catálogo real no mostramos productos de demo: mejor lista vacía.
-  return filterAuthorizedOrigins(
-    applyPublishedSelection(filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN))),
-  );
+  return applyPublishedSelection(filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN)));
 
 }
 
@@ -270,13 +267,4 @@ export async function getRelatedProducts(
     )
     .slice(0, limit);
   return related;
-}
-
-/**
- * Catálogo SIN filtrar por orígenes desautorizados.
- * Lo usa el panel de orígenes para poder ver (y volver a autorizar) todo.
- */
-export async function getCatalogForAudit(): Promise<Product[]> {
-  const visible = await getCatalog();
-  return catalogCache ? catalogCache.products : visible;
 }
