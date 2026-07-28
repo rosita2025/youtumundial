@@ -55,7 +55,14 @@ async function handle(request: Request) {
     publishedProductIds: SUP_PUBLISHED_IDS,
   });
 
-  return Response.json(report, { status: report.ok ? 200 : 409 });
+  const { checkShopifyAdminScopes } = await import("@/lib/shopify/admin.server");
+  const shopifyScopes = await checkShopifyAdminScopes();
+
+  return Response.json(
+    { ...report, shopifyAdmin: shopifyScopes },
+    { status: report.ok && shopifyScopes.ok ? 200 : 409 },
+  );
+
 }
 
 export const Route = createFileRoute("/api/public/audit/connections")({
