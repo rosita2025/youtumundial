@@ -7,7 +7,6 @@
  */
 
 import { Product, Collection, FilterOptions, SortOption } from './types';
-import { dummyProducts, dummyCollections } from './dummy-data';
 import { mapSupCatalog, filterInStock, SupRawProduct } from '../suppliers/sup';
 import { readSupCatalog } from '../suppliers/local-catalog';
 import { fetchStoreCatalog } from '../suppliers/catalog.functions';
@@ -16,8 +15,9 @@ import { readPublishedIds } from '../suppliers/published-store';
 import supCatalog from '../suppliers/sup-catalog.json';
 import { fetchShopifyProducts } from '../shopify/storefront';
 
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
+
 
 /**
  * Publicación manual: si el admin eligió productos concretos, solo esos se
@@ -73,8 +73,9 @@ async function getCatalog(): Promise<Product[]> {
     if (products.length > 0) return products;
   }
 
-  const imported = applyPublishedSelection(filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN)));
-  return imported.length > 0 ? imported : dummyProducts;
+  // Sin catálogo real no mostramos productos de demo: mejor lista vacía.
+  return applyPublishedSelection(filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN)));
+
 }
 
 
@@ -168,29 +169,50 @@ export async function getProductBySku(sku: string): Promise<{ product: Product; 
   return bySlug ? { product: bySlug, variantId: bySlug.variants[0]?.id ?? '' } : null;
 }
 
+/** Título legible a partir de un slug de categoría. */
+const titleize = (slug: string) =>
+  slug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
 /**
- * Get all collections
+ * Colecciones REALES: se arman con las categorías de los productos que están
+ * importados en tu catálogo. Si un producto no trae categoría, no inventamos
+ * colecciones de demo.
  */
 export async function getCollections(): Promise<Collection[]> {
-  // TODO: Replace with Shopify API call
-  // if (SHOPIFY_ENABLED) {
-  //   return shopifyClient.getCollections();
-  // }
+  const catalog = await getCatalog();
+  const map = new Map<string, Product[]>();
+  for (const product of catalog) {
+    for (const slug of product.collections) {
+      const key = String(slug).trim().toLowerCase();
+      if (!key) continue;
+      map.set(key, [...(map.get(key) ?? []), product]);
+    }
+  }
 
-  return dummyCollections;
+  return [...map.entries()].map(([slug, products]) => ({
+    id: `col-${slug}`,
+    slug,
+    title: titleize(slug),
+    description: '',
+    image: products[0]?.images[0] ?? {
+      id: `col-${slug}-img`,
+      url: '',
+      altText: titleize(slug),
+      width: 800,
+      height: 1000,
+    },
+    productCount: products.length,
+  }));
 }
 
 /**
  * Get a single collection by slug
  */
 export async function getCollection(slug: string): Promise<Collection | null> {
-  // TODO: Replace with Shopify API call
-  // if (SHOPIFY_ENABLED) {
-  //   return shopifyClient.getCollection(slug);
-  // }
-
-  return dummyCollections.find(c => c.slug === slug) || null;
+  const collections = await getCollections();
+  return collections.find(c => c.slug === slug) || null;
 }
+
 
 /**
  * Get products for a specific collection
@@ -218,12 +240,15 @@ export async function getFeaturedProducts(limit: number = 8): Promise<Product[]>
 }
 
 /**
- * Get new arrivals
+ * Novedades: lo último importado. Si no hay una colección "new-arrivals",
+ * mostramos los productos más nuevos del catálogo real.
  */
 export async function getNewArrivals(limit: number = 4): Promise<Product[]> {
-  const products = await getProducts({ collection: 'new-arrivals' }, 'newest');
+  const tagged = await getProducts({ collection: 'new-arrivals' }, 'newest');
+  const products = tagged.length > 0 ? tagged : await getProducts(undefined, 'newest');
   return products.slice(0, limit);
 }
+
 
 /**
  * Get related products (same collection, excluding current)

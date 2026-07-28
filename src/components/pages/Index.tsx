@@ -41,18 +41,22 @@ const Index = () => {
   return (
     <Layout>
       <Hero />
-      <FeaturedCollections collections={collections} />
+      {collections.length > 0 && <FeaturedCollections collections={collections} />}
+      {featuredProducts.length > 0 && (
       <TrendingProducts
         products={featuredProducts}
         title="Trending Now"
         subtitle="Our most popular picks this season"
       />
+      )}
+      {newArrivals.length > 0 && (
       <TrendingProducts
         products={newArrivals}
         title="New Arrivals"
         subtitle="Fresh styles just landed"
-        viewAllLink="/collections/new-arrivals"
+        viewAllLink="/products"
       />
+      )}
       <Newsletter />
     </Layout>
   );
