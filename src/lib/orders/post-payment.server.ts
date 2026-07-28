@@ -25,7 +25,7 @@ export async function runPostPaymentTasks(params: {
   return withIdempotency(
     idempotencyKey('post-payment', params.sessionId),
     () => runPostPaymentTasksNow(params),
-    { isSuccess: () => true },
+    { isSuccess: () => true, ttlMs: 60_000 },
   );
 }
 
