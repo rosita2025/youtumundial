@@ -148,9 +148,33 @@ function buildDraftInput(input: AbandonedCheckoutInput) {
   };
 }
 
+/** Errores que sí vale la pena reintentar (red, límite de tasa, 5xx de Shopify). */
+function isRetryable(message: string) {
+  const m = message.toLowerCase();
+  return (
+    m.includes('throttl') ||
+    m.includes('rate limit') ||
+    m.includes('timeout') ||
+    m.includes('network') ||
+    m.includes('fetch failed') ||
+    m.includes('econn') ||
+    m.includes('temporar') ||
+    /\b(429|500|502|503|504)\b/.test(m)
+  );
+}
+
+const MAX_ATTEMPTS = 3;
+const BASE_DELAY_MS = 600;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
  * Crea o actualiza el carrito abandonado en Shopify.
- * Es idempotente: una sola referencia = un solo borrador (no duplica).
+ *
+ * Es idempotente: una sola referencia = un solo borrador (no duplica), porque
+ * antes de crear siempre se busca el borrador existente por su etiqueta.
+ * Ante fallos transitorios reintenta hasta 3 veces con espera creciente y, si
+ * aun así falla, deja la causa en el log y avisa al administrador.
  */
 export async function syncAbandonedCheckout(
   input: AbandonedCheckoutInput,
@@ -159,40 +183,80 @@ export async function syncAbandonedCheckout(
     return { ok: false, message: 'Datos insuficientes.' };
   }
   if (!(await canWriteDrafts())) {
-    return { ok: false, message: 'La app de Shopify no tiene el permiso "write_draft_orders".' };
+    const message = 'La app de Shopify no tiene el permiso "write_draft_orders".';
+    const { alertAdmin } = await import('@/lib/notifications/admin-alert.server');
+    await alertAdmin({
+      key: 'draft-orders-scope',
+      title: 'Carritos abandonados sin sincronizar (permiso faltante)',
+      cause: message,
+      context: { referencia: input.reference },
+    });
+    return { ok: false, message };
   }
 
   const draftInput = buildDraftInput(input);
+  let lastCause = 'Motivo desconocido.';
+  let operation: 'crear' | 'actualizar' = 'crear';
 
-  try {
-    const existing = await findDraftByReference(input.reference);
-    if (existing) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const existing = await findDraftByReference(input.reference);
+      operation = existing ? 'actualizar' : 'crear';
+
+      if (existing) {
+        const data = await adminRequest<{
+          draftOrderUpdate: {
+            draftOrder: { id: string } | null;
+            userErrors: { message: string }[];
+          };
+        }>(DRAFT_UPDATE, { id: existing, input: draftInput });
+        const errors = data?.draftOrderUpdate?.userErrors ?? [];
+        if (!errors.length) return { ok: true, draftId: existing };
+        lastCause = errors.map((e) => e.message).join(', ') || 'Rechazado por Shopify.';
+        // userErrors son de validación: reintentar no cambia el resultado.
+        break;
+      }
+
       const data = await adminRequest<{
-        draftOrderUpdate: {
+        draftOrderCreate: {
           draftOrder: { id: string } | null;
           userErrors: { message: string }[];
         };
-      }>(DRAFT_UPDATE, { id: existing, input: draftInput });
-      const errors = data?.draftOrderUpdate?.userErrors ?? [];
-      if (errors.length) return { ok: false, message: errors.map((e) => e.message).join(', ') };
-      return { ok: true, draftId: existing };
+      }>(DRAFT_CREATE, { input: draftInput });
+      const errors = data?.draftOrderCreate?.userErrors ?? [];
+      const draft = data?.draftOrderCreate?.draftOrder;
+      if (draft) return { ok: true, draftId: draft.id };
+      lastCause = errors.map((e) => e.message).join(', ') || 'Rechazado por Shopify.';
+      break;
+    } catch (error) {
+      lastCause = (error as Error).message?.slice(0, 300) || 'Error desconocido.';
+      const retryable = isRetryable(lastCause) && attempt < MAX_ATTEMPTS;
+      console.warn(
+        `[carrito-abandonado] intento ${attempt}/${MAX_ATTEMPTS} al ${operation} el borrador ` +
+          `(${input.reference}): ${lastCause}${retryable ? ' — reintentando' : ''}`,
+      );
+      if (!retryable) break;
+      await wait(BASE_DELAY_MS * 2 ** (attempt - 1));
     }
-
-    const data = await adminRequest<{
-      draftOrderCreate: {
-        draftOrder: { id: string } | null;
-        userErrors: { message: string }[];
-      };
-    }>(DRAFT_CREATE, { input: draftInput });
-    const errors = data?.draftOrderCreate?.userErrors ?? [];
-    const draft = data?.draftOrderCreate?.draftOrder;
-    if (!draft) return { ok: false, message: errors.map((e) => e.message).join(', ') || 'Rechazado' };
-    return { ok: true, draftId: draft.id };
-  } catch (error) {
-    console.warn('syncAbandonedCheckout', input.reference, (error as Error).message);
-    return { ok: false, message: 'No se pudo sincronizar el carrito abandonado.' };
   }
+
+  const { alertAdmin } = await import('@/lib/notifications/admin-alert.server');
+  await alertAdmin({
+    key: 'draft-orders-sync-fail',
+    title: `No se pudo ${operation} el borrador de carrito abandonado`,
+    cause: lastCause,
+    context: {
+      referencia: input.reference,
+      pais: input.countryCode,
+      lineas: input.lines.length,
+      intentos: MAX_ATTEMPTS,
+    },
+  });
+
+  // Al cliente nunca se le devuelven detalles internos.
+  return { ok: false, message: 'No se pudo sincronizar el carrito abandonado.' };
 }
+
 
 /**
  * El cliente terminó de comprar: el carrito ya no está abandonado.
