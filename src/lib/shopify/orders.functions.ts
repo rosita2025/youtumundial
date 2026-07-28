@@ -21,6 +21,15 @@ export const listShopifyOrders = createServerFn({ method: 'POST' })
       const { listShopifyAdminOrders } = await import('./admin.server');
       return { ok: true, orders: await listShopifyAdminOrders(data.limit) };
     } catch (error) {
+      const { ShopifyScopeError } = await import('./admin.server');
+      if (error instanceof ShopifyScopeError) {
+        return {
+          ok: false,
+          orders: [],
+          error:
+            'Shopify no permite leer pedidos con los permisos actuales. Activá el permiso "read_orders" (Configuración → Apps y canales de venta → Desarrollar apps → Ámbitos de la Admin API) y volvé a sincronizar.',
+        };
+      }
       // Nunca devolvemos el detalle interno del proveedor al navegador.
       console.error('Shopify orders sync failed:', error);
       return { ok: false, orders: [], error: 'No se pudieron leer los pedidos de Shopify.' };

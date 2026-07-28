@@ -16,8 +16,27 @@ function adminEndpoint() {
   return `https://${SHOPIFY_SHOP_DOMAIN}/admin/api/${API_VERSION}/graphql.json`;
 }
 
+/** Token de la app de Shopify. Puede venir como token plano o como sesión JSON. */
+function adminToken(): string {
+  const raw =
+    process.env.SHOPIFY_ACCESS_TOKEN ??
+    Object.entries(process.env).find(([k]) => k.startsWith('SHOPIFY_ONLINE_ACCESS_TOKEN'))?.[1] ??
+    '';
+  const value = String(raw).trim();
+  if (value.startsWith('{')) {
+    try {
+      return String(JSON.parse(value).access_token ?? '');
+    } catch {
+      return '';
+    }
+  }
+  return value;
+}
+
+export class ShopifyScopeError extends Error {}
+
 async function adminRequest<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
-  const token = process.env.SHOPIFY_ACCESS_TOKEN;
+  const token = adminToken();
   if (!token) throw new Error('Falta el token de Shopify (SHOPIFY_ACCESS_TOKEN).');
 
   const res = await fetch(adminEndpoint(), {
@@ -31,7 +50,11 @@ async function adminRequest<T>(query: string, variables: Record<string, unknown>
 
   if (!res.ok) throw new Error(`Shopify Admin HTTP ${res.status}`);
   const json = (await res.json()) as { data?: T; errors?: Array<{ message: string }> };
-  if (json.errors?.length) throw new Error(`Shopify: ${json.errors.map((e) => e.message).join(', ')}`);
+  if (json.errors?.length) {
+    const message = json.errors.map((e) => e.message).join(', ');
+    if (/access denied/i.test(message)) throw new ShopifyScopeError(message);
+    throw new Error(`Shopify: ${message}`);
+  }
   if (!json.data) throw new Error('Shopify no devolvió datos.');
   return json.data;
 }
