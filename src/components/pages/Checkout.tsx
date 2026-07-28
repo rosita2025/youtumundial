@@ -590,7 +590,7 @@ const Checkout = () => {
               <div className="space-y-3">
                 {methods.map((m) => {
                   const Icon = m.icon;
-                  const disabled = m.id === 'yape' && countryCode !== 'PE';
+                  const disabled = false;
                   return (
                     <button
                       key={m.id}
