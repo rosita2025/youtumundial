@@ -8,6 +8,8 @@ export interface ManualOrderInput {
   countryCode: string;
   address: string;
   couponCode?: string;
+  /** Referencia del carrito abandonado a cerrar cuando el pedido se registra. */
+  abandonedReference?: string;
   items: { variantId: string; quantity: number }[];
 }
 
@@ -39,6 +41,7 @@ export const createManualOrder = createServerFn({ method: 'POST' })
     countryCode: String(input?.countryCode ?? '').slice(0, 5),
     address: String(input?.address ?? '').slice(0, 300),
     couponCode: String(input?.couponCode ?? '').slice(0, 40),
+    abandonedReference: String(input?.abandonedReference ?? '').slice(0, 60),
     items: Array.isArray(input?.items) ? input.items.slice(0, 30) : [],
   }))
   .handler(async ({ data }): Promise<ManualOrderResult> => {
@@ -108,6 +111,16 @@ export const createManualOrder = createServerFn({ method: 'POST' })
 
     if (!shopify.ok) {
       return { ok: false, message: shopify.message ?? 'No se pudo registrar el pedido en la tienda.' };
+    }
+
+    // El carrito dejó de estar abandonado: cerramos el borrador en Shopify.
+    if (data.abandonedReference) {
+      try {
+        const { closeAbandonedCheckout } = await import('@/lib/shopify/abandoned.server');
+        await closeAbandonedCheckout(data.abandonedReference);
+      } catch (error) {
+        console.warn('createManualOrder(abandoned)', (error as Error).message);
+      }
     }
 
     return {
