@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { AdminGate, getAdminToken } from "@/components/admin/AdminGate";
 import { toast } from "sonner";
 import { ClipboardCopy, Download, Link as LinkIcon, PackageSearch, RefreshCw, Stethoscope, Trash2 } from "lucide-react";
 
@@ -63,7 +64,7 @@ function SupAdmin() {
   async function runHealth() {
     setHealthLoading(true);
     try {
-      const res = await checkHealth();
+      const res = await checkHealth({ data: { adminToken: getAdminToken() } });
       setHealth(res.steps);
       if (res.ok) {
         toast.success(`SUP responde: ${res.totalProducts} productos disponibles`);
@@ -79,7 +80,7 @@ function SupAdmin() {
 
 
   useEffect(() => {
-    getStatus().then(setStatus).catch(() => setStatus(null));
+    getStatus({ data: { adminToken: getAdminToken() } }).then(setStatus).catch(() => setStatus(null));
     setStored(readSupCatalog());
     setPublished(readPublishedIds());
   }, [getStatus]);
@@ -89,7 +90,7 @@ function SupAdmin() {
     setLoading(true);
     setError(null);
     try {
-      const res = await getProducts({ data: { page: nextPage, pageSize: 20, keyword } });
+      const res = await getProducts({ data: { page: nextPage, pageSize: 20, keyword, adminToken: getAdminToken() } });
       if (!res.ok) {
         setError(res.error ?? "No se pudo consultar SUP.");
         setResults([]);
@@ -109,7 +110,7 @@ function SupAdmin() {
     setMemberLoading(true);
     setError(null);
     try {
-      const res = await getMemberProducts({ data: { page: nextPage, pageSize: 40, keyword, source: memberSource } });
+      const res = await getMemberProducts({ data: { page: nextPage, pageSize: 40, keyword, source: memberSource, adminToken: getAdminToken() } });
       if (!res.ok) {
         setError(res.error ?? "No se pudo leer tu Member Center de SUP.");
         setResults([]);
@@ -140,7 +141,7 @@ function SupAdmin() {
     setUrlLoading(true);
     setError(null);
     try {
-      const res = await importByUrl({ data: { url: sourceUrl } });
+      const res = await importByUrl({ data: { url: sourceUrl, adminToken: getAdminToken() } });
       if (!res.ok) {
         setError(res.error ?? "No se pudo importar esa URL.");
       } else {
@@ -157,7 +158,7 @@ function SupAdmin() {
   async function resync() {
     setUrlLoading(true);
     try {
-      const res = await resyncCatalog();
+      const res = await resyncCatalog({ data: { adminToken: getAdminToken() } });
       if (res.ok) toast.success(`Tienda sincronizada: ${res.count} productos actualizados desde SUP.`);
       else toast.error(res.error ?? "No se pudo sincronizar.");
     } finally {
