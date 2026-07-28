@@ -8,6 +8,8 @@ interface StripeCartCheckoutProps {
   countryCode: string;
   couponCode?: string;
   customerEmail?: string;
+  customerName?: string;
+  customerPhone?: string;
   returnUrl: string;
 }
 
@@ -16,6 +18,8 @@ export function StripeCartCheckout({
   countryCode,
   couponCode,
   customerEmail,
+  customerName,
+  customerPhone,
   returnUrl,
 }: StripeCartCheckoutProps) {
   const fetchClientSecret = async (): Promise<string> => {
@@ -25,6 +29,8 @@ export function StripeCartCheckout({
         countryCode,
         couponCode,
         customerEmail,
+        customerName,
+        customerPhone,
         returnUrl,
         environment: getStripeEnvironment(),
       },

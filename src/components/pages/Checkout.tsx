@@ -18,6 +18,15 @@ import {
 import { type Coupon } from '@/lib/checkout/coupons';
 import { validateCoupon } from '@/lib/checkout/coupon.functions';
 import { getShippingQuote, type ShippingQuoteResult } from '@/lib/checkout/shipping.functions';
+import {
+  emptyCustomer,
+  fullName,
+  toE164,
+  validateCustomer,
+  type CustomerErrors,
+  type CustomerForm,
+} from '@/lib/checkout/customer';
+
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
@@ -59,7 +68,9 @@ const Checkout = () => {
   const fetchShipping = useServerFn(getShippingQuote);
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
-  const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
+  const [customer, setCustomer] = useState<CustomerForm>(emptyCustomer);
+  const [errors, setErrors] = useState<CustomerErrors>({});
+
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<Coupon | null>(null);
 
@@ -130,7 +141,17 @@ const Checkout = () => {
     );
   }
 
-  const missingCustomer = !customer.name || !customer.email || !customer.address;
+  const validation = validateCustomer(customer);
+  const missingCustomer = !validation.ok;
+  const customerName = fullName(customer);
+  const customerPhone = toE164(customer.phone);
+
+  const updateCustomer = (field: keyof CustomerForm, value: string) => {
+    setCustomer((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+    setShowStripe(false);
+  };
+
   const isFreeOrder = totals.total < 0.5;
 
   const applyCoupon = async () => {
@@ -169,8 +190,9 @@ const Checkout = () => {
   }));
 
   const handlePay = async () => {
-    if (missingCustomer) {
-      toast.error('Completá tus datos de envío para continuar.');
+    if (!validation.ok) {
+      setErrors(validation.errors);
+      toast.error('Completá todos tus datos de envío para continuar.');
       return;
     }
 
@@ -182,10 +204,12 @@ const Checkout = () => {
         const result = await createSupOrder({
           data: {
             reference,
-            name: customer.name,
+            name: customerName,
             email: customer.email,
+            phone: customerPhone,
             countryCode,
             address: customer.address,
+
             couponCode: coupon?.code,
             items: cartLines,
           },
@@ -232,7 +256,12 @@ const Checkout = () => {
 
     if (method === 'yape') {
       window.open(
-        buildWhatsappOrderLink(cart, country, totals, customer),
+        buildWhatsappOrderLink(cart, country, totals, {
+        name: customerName,
+        email: customer.email,
+        phone: customerPhone,
+        address: customer.address,
+      }),
         '_blank',
         'noopener,noreferrer',
       );
@@ -241,7 +270,12 @@ const Checkout = () => {
 
     toast.error('Ese método aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(
-      buildWhatsappOrderLink(cart, country, totals, customer),
+      buildWhatsappOrderLink(cart, country, totals, {
+        name: customerName,
+        email: customer.email,
+        phone: customerPhone,
+        address: customer.address,
+      }),
       '_blank',
       'noopener,noreferrer',
     );
@@ -263,34 +297,90 @@ const Checkout = () => {
               <h2 className="font-medium text-lg mb-4">1. Datos de envío</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nombre y apellido</Label>
+                  <Label htmlFor="firstName">Nombre *</Label>
                   <Input
-                    id="name"
-                    value={customer.name}
-                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                    placeholder="Ana Pérez"
+                    id="firstName"
+                    autoComplete="given-name"
+                    maxLength={60}
+                    value={customer.firstName}
+                    onChange={(e) => updateCustomer('firstName', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.firstName)}
+                    placeholder="Ana"
                   />
+                  {errors.firstName && (
+                    <p className="text-xs text-destructive">{errors.firstName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="lastName">Apellido *</Label>
+                  <Input
+                    id="lastName"
+                    autoComplete="family-name"
+                    maxLength={60}
+                    value={customer.lastName}
+                    onChange={(e) => updateCustomer('lastName', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.lastName)}
+                    placeholder="Pérez"
+                  />
+                  {errors.lastName && (
+                    <p className="text-xs text-destructive">{errors.lastName}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Correo electrónico *</Label>
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
+                    maxLength={160}
                     value={customer.email}
-                    onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                    onChange={(e) => updateCustomer('email', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.email)}
                     placeholder="ana@email.com"
                   />
+                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Teléfono (con código de país) *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={25}
+                    value={customer.phone}
+                    onChange={(e) => updateCustomer('phone', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.phone)}
+                    placeholder="+51 987 654 321"
+                  />
+                  {errors.phone ? (
+                    <p className="text-xs text-destructive">{errors.phone}</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Lo usamos para coordinar la entrega con el courier.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">Dirección completa</Label>
+                  <Label htmlFor="address">Dirección completa *</Label>
                   <Input
                     id="address"
+                    autoComplete="street-address"
+                    maxLength={300}
                     value={customer.address}
-                    onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
+                    onChange={(e) => updateCustomer('address', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.address)}
                     placeholder="Calle, número, ciudad, código postal"
                   />
+                  {errors.address && <p className="text-xs text-destructive">{errors.address}</p>}
                 </div>
               </div>
+
 
               <div className="mt-6">
                 <Label className="mb-3 block">País de destino</Label>
@@ -374,6 +464,8 @@ const Checkout = () => {
                     countryCode={countryCode}
                     couponCode={coupon?.code}
                     customerEmail={customer.email}
+                    customerName={customerName}
+                    customerPhone={customerPhone}
                     returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
                   />
                 </div>
@@ -476,7 +568,12 @@ const Checkout = () => {
                 )}
               </div>
 
-              <Button className="w-full mt-6" size="lg" onClick={() => void handlePay()}>
+              <Button
+                className="w-full mt-6"
+                size="lg"
+                disabled={missingCustomer}
+                onClick={() => void handlePay()}
+              >
                 {isFreeOrder
                   ? 'Confirmar pedido gratis'
                   : method === 'yape'

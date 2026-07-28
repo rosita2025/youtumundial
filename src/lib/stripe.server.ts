@@ -95,6 +95,8 @@ export interface CartCheckoutInput {
   countryCode: string;
   couponCode?: string;
   customerEmail?: string;
+  customerName?: string;
+  customerPhone?: string;
   returnUrl: string;
   environment: StripeEnv;
 }
@@ -160,7 +162,12 @@ export async function createCartSession(data: CartCheckoutInput) {
     // Necesitamos la dirección real para despachar el pedido en SUP.
     shipping_address_collection: { allowed_countries: SHIPPING_COUNTRIES },
     phone_number_collection: { enabled: true },
-    metadata: buildOrderMetadata(priced.lines),
+    metadata: {
+      ...buildOrderMetadata(priced.lines),
+      // Datos del formulario propio: respaldo si Stripe no los devuelve.
+      ...(data.customerName && { buyer_name: data.customerName.slice(0, 120) }),
+      ...(data.customerPhone && { buyer_phone: data.customerPhone.slice(0, 25) }),
+    },
     ...(data.customerEmail && { customer_email: data.customerEmail }),
   } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
 
@@ -238,8 +245,8 @@ export async function readOrderSnapshot(
     paid: session.payment_status === 'paid',
     supOrderId: metadata.sup_order_id || undefined,
     email: session.customer_details?.email ?? undefined,
-    name: shipping?.name ?? session.customer_details?.name ?? undefined,
-    phone: session.customer_details?.phone ?? undefined,
+    name: shipping?.name ?? session.customer_details?.name ?? metadata.buyer_name ?? undefined,
+    phone: session.customer_details?.phone ?? metadata.buyer_phone ?? undefined,
     address: (shipping?.address ?? session.customer_details?.address ?? undefined) as
       | StripeOrderSnapshot['address']
       | undefined,

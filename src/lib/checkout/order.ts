@@ -52,7 +52,7 @@ export function buildWhatsappOrderLink(
   cart: Cart,
   country: ShippingCountry,
   totals: OrderTotals,
-  customer: { name: string; email: string; address: string },
+  customer: { name: string; email: string; phone?: string; address: string },
 ): string {
   const lines = [
     `*Nuevo pedido — ${checkoutConfig.storeName}*`,
@@ -71,6 +71,7 @@ export function buildWhatsappOrderLink(
     '',
     `Nombre: ${customer.name}`,
     `Email: ${customer.email}`,
+    ...(customer.phone ? [`Teléfono: ${customer.phone}`] : []),
     `Dirección: ${customer.address}`,
     `País: ${country.name}`,
     '',
