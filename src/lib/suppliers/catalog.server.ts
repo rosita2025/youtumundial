@@ -45,46 +45,52 @@ async function fetchOne(id: string): Promise<SupRawProduct | null> {
 export async function syncPublishedCatalog(ids: string[], force = false): Promise<SupRawProduct[]> {
   if (!force && cache && Date.now() - cache.at < TTL_MS) return cache.products;
 
+  // Siempre partimos del Member Center real de la cuenta (productos importados
+  // o listados desde 1688, AliExpress, Alibaba…).
   let products: SupRawProduct[] = [];
+  try {
+    // Secuencial a propósito: SUP invalida el token si pedimos dos logins a la vez.
+    const listed = await listMemberListedProducts({ page: 1, pageSize: 200 });
+    const queue = await listMemberImportQueue({ page: 1, pageSize: 200 });
+    const seen = new Set<string>();
+    const merged = [...listed, ...queue].filter((row) => {
+      const key = String(
+        (row as Record<string, unknown>).goods_id ??
+          (row as Record<string, unknown>).product_id ??
+          (row as Record<string, unknown>).id ??
+          "",
+      );
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    products = normalizeSupProducts(merged);
+  } catch {
+    products = [];
+  }
 
-  if (ids.length > 0) {
-    const settled = await Promise.all(ids.map((id) => fetchOne(String(id))));
-    products = settled.filter((p): p is SupRawProduct => p !== null);
-  } else {
-    // Sin selección todavía: usamos primero el Member Center real de la cuenta
-    // (productos importados/listados desde 1688, AliExpress, Alibaba, etc.).
+  if (products.length === 0) {
     try {
-      // Traemos TODO el Member Center (listados + cola importada), sin recortes,
-      // para que cualquier producto nuevo aparezca apenas se importa en SUP.
-      // Secuencial a propósito: SUP invalida el token si pedimos dos logins a la vez.
-      const listed = await listMemberListedProducts({ page: 1, pageSize: 200 });
-      const queue = await listMemberImportQueue({ page: 1, pageSize: 200 });
-      const seen = new Set<string>();
-      const merged = [...listed, ...queue].filter((row) => {
-        const key = String(
-          (row as Record<string, unknown>).goods_id ??
-            (row as Record<string, unknown>).product_id ??
-            (row as Record<string, unknown>).id ??
-            "",
-        );
-        if (!key || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      products = normalizeSupProducts(merged);
+      products = normalizeSupProducts(await listProducts({ page: 1, pageSize: 24 }));
     } catch {
       products = [];
     }
+  }
 
-    if (products.length === 0) {
-      try {
-        products = normalizeSupProducts(await listProducts({ page: 1, pageSize: 24 }));
-      } catch {
-        products = [];
-      }
+  // Con selección manual mostramos SOLO esos productos (los demás son de otras
+  // cuentas/pruebas y no deben aparecer en la tienda).
+  if (ids.length > 0) {
+    const wanted = new Set(ids.map(String));
+    const filtered = products.filter((p) => wanted.has(String(p.id)));
+    const missing = ids.map(String).filter((id) => !filtered.some((p) => String(p.id) === id));
+    if (missing.length > 0) {
+      const extra = await Promise.all(missing.map((id) => fetchOne(id)));
+      filtered.push(...extra.filter((p): p is SupRawProduct => p !== null));
     }
+    products = filtered;
   }
 
   cache = { at: Date.now(), products };
   return products;
 }
+
