@@ -105,11 +105,15 @@ export async function trackPublicOrder(reference: string): Promise<PublicTrackin
         return { ...EMPTY, message: 'No encontramos ese número de pago.' };
       }
     } else {
+      // Solo aceptamos la referencia completa del pedido: los IDs internos
+      // son secuenciales y permitirían adivinar pedidos ajenos.
+      if (ref.length < 8) {
+        return { ...EMPTY, message: 'Ingresá el número completo de tu pedido.' };
+      }
       const rows = (await listSupOrders({ limit: 100 })) as Record<string, unknown>[];
       const match = rows.find(
         (row) =>
           str(row.order_sn).toLowerCase() === ref.toLowerCase() ||
-          str(row.id) === ref ||
           str(row.out_trade_no).toLowerCase() === ref.toLowerCase(),
       );
       if (!match) {
@@ -120,6 +124,9 @@ export async function trackPublicOrder(reference: string): Promise<PublicTrackin
 
     return toPublic(await getOrderDetail(supOrderId));
   } catch (error) {
-    return { ...EMPTY, message: (error as Error).message };
+    // El detalle real (credenciales, endpoints de SUP) queda solo en el log.
+    console.error('trackPublicOrder', (error as Error).message);
+    return { ...EMPTY, message: 'No pudimos consultar tu pedido en este momento. Probá de nuevo en unos minutos.' };
   }
+
 }
