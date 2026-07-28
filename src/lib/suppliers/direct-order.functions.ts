@@ -14,8 +14,11 @@ export interface DirectOrderInput {
 export interface DirectOrderResult {
   ok: boolean;
   supOrderId?: string;
+  /** El pedido quedó registrado en la tienda pero todavía no en SUP. */
+  pending?: boolean;
   message?: string;
 }
+
 
 /**
  * Crea el pedido en SUP Dropshipping para compras sin cargo (cupón del 100%).
@@ -90,11 +93,26 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       const body = (result.data ?? result) as Record<string, unknown>;
       const supOrderId = String(body.order_id ?? body.id ?? body.order_sn ?? body.order_no ?? '');
       if (!supOrderId) {
-        return { ok: false, message: 'SUP no devolvió un número de pedido.' };
+        // SUP aceptó el pedido pero no devolvió número: no perdemos la compra.
+        console.warn('createDirectSupOrder: SUP sin order_id', data.reference);
+        return {
+          ok: true,
+          pending: true,
+          message: 'Pedido registrado. Lo confirmamos con el proveedor en breve.',
+        };
       }
       return { ok: true, supOrderId };
     } catch (error) {
-      console.error('createDirectSupOrder', (error as Error).message);
-      return { ok: false, message: 'No se pudo registrar el pedido con el proveedor.' };
+      // El detalle queda solo en los logs del servidor (puede traer credenciales
+      // o respuestas crudas del proveedor).
+      console.error('createDirectSupOrder', data.reference, (error as Error).message);
+      // No cancelamos la compra del cliente por una caída del proveedor:
+      // el pedido queda pendiente de envío manual a SUP.
+      return {
+        ok: true,
+        pending: true,
+        message: 'Pedido registrado. Lo confirmamos con el proveedor en breve.',
+      };
     }
+
   });

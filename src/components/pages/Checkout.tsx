@@ -140,11 +140,16 @@ const Checkout = () => {
           toast.error(result.message ?? 'No se pudo registrar el pedido.');
           return;
         }
+        if (result.pending) {
+          toast.success('¡Gracias por tu compra! Pedido registrado, lo confirmamos en breve.');
+        } else {
+          toast.success('¡Gracias por tu compra! Pedido confirmado con tu cupón.');
+        }
       } catch (e) {
         toast.error((e as Error).message);
         return;
       }
-      toast.success('¡Gracias por tu compra! Pedido confirmado con tu cupón.');
+
       clearCart();
       navigate('/checkout/return?free=1');
       return;
