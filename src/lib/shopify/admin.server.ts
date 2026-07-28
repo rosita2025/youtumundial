@@ -4,9 +4,11 @@
  * Se usa para registrar en Shopify los pedidos que se cobran con el checkout
  * propio (Stripe), así el inventario y los reportes de la tienda quedan al día.
  *
- * El token vive en `SHOPIFY_ACCESS_TOKEN` y nunca sale del servidor. Si la app
- * privada no tiene permiso `write_orders`, la función no rompe la compra:
- * devuelve `{ ok: false }` y el pedido igual queda cobrado y despachado.
+ * El acceso se obtiene con `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET`
+ * (client_credentials) y nunca sale del servidor. Si la app no tiene permiso
+ * `write_orders`, la función no rompe la compra: devuelve `{ ok: false }` y el
+ * pedido igual queda cobrado y despachado.
+
  */
 
 import {
@@ -25,21 +27,18 @@ const ADMIN_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/admin/api/${SHOPIFY
 /**
  * Token del Admin API (solo servidor).
  *
- * Prioriza `SHOPIFY_ADMIN_ORDERS_TOKEN`, luego el token temporal obtenido con
- * `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` (client_credentials) y por
- * último el token de la integración. Nunca se envía al navegador.
+ * Se obtiene siempre con `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET`
+ * (client_credentials). Los tokens estáticos antiguos ya no se usan.
+ * Nunca se envía al navegador.
  */
 function adminToken(): Promise<string | undefined> {
   return resolveShopifyAdminToken();
 }
 
 export function hasShopifyAdminCredentials(): boolean {
-  return Boolean(
-    process.env.SHOPIFY_ADMIN_ORDERS_TOKEN?.trim() ||
-      process.env.SHOPIFY_ACCESS_TOKEN?.trim() ||
-      hasShopifyClientCredentials(),
-  );
+  return hasShopifyClientCredentials();
 }
+
 
 async function adminRequest<T = any>(
   query: string,
