@@ -455,40 +455,49 @@ export async function findShopifyOrderByReference(
 }
 
 /**
- * Crea el pedido en Shopify con reintentos automáticos y sin duplicar:
- * antes de cada intento comprueba si ya existe un pedido con esa referencia.
+ * Crea el pedido en Shopify con reintentos automáticos y sin duplicar.
+ *
+ * Doble protección contra duplicados:
+ *  - Clave de idempotencia por referencia: las llamadas simultáneas o repetidas
+ *    (doble clic, recarga de la página de gracias, reintento del webhook)
+ *    comparten la misma ejecución y el mismo resultado.
+ *  - Búsqueda por etiqueta en Shopify antes de cada intento.
  */
 export async function createShopifyOrderIdempotent(
   input: ShopifyOrderInput,
 ): Promise<ShopifyOrderResult> {
-  // Verificación automática de permisos (lectura + creación de pedidos).
-  const gate = await requireShopifyOrderAccess();
-  if (!gate.ok) return { ok: false, message: gate.message };
+  const { withIdempotency, idempotencyKey } = await import('@/lib/utils/idempotency.server');
 
+  return withIdempotency(idempotencyKey('shopify-order', input.reference), async () => {
+    // Verificación automática de permisos (lectura + creación de pedidos).
+    const gate = await requireShopifyOrderAccess();
+    if (!gate.ok) return { ok: false, message: gate.message };
 
-  const existing = await findShopifyOrderByReference(input.reference);
-  if (existing) return existing;
+    const existing = await findShopifyOrderByReference(input.reference);
+    if (existing) return existing;
 
-  const { withRetry } = await import('@/lib/utils/retry');
-  try {
-    return await withRetry(
-      async (attempt) => {
-        if (attempt > 1) {
-          const already = await findShopifyOrderByReference(input.reference);
-          if (already) return already;
-        }
-        const result = await createShopifyOrder(input);
-        if (!result.ok) throw new Error(result.message ?? 'Shopify rechazó el pedido');
-        return result;
-      },
-      { attempts: 3, baseDelayMs: 800, label: `createShopifyOrder ${input.reference}` },
-    );
-  } catch (error) {
-    const late = await findShopifyOrderByReference(input.reference);
-    if (late) return late;
-    return { ok: false, message: (error as Error).message };
-  }
+    const { withRetry } = await import('@/lib/utils/retry');
+    try {
+      return await withRetry(
+        async (attempt) => {
+          if (attempt > 1) {
+            const already = await findShopifyOrderByReference(input.reference);
+            if (already) return already;
+          }
+          const result = await createShopifyOrder(input);
+          if (!result.ok) throw new Error(result.message ?? 'Shopify rechazó el pedido');
+          return result;
+        },
+        { attempts: 3, baseDelayMs: 800, label: `createShopifyOrder ${input.reference}` },
+      );
+    } catch (error) {
+      const late = await findShopifyOrderByReference(input.reference);
+      if (late) return late;
+      return { ok: false, message: (error as Error).message };
+    }
+  });
 }
+
 
 
 /* ------------------------------------------------------------------ */
