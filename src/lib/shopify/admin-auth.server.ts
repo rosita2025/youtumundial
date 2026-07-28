@@ -79,8 +79,9 @@ async function requestClientCredentialsToken(): Promise<string | null> {
 
 /** Devuelve un token válido del Admin API o `undefined` si no hay ninguno. */
 export async function resolveShopifyAdminToken(): Promise<string | undefined> {
-  const explicit = env('SHOPIFY_ADMIN_ORDERS_TOKEN');
+  const explicit = env('SHOPIFY_ADMIN_AUTOMATION_TOKEN') ?? env('SHOPIFY_ADMIN_ORDERS_TOKEN');
   if (explicit) return explicit;
+
 
   if (hasShopifyClientCredentials()) {
     if (cached && Date.now() < cached.expiresAt) return cached.token;
