@@ -17,11 +17,26 @@ import { assertAllowedShopifyUrl } from '../security/connection-audit';
 
 const ADMIN_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
+/**
+ * Token del Admin API (solo servidor).
+ *
+ * Prioriza `SHOPIFY_ADMIN_ORDERS_TOKEN` (app privada propia con permisos de
+ * pedidos: read_orders / write_orders) y usa el token de la integración como
+ * respaldo para productos. Nunca se envía al navegador.
+ */
+function adminToken(): string | undefined {
+  return (
+    process.env.SHOPIFY_ADMIN_ORDERS_TOKEN?.trim() ||
+    process.env.SHOPIFY_ACCESS_TOKEN?.trim() ||
+    undefined
+  );
+}
+
 async function adminRequest<T = any>(
   query: string,
   variables: Record<string, unknown> = {},
 ): Promise<T> {
-  const token = process.env.SHOPIFY_ACCESS_TOKEN;
+  const token = adminToken();
   if (!token) throw new Error('SHOPIFY_ACCESS_TOKEN no está configurado');
 
   assertAllowedShopifyUrl(ADMIN_URL);
@@ -244,7 +259,7 @@ export interface ShopifyScopeReport {
  * No expone el token: solo devuelve la lista de scopes concedidos y faltantes.
  */
 export async function checkShopifyAdminScopes(): Promise<ShopifyScopeReport> {
-  if (!process.env.SHOPIFY_ACCESS_TOKEN) {
+  if (!adminToken()) {
     return {
       ok: false,
       configured: false,
