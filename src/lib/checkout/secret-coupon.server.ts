@@ -6,6 +6,7 @@
  * pueda adivinar el código y pedir mercadería real sin pagar.
  */
 import type { Coupon } from './coupons';
+import { findShopifyCoupon } from './shopify-coupons';
 
 export function getSecretTestCoupon(): Coupon | null {
   const code = (process.env.TEST_COUPON_CODE ?? '').trim().toUpperCase();
@@ -21,8 +22,16 @@ export function getSecretTestCoupon(): Coupon | null {
 
 /** Solo el cupón secreto puede dejar un pedido en $0. */
 export function isFreeOrderAllowed(couponCode?: string | null): boolean {
-  const secret = getSecretTestCoupon();
-  if (!secret || !couponCode) return false;
   const norm = (s: string) => s.trim().toUpperCase().replace(/[\s-]+/g, '');
-  return norm(couponCode) === norm(secret.code);
+  if (!couponCode) return false;
+
+  // 1) Cupón de prueba secreto (solo servidor).
+  const secret = getSecretTestCoupon();
+  if (secret && norm(couponCode) === norm(secret.code)) return true;
+
+  // 2) Cupón del 100% creado en Shopify y sincronizado acá: solo mientras
+  //    esté dentro de su ventana de vigencia (ver shopify-coupons.ts).
+  const shopify = findShopifyCoupon(couponCode);
+  return Boolean(shopify && shopify.percentOff === 100);
 }
+

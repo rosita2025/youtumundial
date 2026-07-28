@@ -22,9 +22,12 @@ export const validateCoupon = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<ValidateCouponResult> => {
     const { findCoupon } = await import('./coupons');
     const { getSecretTestCoupon } = await import('./secret-coupon.server');
+    const { activeShopifyCoupons } = await import('./shopify-coupons');
 
     const secret = getSecretTestCoupon();
-    const result = findCoupon(data.code, data.subtotal, secret ? [secret] : []);
+    const extra = [...activeShopifyCoupons(), ...(secret ? [secret] : [])];
+    const result = findCoupon(data.code, data.subtotal, extra);
     if (!result.ok) return { ok: false, message: result.message };
     return { ok: true, coupon: result.coupon };
   });
+
