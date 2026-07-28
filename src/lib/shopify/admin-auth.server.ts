@@ -2,6 +2,7 @@
  * Resolución del token del Admin API de Shopify (SOLO SERVIDOR).
  *
  * Orden de preferencia:
+ *  0. `SHOPIFY_ADMIN_AUTOMATION_TOKEN` — token de automatización (CI/CD) de la app.
  *  1. `SHOPIFY_ADMIN_ORDERS_TOKEN` — token offline `shpat_` de app privada.
  *  2. `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` — intercambio
  *     `grant_type=client_credentials` contra Shopify, que devuelve un token
@@ -79,8 +80,9 @@ async function requestClientCredentialsToken(): Promise<string | null> {
 
 /** Devuelve un token válido del Admin API o `undefined` si no hay ninguno. */
 export async function resolveShopifyAdminToken(): Promise<string | undefined> {
-  const explicit = env('SHOPIFY_ADMIN_ORDERS_TOKEN');
+  const explicit = env('SHOPIFY_ADMIN_AUTOMATION_TOKEN') ?? env('SHOPIFY_ADMIN_ORDERS_TOKEN');
   if (explicit) return explicit;
+
 
   if (hasShopifyClientCredentials()) {
     if (cached && Date.now() < cached.expiresAt) return cached.token;
