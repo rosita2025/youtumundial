@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from '@/lib/router-compat';
-import { Layout } from '@/components/layout/Layout';
-import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { CheckoutShell } from '@/components/checkout/CheckoutShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
