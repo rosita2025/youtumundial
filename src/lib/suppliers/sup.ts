@@ -7,6 +7,7 @@
  */
 
 import { Product, ProductVariant } from '../data/types';
+import { cleanDescription } from '../data/description';
 
 /** Margen por defecto aplicado sobre el costo de SUP (60%). */
 export const DEFAULT_MARGIN = 0.6;
