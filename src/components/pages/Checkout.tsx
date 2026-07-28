@@ -363,7 +363,7 @@ const Checkout = () => {
           <div className="lg:col-span-2 space-y-8">
             <section className="text-center">
               <p className="text-sm text-muted-foreground mb-3">Pago exprés</p>
-              <div className="grid sm:grid-cols-3 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {
