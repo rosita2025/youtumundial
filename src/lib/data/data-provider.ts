@@ -73,8 +73,9 @@ async function getCatalog(): Promise<Product[]> {
     if (products.length > 0) return products;
   }
 
-  const imported = applyPublishedSelection(filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN)));
-  return imported.length > 0 ? imported : dummyProducts;
+  // Sin catálogo real no mostramos productos de demo: mejor lista vacía.
+  return applyPublishedSelection(filterInStock(mapSupCatalog(supCatalog as SupRawProduct[], SUP_MARGIN)));
+
 }
 
 
