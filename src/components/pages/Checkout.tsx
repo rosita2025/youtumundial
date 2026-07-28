@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -17,6 +17,7 @@ import {
 } from '@/lib/checkout/order';
 import { type Coupon } from '@/lib/checkout/coupons';
 import { validateCoupon } from '@/lib/checkout/coupon.functions';
+import { getShippingQuote, type ShippingQuoteResult } from '@/lib/checkout/shipping.functions';
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
@@ -55,14 +56,65 @@ const Checkout = () => {
   const [showStripe, setShowStripe] = useState(false);
   const createSupOrder = useServerFn(createDirectSupOrder);
   const checkCoupon = useServerFn(validateCoupon);
+  const fetchShipping = useServerFn(getShippingQuote);
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState({ name: '', email: '', address: '' });
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<Coupon | null>(null);
 
+  const [shippingQuote, setShippingQuote] = useState<ShippingQuoteResult | null>(null);
+  const [loadingShipping, setLoadingShipping] = useState(false);
+
   const country = shippingCountries.find((c) => c.code === countryCode) ?? shippingCountries[0];
-  const totals = getTotals(cart, country, coupon);
+  const baseTotals = getTotals(cart, country, coupon);
+  // El envío internacional (EE.UU., Canadá y demás destinos) se sincroniza con
+  // los perfiles de envío de Shopify; el servidor vuelve a validarlo al cobrar.
+  const liveShipping =
+    coupon?.freeShipping || baseTotals.shipping === 0
+      ? 0
+      : (shippingQuote?.amount ?? baseTotals.shipping);
+  const totalWithShipping =
+    Math.round((baseTotals.subtotal - baseTotals.discount + liveShipping) * 100) / 100;
+  const totals = {
+    ...baseTotals,
+    shipping: liveShipping,
+    total: Math.max(0, totalWithShipping),
+    totalPen: Math.round(Math.max(0, totalWithShipping) * checkoutConfig.usdToPen * 100) / 100,
+  };
+
+  const shippingKey = cart.items
+    .map((i) => `${i.variant.id}x${i.quantity}`)
+    .join(',');
+
+  useEffect(() => {
+    if (!shippingKey) return;
+    let cancelled = false;
+    setLoadingShipping(true);
+    fetchShipping({
+      data: {
+        items: cart.items.map((i) => ({
+          variantId: String(i.variant.id),
+          quantity: i.quantity,
+        })),
+        countryCode,
+        subtotal: cart.subtotal,
+      },
+    })
+      .then((quote) => {
+        if (!cancelled) setShippingQuote(quote);
+      })
+      .catch(() => {
+        if (!cancelled) setShippingQuote(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingShipping(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shippingKey, countryCode, cart.subtotal]);
 
   if (cart.items.length === 0) {
     return (
@@ -394,8 +446,19 @@ const Checkout = () => {
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Envío a {country.name}</span>
-                  <span>{totals.shipping === 0 ? 'Gratis' : formatPrice(totals.shipping)}</span>
+                  <span>
+                    {loadingShipping
+                      ? 'Calculando…'
+                      : totals.shipping === 0
+                        ? 'Gratis'
+                        : formatPrice(totals.shipping)}
+                  </span>
                 </div>
+                {shippingQuote?.fromShopify && totals.shipping > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Tarifa {shippingQuote.title} sincronizada con tu tienda.
+                  </p>
+                )}
                 <div className="flex justify-between font-medium text-base border-t border-border pt-3">
                   <span>Total</span>
                   <span>{formatPrice(totals.total)}</span>

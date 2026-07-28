@@ -10,7 +10,7 @@
 import { fetchShopifyProducts } from '@/lib/shopify/storefront';
 import { fetchStoreCatalog } from '@/lib/suppliers/catalog.functions';
 import { findCoupon, couponDiscount, type Coupon } from './coupons';
-import { shippingCountries, FREE_SHIPPING_THRESHOLD } from './config';
+import { shippingCountries } from './config';
 import type { Product } from '@/lib/data/types';
 
 export interface CartLineRequest {
@@ -127,8 +127,15 @@ export async function priceOrder(params: {
   const discounted = Math.max(0, subtotal - discount);
   const country =
     shippingCountries.find((c) => c.code === params.countryCode) ?? shippingCountries[0];
-  const shipping =
-    coupon?.freeShipping || discounted >= FREE_SHIPPING_THRESHOLD ? 0 : country.shipping;
+  // Tarifa real sincronizada desde los perfiles de envío de Shopify
+  // (EE.UU., Canadá, Perú, Reino Unido) con fallback a la tarifa fija.
+  const { resolveShippingCost } = await import('./shipping.server');
+  const shipping = await resolveShippingCost({
+    items: params.items,
+    countryCode: country.code,
+    discountedSubtotal: discounted,
+    freeShipping: coupon?.freeShipping,
+  });
   const total = Math.round((discounted + shipping) * 100) / 100;
 
   // Defensa en profundidad: un pedido de $0 despacha mercadería real y la pagás
