@@ -9,7 +9,6 @@ import { formatPrice } from '@/lib/utils/format';
 import { checkoutConfig, shippingCountries } from '@/lib/checkout/config';
 import {
   
-  buildPaypalLink,
   buildWhatsappOrderLink,
   getTotals,
   type PaymentMethod,
@@ -31,7 +30,7 @@ import {
   type CustomerForm,
 } from '@/lib/checkout/customer';
 
-import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
+import { CreditCard, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
 import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
@@ -48,20 +47,8 @@ const methods: { id: PaymentMethod; title: string; description: string; icon: ty
     description: 'Visa, Mastercard y Amex de Perú, EE.UU., Canadá y Reino Unido. Pago seguro en la misma página.',
     icon: CreditCard,
   },
-
-  {
-    id: 'paypal',
-    title: 'PayPal',
-    description: 'Pagá con tu saldo o tarjeta desde EE.UU., Canadá o Reino Unido.',
-    icon: Wallet,
-  },
-  {
-    id: 'yape',
-    title: 'Yape / Plin',
-    description: 'Solo Perú. Escaneá el QR y enviás la captura por WhatsApp.',
-    icon: Smartphone,
-  },
 ];
+
 
 
 const Checkout = () => {
@@ -351,83 +338,6 @@ const Checkout = () => {
     }
 
 
-    if (chosen === 'paypal') {
-      const link = buildPaypalLink(totals.total);
-      if (link) {
-        window.location.href = link;
-        return;
-      }
-    }
-
-    if (chosen === 'yape') {
-      // Pago manual desde Perú: registramos el pedido REAL en Shopify como
-      // pendiente de pago (precio recalculado en el servidor) y recién después
-      // abrimos WhatsApp con la referencia para enviar la captura del Yape.
-      if (!manualReferenceRef.current) manualReferenceRef.current = `YTM-${Date.now()}`;
-      const reference = manualReferenceRef.current;
-      payingRef.current = true;
-      setPaying(true);
-      let orderNumber: string | undefined;
-      try {
-        const result = await createManual({
-          data: {
-            reference,
-            name: customerName,
-            email: customer.email,
-            phone: customerPhone,
-            countryCode,
-            address: addressLine,
-            couponCode: coupon?.code,
-            abandonedReference: abandonedRef.current ?? undefined,
-            items: cartLines,
-          },
-        });
-        if (!result.ok) {
-          toast.error(result.message ?? 'No se pudo registrar el pedido.');
-          payingRef.current = false;
-          setPaying(false);
-          return;
-        }
-        orderNumber = result.shopifyOrderNumber;
-        toast.success(
-          orderNumber
-            ? `Pedido ${orderNumber} registrado. Enviá la captura del pago por WhatsApp.`
-            : 'Pedido registrado. Enviá la captura del pago por WhatsApp.',
-        );
-      } catch (e) {
-        toast.error((e as Error).message);
-        payingRef.current = false;
-        setPaying(false);
-        return;
-      }
-
-      window.open(
-        buildWhatsappOrderLink(cart, country, totals, {
-          name: customerName,
-          email: customer.email,
-          phone: customerPhone,
-          address: addressLine,
-          reference,
-          orderNumber,
-        }),
-        '_blank',
-        'noopener,noreferrer',
-      );
-      const finishedRef = abandonedRef.current;
-      if (finishedRef) {
-        clearAbandoned({ data: { reference: finishedRef } }).catch(() => {});
-        abandonedRef.current = null;
-        if (typeof window !== 'undefined') {
-          window.sessionStorage.removeItem('ytm-abandoned-ref');
-        }
-      }
-      clearCart();
-      navigate(
-        `/checkout/return?manual=1&reference=${encodeURIComponent(reference)}` +
-          (orderNumber ? `&order=${encodeURIComponent(orderNumber)}` : ''),
-      );
-      return;
-    }
 
 
     toast.error('Ese método aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
@@ -452,7 +362,7 @@ const Checkout = () => {
           <div className="lg:col-span-2 space-y-8">
             <section className="text-center">
               <p className="text-sm text-muted-foreground mb-3">Pago exprés</p>
-              <div className="grid sm:grid-cols-3 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -472,16 +382,6 @@ const Checkout = () => {
                   className="rounded-md border border-border py-3 text-sm font-medium hover:border-primary/50 transition-colors"
                 >
                   Google Pay / Apple Pay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMethod('paypal');
-                    void handlePay('paypal');
-                  }}
-                  className="rounded-md bg-[#ffc439] text-[#003087] py-3 text-sm font-semibold hover:brightness-95 transition-all"
-                >
-                  PayPal
                 </button>
               </div>
               <div className="flex items-center gap-4 my-6">
@@ -679,7 +579,7 @@ const Checkout = () => {
               <div className="space-y-3">
                 {methods.map((m) => {
                   const Icon = m.icon;
-                  const disabled = m.id === 'yape' && countryCode !== 'PE';
+                  const disabled = false;
                   return (
                     <button
                       key={m.id}
@@ -700,31 +600,8 @@ const Checkout = () => {
                 })}
               </div>
 
-              {method === 'yape' && (
-                <div className="mt-4 rounded-lg border border-border p-4 flex flex-col sm:flex-row gap-4 items-start">
-                  {checkoutConfig.yapeQrUrl ? (
-                    <img
-                      src={checkoutConfig.yapeQrUrl}
-                      alt="Código QR para pagar con Yape o Plin"
-                      className="h-36 w-36 rounded-md object-contain bg-card"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-36 w-36 rounded-md border border-dashed border-border grid place-items-center text-xs text-muted-foreground text-center px-2">
-                      QR pendiente de cargar
-                    </div>
-                  )}
-                  <div className="text-sm space-y-1">
-                    <p className="font-medium">Pagá S/ {totals.totalPen.toFixed(2)}</p>
-                    {checkoutConfig.yapeNumber && <p>Yape: {checkoutConfig.yapeNumber}</p>}
-                    {checkoutConfig.plinNumber && <p>Plin: {checkoutConfig.plinNumber}</p>}
-                    <p className="text-muted-foreground">
-                      Al confirmar se abre WhatsApp con el detalle del pedido. Adjuntá la captura del pago
-                      y confirmamos el envío.
-                    </p>
-                  </div>
-                </div>
-              )}
+
+
 
               {method === 'card' && showStripe && (
                 <div className="mt-6 rounded-lg border border-border p-4">
@@ -851,9 +728,7 @@ const Checkout = () => {
                     ? 'Completá el pago abajo'
                     : isFreeOrder
                       ? 'Confirmar pedido gratis'
-                      : method === 'yape'
-                        ? 'Registrar pedido y pagar con Yape'
-                        : 'Pagar ahora'}
+                      : 'Pagar ahora'}
               </Button>
 
 
