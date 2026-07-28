@@ -57,11 +57,15 @@ export type CouponResult =
   | { ok: true; coupon: Coupon }
   | { ok: false; message: string };
 
-export function findCoupon(input: string, subtotal: number): CouponResult {
+export function findCoupon(
+  input: string,
+  subtotal: number,
+  extra: Coupon[] = [],
+): CouponResult {
   const code = input.trim().toUpperCase();
   if (!code) return { ok: false, message: 'Escribí un código de cupón.' };
 
-  const coupon = coupons.find((c) => c.code === code && c.active !== false);
+  const coupon = [...extra, ...coupons].find((c) => c.code === code && c.active !== false);
   if (!coupon) return { ok: false, message: 'Ese cupón no existe o ya venció.' };
 
   if (coupon.minSubtotal && subtotal < coupon.minSubtotal) {
