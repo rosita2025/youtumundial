@@ -261,18 +261,38 @@ export async function syncAbandonedCheckout(
 /**
  * El cliente terminó de comprar: el carrito ya no está abandonado.
  * Borra el borrador para que no quede duplicado con el pedido real.
+ * Reintenta ante fallos transitorios y avisa al admin si no lo logra.
  */
 export async function closeAbandonedCheckout(reference: string): Promise<AbandonedResult> {
   if (!reference) return { ok: false };
   if (!(await canWriteDrafts())) return { ok: false };
 
-  try {
-    const existing = await findDraftByReference(reference);
-    if (!existing) return { ok: true };
-    await adminRequest(DRAFT_DELETE, { input: { id: existing } });
-    return { ok: true };
-  } catch (error) {
-    console.warn('closeAbandonedCheckout', reference, (error as Error).message);
-    return { ok: false };
+  let lastCause = 'Motivo desconocido.';
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const existing = await findDraftByReference(reference);
+      if (!existing) return { ok: true };
+      await adminRequest(DRAFT_DELETE, { input: { id: existing } });
+      return { ok: true };
+    } catch (error) {
+      lastCause = (error as Error).message?.slice(0, 300) || 'Error desconocido.';
+      const retryable = isRetryable(lastCause) && attempt < MAX_ATTEMPTS;
+      console.warn(
+        `[carrito-abandonado] intento ${attempt}/${MAX_ATTEMPTS} al borrar el borrador ` +
+          `(${reference}): ${lastCause}${retryable ? ' — reintentando' : ''}`,
+      );
+      if (!retryable) break;
+      await wait(BASE_DELAY_MS * 2 ** (attempt - 1));
+    }
   }
+
+  const { alertAdmin } = await import('@/lib/notifications/admin-alert.server');
+  await alertAdmin({
+    key: 'draft-orders-close-fail',
+    title: 'No se pudo cerrar el borrador de carrito abandonado tras la compra',
+    cause: lastCause,
+    context: { referencia: reference, intentos: MAX_ATTEMPTS },
+  });
+  return { ok: false };
 }
+
