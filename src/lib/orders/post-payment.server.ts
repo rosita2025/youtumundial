@@ -74,6 +74,18 @@ export async function runPostPaymentTasks(params: {
     else console.warn('post-payment email', sessionId, sendResult.message);
   }
 
+  // 3) El carrito ya no está abandonado: cerramos el borrador en Shopify
+  //    desde el servidor (aunque el cliente haya cerrado el navegador).
+  if (snapshot.abandonedReference && !snapshot.abandonedClosed) {
+    try {
+      const { closeAbandonedCheckout } = await import('@/lib/shopify/abandoned.server');
+      const closed = await closeAbandonedCheckout(snapshot.abandonedReference);
+      if (closed.ok) patch.abandoned_closed = '1';
+    } catch (error) {
+      console.warn('post-payment abandoned', sessionId, (error as Error).message);
+    }
+  }
+
   if (params.delayed) patch.sup_pending = '1';
   if (Object.keys(patch).length) await markSessionMeta(sessionId, environment, patch);
 

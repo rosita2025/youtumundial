@@ -12,6 +12,8 @@ interface StripeCartCheckoutProps {
   customerEmail?: string;
   customerName?: string;
   customerPhone?: string;
+  /** Carrito abandonado a cerrar cuando el pago se confirme. */
+  abandonedReference?: string;
   returnUrl: string;
 }
 
@@ -22,6 +24,7 @@ export function StripeCartCheckout({
   customerEmail,
   customerName,
   customerPhone,
+  abandonedReference,
   returnUrl,
 }: StripeCartCheckoutProps) {
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +39,7 @@ export function StripeCartCheckout({
     customerEmail,
     customerName,
     customerPhone,
+    abandonedReference,
     returnUrl,
   });
 

@@ -303,6 +303,7 @@ const Checkout = () => {
             address: addressLine,
 
             couponCode: coupon?.code,
+            abandonedReference: abandonedRef.current ?? undefined,
             items: cartLines,
           },
         });
@@ -377,6 +378,7 @@ const Checkout = () => {
             countryCode,
             address: addressLine,
             couponCode: coupon?.code,
+            abandonedReference: abandonedRef.current ?? undefined,
             items: cartLines,
           },
         });
@@ -733,6 +735,8 @@ const Checkout = () => {
                     customerEmail={customer.email}
                     customerName={customerName}
                     customerPhone={customerPhone}
+                    abandonedReference={abandonedRef.current ?? undefined}
+
                     returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
                   />
                 </div>

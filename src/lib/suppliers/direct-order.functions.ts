@@ -8,6 +8,8 @@ export interface DirectOrderInput {
   countryCode: string;
   address: string;
   couponCode?: string;
+  /** Referencia del carrito abandonado a cerrar cuando el pedido se registra. */
+  abandonedReference?: string;
   items: { variantId: string; quantity: number }[];
 }
 
@@ -36,6 +38,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
     countryCode: String(input?.countryCode ?? '').slice(0, 5),
     address: String(input?.address ?? '').slice(0, 300),
     couponCode: String(input?.couponCode ?? '').slice(0, 40),
+    abandonedReference: String(input?.abandonedReference ?? '').slice(0, 60),
     items: Array.isArray(input?.items) ? input.items : [],
   }))
   .handler(async ({ data }): Promise<DirectOrderResult> => {
@@ -99,6 +102,16 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       })),
     });
     const shopifyOrderNumber = shopifyResult.ok ? shopifyResult.orderName : undefined;
+
+    // El carrito dejó de estar abandonado: cerramos el borrador en Shopify.
+    if (data.abandonedReference) {
+      try {
+        const { closeAbandonedCheckout } = await import('@/lib/shopify/abandoned.server');
+        await closeAbandonedCheckout(data.abandonedReference);
+      } catch (error) {
+        console.warn('createDirectSupOrder(abandoned)', (error as Error).message);
+      }
+    }
 
     const created = await createPurchaseOrderIdempotent(data.reference, {
       remark: `Youtumundial · ${data.reference}`,
