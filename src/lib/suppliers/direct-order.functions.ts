@@ -70,12 +70,13 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
     }
 
     const country = shippingCountries.find((c) => c.code === data.countryCode);
-    const { createPurchaseOrder } = await import('./sup-api.server');
+    const { createPurchaseOrderIdempotent } = await import('./sup-api.server');
 
     // Los pedidos con cupón también se registran en Shopify (total 0) para que
     // la tienda tenga el pedido, el cliente y el número visible (#1001).
-    const { createShopifyOrder } = await import('@/lib/shopify/admin.server');
-    const shopifyResult = await createShopifyOrder({
+    // Con reintentos automáticos y sin duplicar (se busca por referencia).
+    const { createShopifyOrderIdempotent } = await import('@/lib/shopify/admin.server');
+    const shopifyResult = await createShopifyOrderIdempotent({
       reference: data.reference,
       email: data.email,
       name: data.name,
@@ -92,45 +93,28 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
     });
     const shopifyOrderNumber = shopifyResult.ok ? shopifyResult.orderName : undefined;
 
-    try {
-      const result = (await createPurchaseOrder({
-        remark: `Youtumundial · ${data.reference}`,
-        out_trade_no: data.reference,
-        consignee: {
-          name: data.name || 'Cliente Youtumundial',
-          phone: data.phone,
-          email: data.email,
-          country: country?.name ?? data.countryCode,
-          address: data.address,
-        },
-        products: supItems.map((item) => ({
-          product_id: item.supProductId,
-          variant_id: item.supVariantId,
-          product_sn: item.supVariantSku,
-          quantity: item.quantity,
-          variant: item.variantTitle,
-        })),
-      })) as Record<string, unknown>;
+    const created = await createPurchaseOrderIdempotent(data.reference, {
+      remark: `Youtumundial · ${data.reference}`,
+      out_trade_no: data.reference,
+      consignee: {
+        name: data.name || 'Cliente Youtumundial',
+        phone: data.phone,
+        email: data.email,
+        country: country?.name ?? data.countryCode,
+        address: data.address,
+      },
+      products: supItems.map((item) => ({
+        product_id: item.supProductId,
+        variant_id: item.supVariantId,
+        product_sn: item.supVariantSku,
+        quantity: item.quantity,
+        variant: item.variantTitle,
+      })),
+    });
 
-      const body = (result.data ?? result) as Record<string, unknown>;
-      const supOrderId = String(body.order_id ?? body.id ?? body.order_sn ?? body.order_no ?? '');
-      if (!supOrderId) {
-        // SUP aceptó el pedido pero no devolvió número: no perdemos la compra.
-        console.warn('createDirectSupOrder: SUP sin order_id', data.reference);
-        return {
-          ok: true,
-          pending: true,
-          shopifyOrderNumber,
-          message: 'Pedido registrado. Lo confirmamos con el proveedor en breve.',
-        };
-      }
-      return { ok: true, supOrderId, shopifyOrderNumber };
-    } catch (error) {
-      // El detalle queda solo en los logs del servidor (puede traer credenciales
-      // o respuestas crudas del proveedor).
-      console.error('createDirectSupOrder', data.reference, (error as Error).message);
+    if (!created.ok || !created.supOrderId) {
       // No cancelamos la compra del cliente por una caída del proveedor:
-      // el pedido queda pendiente de envío manual a SUP.
+      // el pedido queda pendiente y se puede re-sincronizar.
       return {
         ok: true,
         pending: true,
@@ -139,4 +123,34 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       };
     }
 
+    return { ok: true, supOrderId: created.supOrderId, shopifyOrderNumber };
   });
+
+/**
+ * Re-sincronización manual de un pedido con cupón: vuelve a intentar Shopify y
+ * SUP usando la misma referencia, así nunca se duplica el pedido.
+ */
+export const resyncDirectOrder = createServerFn({ method: 'POST' })
+  .inputValidator((input: { reference: string }) => ({
+    reference: String(input?.reference ?? '').trim().slice(0, 60),
+  }))
+  .handler(async ({ data }): Promise<DirectOrderResult> => {
+    if (!data.reference) return { ok: false, message: 'Falta la referencia del pedido.' };
+
+    const { findShopifyOrderByReference } = await import('@/lib/shopify/admin.server');
+    const { findSupOrderByReference } = await import('./sup-api.server');
+
+    const shopify = await findShopifyOrderByReference(data.reference);
+    const supOrderId = await findSupOrderByReference(data.reference);
+
+    return {
+      ok: true,
+      supOrderId: supOrderId || undefined,
+      shopifyOrderNumber: shopify?.orderName,
+      pending: !supOrderId,
+      message: supOrderId
+        ? 'Pedido sincronizado con el proveedor.'
+        : 'Todavía no figura en el proveedor. Lo seguimos reintentando.',
+    };
+  });
+
