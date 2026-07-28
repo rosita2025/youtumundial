@@ -189,7 +189,13 @@ export interface StripeOrderSnapshot {
   };
   items: { supProductId: string; quantity: number; variantTitle: string; supVariantId?: string; supVariantSku?: string }[];
   amountTotal: number;
+  currency: string;
+  /** Pedido ya registrado en Shopify (idempotencia). */
+  shopifyOrderId?: string;
+  /** Email de confirmación ya enviado (idempotencia). */
+  confirmationSent?: boolean;
 }
+
 
 /** Lee una sesión de Stripe y arma el snapshot del pedido para enviarlo a SUP. */
 export async function readOrderSnapshot(
