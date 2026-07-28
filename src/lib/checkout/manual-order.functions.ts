@@ -53,7 +53,9 @@ export const createManualOrder = createServerFn({ method: 'POST' })
         couponCode: data.couponCode || undefined,
       });
     } catch (error) {
-      return { ok: false, message: (error as Error).message };
+      // El detalle queda solo en los logs del servidor.
+      console.error('createManualOrder:price', (error as Error).message);
+      return { ok: false, message: 'No se pudo calcular el pedido. Revisá tu carrito.' };
     }
 
     // El pago manual es para pedidos con importe real. Un total en cero solo
