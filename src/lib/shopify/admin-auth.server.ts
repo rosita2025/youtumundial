@@ -122,21 +122,28 @@ export async function resolveShopifyAdminToken(): Promise<string | undefined> {
     );
   }
 
-  if (cached && Date.now() < cached.expiresAt) return cached.token;
+  if (cached && Date.now() < cached.expiresAt) {
+    // Segunda barrera: si algo dejó un valor inválido en cache, lo tiramos.
+    if (isValidShopifyAdminToken(cached.token)) return cached.token;
+    cached = null;
+  }
+
   if (!inFlight) {
     inFlight = requestClientCredentialsToken().finally(() => {
       inFlight = null;
     });
   }
   const token = await inFlight;
-  if (!token) {
+  if (!isValidShopifyAdminToken(token)) {
+    cached = null;
     throw new Error(
-      'Shopify Admin: no se pudo obtener el token con client_credentials. Revisa SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET.',
+      'Shopify Admin: no se pudo obtener un token válido con client_credentials. ' +
+        'Revisa SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET en los secretos del proyecto.',
     );
   }
   return token;
-
 }
+
 
 
 /** Fuerza renovar el token temporal (por ejemplo tras un 401 de Shopify). */
