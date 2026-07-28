@@ -192,8 +192,11 @@ export interface StripeOrderSnapshot {
   currency: string;
   /** Pedido ya registrado en Shopify (idempotencia). */
   shopifyOrderId?: string;
+  /** Número visible del pedido en Shopify (ej. #1001). */
+  shopifyOrderName?: string;
   /** Email de confirmación ya enviado (idempotencia). */
   confirmationSent?: boolean;
+
 }
 
 
