@@ -2,12 +2,14 @@
  * Resolución del token del Admin API de Shopify (SOLO SERVIDOR).
  *
  * Orden de preferencia:
- *  0. `SHOPIFY_ADMIN_AUTOMATION_TOKEN` — token de automatización (CI/CD) de la app.
- *  1. `SHOPIFY_ADMIN_ORDERS_TOKEN` — token offline `shpat_` de app privada.
- *  2. `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` — intercambio
+ *  1. `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` — intercambio
  *     `grant_type=client_credentials` contra Shopify, que devuelve un token
  *     offline temporal válido para el Admin API (incluye `orderCreate`).
+ *     Es el método actual de las apps de Shopify y el que usa esta tienda.
+ *  2. `SHOPIFY_ADMIN_ORDERS_TOKEN` / `SHOPIFY_ADMIN_AUTOMATION_TOKEN` — solo
+ *     si tienen formato oficial (`shpat_`, `shpca_`, `shppa_`, `shpss_`).
  *  3. `SHOPIFY_ACCESS_TOKEN` — token de la integración (solo productos).
+
  *
  * Ningún valor se registra en logs ni se envía al navegador. El token temporal
  * se guarda solo en memoria del worker y se renueva antes de expirar.
@@ -78,12 +80,22 @@ async function requestClientCredentialsToken(): Promise<string | null> {
   }
 }
 
+/**
+ * Tokens estáticos válidos para el Admin API de Shopify.
+ * Solo aceptamos formatos oficiales (`shpat_`, `shpca_`, `shppa_`, `shpss_`).
+ * Cualquier otro valor pegado por error se ignora para no romper la sincronización.
+ */
+function staticAdminToken(): string | undefined {
+  const candidates = [
+    env('SHOPIFY_ADMIN_ORDERS_TOKEN'),
+    env('SHOPIFY_ADMIN_AUTOMATION_TOKEN'),
+  ];
+  return candidates.find((t) => !!t && /^shp(at|ca|pa|ss)_/.test(t));
+}
+
 /** Devuelve un token válido del Admin API o `undefined` si no hay ninguno. */
 export async function resolveShopifyAdminToken(): Promise<string | undefined> {
-  const explicit = env('SHOPIFY_ADMIN_AUTOMATION_TOKEN') ?? env('SHOPIFY_ADMIN_ORDERS_TOKEN');
-  if (explicit) return explicit;
-
-
+  // 1. Client credentials (método actual de las apps de Shopify).
   if (hasShopifyClientCredentials()) {
     if (cached && Date.now() < cached.expiresAt) return cached.token;
     if (!inFlight) {
@@ -95,8 +107,14 @@ export async function resolveShopifyAdminToken(): Promise<string | undefined> {
     if (token) return token;
   }
 
+  // 2. Token estático offline, si existe y tiene formato válido.
+  const explicit = staticAdminToken();
+  if (explicit) return explicit;
+
+  // 3. Token de la integración (normalmente solo productos).
   return env('SHOPIFY_ACCESS_TOKEN');
 }
+
 
 /** Fuerza renovar el token temporal (por ejemplo tras un 401 de Shopify). */
 export function resetShopifyAdminToken() {
