@@ -324,11 +324,22 @@ export async function createPurchaseOrderIdempotent(
   reference: string,
   order: unknown,
 ): Promise<{ ok: boolean; supOrderId?: string; message?: string }> {
+  const { withIdempotency, idempotencyKey } = await import("@/lib/utils/idempotency.server");
+  return withIdempotency(idempotencyKey("sup-order", reference), () =>
+    createPurchaseOrderNow(reference, order),
+  );
+}
+
+async function createPurchaseOrderNow(
+  reference: string,
+  order: unknown,
+): Promise<{ ok: boolean; supOrderId?: string; message?: string }> {
   const existing = await findSupOrderByReference(reference);
   if (existing) return { ok: true, supOrderId: existing };
 
   const { withRetry } = await import("@/lib/utils/retry");
   try {
+
     const supOrderId = await withRetry(
       async (attempt) => {
         if (attempt > 1) {
