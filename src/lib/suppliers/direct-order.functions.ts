@@ -36,9 +36,10 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<DirectOrderResult> => {
     const { priceOrder, normalizeCartLines } = await import('@/lib/checkout/pricing.server');
     const { shippingCountries } = await import('@/lib/checkout/config');
+    const { isFreeOrderAllowed } = await import('@/lib/checkout/secret-coupon.server');
 
-    // Este endpoint despacha sin cobrar: queda cerrado salvo que lo habilites.
-    if (process.env.ALLOW_FREE_TEST_ORDERS !== 'true') {
+    // Este endpoint despacha sin cobrar: solo el cupón de prueba secreto lo abre.
+    if (!isFreeOrderAllowed(data.couponCode)) {
       return { ok: false, message: 'Este pedido requiere pago. Elegí un método de pago.' };
     }
 
