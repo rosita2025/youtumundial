@@ -30,6 +30,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
 import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
+import { Route as ApiPublicShopifyWebhookRouteImport } from './routes/api/public/shopify/webhook'
 import { Route as ApiPublicAuditConnectionsRouteImport } from './routes/api/public/audit/connections'
 
 const TermsRoute = TermsRouteImport.update({
@@ -138,6 +139,11 @@ const ApiPublicSupShippingRoute = ApiPublicSupShippingRouteImport.update({
   path: '/api/public/sup/shipping',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicShopifyWebhookRoute = ApiPublicShopifyWebhookRouteImport.update({
+  id: '/api/public/shopify/webhook',
+  path: '/api/public/shopify/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAuditConnectionsRoute =
   ApiPublicAuditConnectionsRouteImport.update({
     id: '/api/public/audit/connections',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
+  '/api/public/shopify/webhook': typeof ApiPublicShopifyWebhookRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
+  '/api/public/shopify/webhook': typeof ApiPublicShopifyWebhookRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
+  '/api/public/shopify/webhook': typeof ApiPublicShopifyWebhookRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/api/public/audit/connections'
+    | '/api/public/shopify/webhook'
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products'
     | '/api/public/audit/connections'
+    | '/api/public/shopify/webhook'
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/products/'
     | '/api/public/audit/connections'
+    | '/api/public/shopify/webhook'
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
@@ -311,6 +323,7 @@ export interface RootRouteChildren {
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicAuditConnectionsRoute: typeof ApiPublicAuditConnectionsRoute
+  ApiPublicShopifyWebhookRoute: typeof ApiPublicShopifyWebhookRoute
   ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
   ApiPublicSupSyncCatalogRoute: typeof ApiPublicSupSyncCatalogRoute
   ApiPublicSupSyncTrackingRoute: typeof ApiPublicSupSyncTrackingRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSupShippingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/shopify/webhook': {
+      id: '/api/public/shopify/webhook'
+      path: '/api/public/shopify/webhook'
+      fullPath: '/api/public/shopify/webhook'
+      preLoaderRoute: typeof ApiPublicShopifyWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/audit/connections': {
       id: '/api/public/audit/connections'
       path: '/api/public/audit/connections'
@@ -507,6 +527,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicAuditConnectionsRoute: ApiPublicAuditConnectionsRoute,
+  ApiPublicShopifyWebhookRoute: ApiPublicShopifyWebhookRoute,
   ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
   ApiPublicSupSyncCatalogRoute: ApiPublicSupSyncCatalogRoute,
   ApiPublicSupSyncTrackingRoute: ApiPublicSupSyncTrackingRoute,
