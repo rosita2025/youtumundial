@@ -204,6 +204,8 @@ export async function syncAbandonedCheckout(
 async function syncAbandonedCheckoutNow(
   input: AbandonedCheckoutInput,
 ): Promise<AbandonedResult> {
+  const { recordSync } = await import('@/lib/observability/sync-audit.server');
+  const startedAt = Date.now();
 
   if (!(await canWriteDrafts())) {
     const message = 'La app de Shopify no tiene el permiso "write_draft_orders".';
@@ -213,6 +215,10 @@ async function syncAbandonedCheckoutNow(
       title: 'Carritos abandonados sin sincronizar (permiso faltante)',
       cause: message,
       context: { referencia: input.reference },
+    });
+    await recordSync({
+      entity: 'draft', action: 'upsert', status: 'skipped',
+      reference: input.reference, email: input.email, cause: message, silent: true,
     });
     return { ok: false, message };
   }
@@ -257,7 +263,14 @@ async function syncAbandonedCheckoutNow(
           };
         }>(DRAFT_UPDATE, { id: existing, input: draftInput });
         const errors = data?.draftOrderUpdate?.userErrors ?? [];
-        if (!errors.length) return { ok: true, draftId: existing };
+        if (!errors.length) {
+          await recordSync({
+            entity: 'draft', action: 'update', status: 'ok',
+            reference: input.reference, email: input.email,
+            ids: { draftId: existing }, attempts: attempt, durationMs: Date.now() - startedAt,
+          });
+          return { ok: true, draftId: existing };
+        }
         lastCause = errors.map((e) => e.message).join(', ') || 'Rechazado por Shopify.';
         // userErrors son de validación: reintentar no cambia el resultado.
         break;
@@ -271,7 +284,14 @@ async function syncAbandonedCheckoutNow(
       }>(DRAFT_CREATE, { input: draftInput });
       const errors = data?.draftOrderCreate?.userErrors ?? [];
       const draft = data?.draftOrderCreate?.draftOrder;
-      if (draft) return { ok: true, draftId: draft.id };
+      if (draft) {
+        await recordSync({
+          entity: 'draft', action: 'create', status: 'ok',
+          reference: input.reference, email: input.email,
+          ids: { draftId: draft.id }, attempts: attempt, durationMs: Date.now() - startedAt,
+        });
+        return { ok: true, draftId: draft.id };
+      }
       lastCause = errors.map((e) => e.message).join(', ') || 'Rechazado por Shopify.';
       break;
     } catch (error) {
@@ -298,6 +318,12 @@ async function syncAbandonedCheckoutNow(
       intentos: MAX_ATTEMPTS,
     },
   });
+  await recordSync({
+    entity: 'draft', action: operation === 'actualizar' ? 'update' : 'create',
+    status: 'rejected', reference: input.reference, email: input.email,
+    cause: lastCause, attempts: MAX_ATTEMPTS, durationMs: Date.now() - startedAt,
+    silent: true, // la alerta ya se envió arriba
+  });
 
   // Al cliente nunca se le devuelven detalles internos.
   return { ok: false, message: 'No se pudo sincronizar el carrito abandonado.' };
@@ -321,7 +347,16 @@ export async function closeAbandonedCheckout(reference: string): Promise<Abandon
 }
 
 async function closeAbandonedCheckoutNow(reference: string): Promise<AbandonedResult> {
-  if (!(await canWriteDrafts())) return { ok: false };
+  const { recordSync } = await import('@/lib/observability/sync-audit.server');
+  const startedAt = Date.now();
+
+  if (!(await canWriteDrafts())) {
+    await recordSync({
+      entity: 'draft', action: 'close', status: 'skipped',
+      reference, cause: 'Sin permiso write_draft_orders.', silent: true,
+    });
+    return { ok: false };
+  }
 
 
 
@@ -329,8 +364,19 @@ async function closeAbandonedCheckoutNow(reference: string): Promise<AbandonedRe
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
       const existing = await findDraftByReference(reference);
-      if (!existing) return { ok: true };
+      if (!existing) {
+        await recordSync({
+          entity: 'draft', action: 'close', status: 'ok',
+          reference, cause: 'Sin borrador pendiente.', attempts: attempt, silent: true,
+        });
+        return { ok: true };
+      }
       await adminRequest(DRAFT_DELETE, { input: { id: existing } });
+      await recordSync({
+        entity: 'draft', action: 'close', status: 'ok',
+        reference, ids: { draftId: existing }, attempts: attempt,
+        durationMs: Date.now() - startedAt,
+      });
       return { ok: true };
     } catch (error) {
       lastCause = (error as Error).message?.slice(0, 300) || 'Error desconocido.';
@@ -350,6 +396,11 @@ async function closeAbandonedCheckoutNow(reference: string): Promise<AbandonedRe
     title: 'No se pudo cerrar el borrador de carrito abandonado tras la compra',
     cause: lastCause,
     context: { referencia: reference, intentos: MAX_ATTEMPTS },
+  });
+  await recordSync({
+    entity: 'draft', action: 'close', status: 'error',
+    reference, cause: lastCause, attempts: MAX_ATTEMPTS,
+    durationMs: Date.now() - startedAt, silent: true,
   });
   return { ok: false };
 }
