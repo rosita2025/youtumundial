@@ -151,6 +151,24 @@ export async function getProduct(slug: string): Promise<Product | null> {
 }
 
 /**
+ * Busca un producto por el SKU de cualquiera de sus variantes.
+ * El SKU de Shopify es el mismo código que usa SUP, así que /productos/:sku
+ * permite abrir la ficha desde un pedido o desde el proveedor.
+ */
+export async function getProductBySku(sku: string): Promise<{ product: Product; variantId: string } | null> {
+  const needle = String(sku ?? '').trim().toLowerCase();
+  if (!needle) return null;
+  const catalog = await getCatalog();
+  for (const product of catalog) {
+    const variant = product.variants.find(v => (v.sku ?? '').trim().toLowerCase() === needle);
+    if (variant) return { product, variantId: variant.id };
+  }
+  // Fallback: algunos productos guardan el código en el slug o el id.
+  const bySlug = catalog.find(p => p.slug.toLowerCase() === needle || p.id.toLowerCase().endsWith(needle));
+  return bySlug ? { product: bySlug, variantId: bySlug.variants[0]?.id ?? '' } : null;
+}
+
+/**
  * Get all collections
  */
 export async function getCollections(): Promise<Collection[]> {
