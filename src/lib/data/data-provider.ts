@@ -271,3 +271,12 @@ export async function getRelatedProducts(
     .slice(0, limit);
   return related;
 }
+
+/**
+ * Catálogo SIN filtrar por orígenes desautorizados.
+ * Lo usa el panel de orígenes para poder ver (y volver a autorizar) todo.
+ */
+export async function getCatalogForAudit(): Promise<Product[]> {
+  const visible = await getCatalog();
+  return catalogCache ? catalogCache.products : visible;
+}
