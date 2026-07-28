@@ -129,6 +129,12 @@ export async function priceOrder(params: {
     coupon?.freeShipping || discounted >= FREE_SHIPPING_THRESHOLD ? 0 : country.shipping;
   const total = Math.round((discounted + shipping) * 100) / 100;
 
+  // Defensa en profundidad: un pedido de $0 despacha mercadería real y la pagás
+  // vos en la wallet de SUP. Solo se permite si lo habilitás a propósito.
+  if (total < 0.5 && process.env.ALLOW_FREE_TEST_ORDERS !== 'true') {
+    throw new Error('Este cupón no está disponible en este momento.');
+  }
+
   // El descuento se reparte proporcionalmente entre las líneas para Stripe.
   const factor = subtotal > 0 ? discounted / subtotal : 1;
   const pricedLines = lines.map((line) => ({
