@@ -107,7 +107,12 @@ export interface ShopifyOrderInput {
     sku?: string;
   }[];
   note?: string;
+  /** Estado de pago del pedido en Shopify. Por defecto PAID (cobro ya hecho). */
+  financialStatus?: 'PAID' | 'PENDING';
+  /** Etiquetas extra (además de las de la tienda y la referencia). */
+  extraTags?: string[];
 }
+
 
 export interface ShopifyOrderResult {
   ok: boolean;
@@ -161,9 +166,14 @@ export async function createShopifyOrder(
     return {
       email: input.email || undefined,
       ...(opts.withPhone && phone ? { phone } : {}),
-      tags: ['youtumundial-checkout', 'stripe', referenceTag(input.reference)],
+      tags: [
+        'youtumundial-checkout',
+        ...(input.extraTags?.length ? input.extraTags : ['stripe']),
+        referenceTag(input.reference),
+      ],
       note: input.note ?? `Pedido del checkout propio · ${input.reference}`,
-      financialStatus: 'PAID',
+      financialStatus: input.financialStatus ?? 'PAID',
+
       ...(shippingAddress && { shippingAddress, billingAddress: shippingAddress }),
       lineItems: input.lines.map((line) => ({
         title: line.title.slice(0, 250),

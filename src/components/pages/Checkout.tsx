@@ -31,6 +31,8 @@ import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'luci
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
 import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
+import { createManualOrder } from '@/lib/checkout/manual-order.functions';
+
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 
@@ -66,9 +68,12 @@ const Checkout = () => {
   const [paying, setPaying] = useState(false);
   const payingRef = useRef(false);
   const freeReferenceRef = useRef<string | null>(null);
+  const manualReferenceRef = useRef<string | null>(null);
   const createSupOrder = useServerFn(createDirectSupOrder);
+  const createManual = useServerFn(createManualOrder);
   const checkCoupon = useServerFn(validateCoupon);
   const fetchShipping = useServerFn(getShippingQuote);
+
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState<CustomerForm>(emptyCustomer);
@@ -269,18 +274,66 @@ const Checkout = () => {
     }
 
     if (method === 'yape') {
+      // Pago manual desde Perú: registramos el pedido REAL en Shopify como
+      // pendiente de pago (precio recalculado en el servidor) y recién después
+      // abrimos WhatsApp con la referencia para enviar la captura del Yape.
+      if (!manualReferenceRef.current) manualReferenceRef.current = `YTM-${Date.now()}`;
+      const reference = manualReferenceRef.current;
+      payingRef.current = true;
+      setPaying(true);
+      let orderNumber: string | undefined;
+      try {
+        const result = await createManual({
+          data: {
+            reference,
+            name: customerName,
+            email: customer.email,
+            phone: customerPhone,
+            countryCode,
+            address: customer.address,
+            couponCode: coupon?.code,
+            items: cartLines,
+          },
+        });
+        if (!result.ok) {
+          toast.error(result.message ?? 'No se pudo registrar el pedido.');
+          payingRef.current = false;
+          setPaying(false);
+          return;
+        }
+        orderNumber = result.shopifyOrderNumber;
+        toast.success(
+          orderNumber
+            ? `Pedido ${orderNumber} registrado. Enviá la captura del pago por WhatsApp.`
+            : 'Pedido registrado. Enviá la captura del pago por WhatsApp.',
+        );
+      } catch (e) {
+        toast.error((e as Error).message);
+        payingRef.current = false;
+        setPaying(false);
+        return;
+      }
+
       window.open(
         buildWhatsappOrderLink(cart, country, totals, {
-        name: customerName,
-        email: customer.email,
-        phone: customerPhone,
-        address: customer.address,
-      }),
+          name: customerName,
+          email: customer.email,
+          phone: customerPhone,
+          address: customer.address,
+          reference,
+          orderNumber,
+        }),
         '_blank',
         'noopener,noreferrer',
       );
+      clearCart();
+      navigate(
+        `/checkout/return?manual=1&reference=${encodeURIComponent(reference)}` +
+          (orderNumber ? `&order=${encodeURIComponent(orderNumber)}` : ''),
+      );
       return;
     }
+
 
     toast.error('Ese método aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(
@@ -595,7 +648,7 @@ const Checkout = () => {
                     : isFreeOrder
                       ? 'Confirmar pedido gratis'
                       : method === 'yape'
-                        ? 'Confirmar pedido por WhatsApp'
+                        ? 'Registrar pedido y pagar con Yape'
                         : 'Pagar ahora'}
               </Button>
 
