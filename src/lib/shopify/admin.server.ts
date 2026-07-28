@@ -14,30 +14,40 @@ import {
   SHOPIFY_STORE_PERMANENT_DOMAIN,
 } from './storefront';
 import { assertAllowedShopifyUrl } from '../security/connection-audit';
+import {
+  resolveShopifyAdminToken,
+  resetShopifyAdminToken,
+  hasShopifyClientCredentials,
+} from './admin-auth.server';
 
 const ADMIN_URL = `https://${SHOPIFY_STORE_PERMANENT_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
 /**
  * Token del Admin API (solo servidor).
  *
- * Prioriza `SHOPIFY_ADMIN_ORDERS_TOKEN` (app privada propia con permisos de
- * pedidos: read_orders / write_orders) y usa el token de la integración como
- * respaldo para productos. Nunca se envía al navegador.
+ * Prioriza `SHOPIFY_ADMIN_ORDERS_TOKEN`, luego el token temporal obtenido con
+ * `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` (client_credentials) y por
+ * último el token de la integración. Nunca se envía al navegador.
  */
-function adminToken(): string | undefined {
-  return (
+function adminToken(): Promise<string | undefined> {
+  return resolveShopifyAdminToken();
+}
+
+export function hasShopifyAdminCredentials(): boolean {
+  return Boolean(
     process.env.SHOPIFY_ADMIN_ORDERS_TOKEN?.trim() ||
-    process.env.SHOPIFY_ACCESS_TOKEN?.trim() ||
-    undefined
+      process.env.SHOPIFY_ACCESS_TOKEN?.trim() ||
+      hasShopifyClientCredentials(),
   );
 }
 
 async function adminRequest<T = any>(
   query: string,
   variables: Record<string, unknown> = {},
+  retry = true,
 ): Promise<T> {
-  const token = adminToken();
-  if (!token) throw new Error('SHOPIFY_ACCESS_TOKEN no está configurado');
+  const token = await adminToken();
+  if (!token) throw new Error('Credenciales de Shopify Admin no configuradas');
 
   assertAllowedShopifyUrl(ADMIN_URL);
 
@@ -50,6 +60,13 @@ async function adminRequest<T = any>(
     body: JSON.stringify({ query, variables }),
   });
 
+  if (response.status === 401 || response.status === 403) {
+    // Token temporal caducado o revocado: renovamos una sola vez.
+    resetShopifyAdminToken();
+    if (retry) return adminRequest<T>(query, variables, false);
+    throw new Error(`Shopify Admin HTTP ${response.status}`);
+  }
+
   if (!response.ok) throw new Error(`Shopify Admin HTTP ${response.status}`);
   const json = (await response.json()) as { data?: T; errors?: { message: string }[] };
   if (json.errors?.length) {
@@ -57,6 +74,7 @@ async function adminRequest<T = any>(
   }
   return json.data as T;
 }
+
 
 const ORDER_CREATE = `
   mutation OrderCreate($order: OrderCreateOrderInput!) {
