@@ -4,6 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { fulfillSupOrder, type FulfillmentResult } from '@/lib/suppliers/fulfillment.functions';
 import { getStripeEnvironment } from '@/lib/stripe';
+import { clearAbandonedCheckout } from '@/lib/checkout/abandoned.functions';
 import { Loader2, PackageCheck, RefreshCw, Truck } from 'lucide-react';
 
 
@@ -40,6 +41,14 @@ export const Route = createFileRoute('/checkout/return')({
 });
 
 function CheckoutReturn() {
+  // La compra terminó: borramos el carrito abandonado guardado en Shopify.
+  useEffect(() => {
+    const reference = window.sessionStorage.getItem('ytm-abandoned-ref');
+    if (!reference) return;
+    window.sessionStorage.removeItem('ytm-abandoned-ref');
+    clearAbandonedCheckout({ data: { reference } }).catch(() => {});
+  }, []);
+
   const {
     session_id: sessionId,
     free,
