@@ -19,6 +19,23 @@ export async function runPostPaymentTasks(params: {
   /** true cuando SUP no confirmó el pedido y queda pendiente. */
   delayed?: boolean;
 }): Promise<{ shopifyOrderName?: string }> {
+  // Clave de idempotencia por sesión de Stripe: si la página de gracias
+  // reintenta o se abre en dos pestañas, las tareas corren una sola vez.
+  const { withIdempotency, idempotencyKey } = await import('@/lib/utils/idempotency.server');
+  return withIdempotency(
+    idempotencyKey('post-payment', params.sessionId),
+    () => runPostPaymentTasksNow(params),
+    { isSuccess: () => true, ttlMs: 60_000 },
+  );
+}
+
+async function runPostPaymentTasksNow(params: {
+  sessionId: string;
+  environment: 'sandbox' | 'live';
+  snapshot: StripeOrderSnapshot;
+  delayed?: boolean;
+}): Promise<{ shopifyOrderName?: string }> {
+
   const { snapshot, sessionId, environment } = params;
   const { markSessionMeta } = await import('@/lib/stripe.server');
   const patch: Record<string, string> = {};
