@@ -99,6 +99,8 @@ export interface CartCheckoutInput {
   customerPhone?: string;
   returnUrl: string;
   environment: StripeEnv;
+  /** Referencia del carrito abandonado, para cerrarlo al confirmarse el pago. */
+  abandonedReference?: string;
 }
 
 /** Guarda el detalle del pedido en la metadata de la sesión (máx. 500 chars por clave). */
@@ -167,6 +169,9 @@ export async function createCartSession(data: CartCheckoutInput) {
       // Datos del formulario propio: respaldo si Stripe no los devuelve.
       ...(data.customerName && { buyer_name: data.customerName.slice(0, 120) }),
       ...(data.customerPhone && { buyer_phone: data.customerPhone.slice(0, 25) }),
+      ...(data.abandonedReference && {
+        abandoned_ref: data.abandonedReference.slice(0, 60),
+      }),
     },
     ...(data.customerEmail && { customer_email: data.customerEmail }),
   } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
@@ -203,6 +208,10 @@ export interface StripeOrderSnapshot {
   shopifyOrderName?: string;
   /** Email de confirmación ya enviado (idempotencia). */
   confirmationSent?: boolean;
+  /** Referencia del carrito abandonado asociado a este checkout. */
+  abandonedReference?: string;
+  /** El borrador de carrito abandonado ya se cerró (idempotencia). */
+  abandonedClosed?: boolean;
 
 }
 
@@ -256,6 +265,8 @@ export async function readOrderSnapshot(
     shopifyOrderId: metadata.shopify_order_id || undefined,
     shopifyOrderName: metadata.shopify_order_name || undefined,
     confirmationSent: metadata.confirmation_sent === '1',
+    abandonedReference: metadata.abandoned_ref || undefined,
+    abandonedClosed: metadata.abandoned_closed === '1',
 
   };
 }
