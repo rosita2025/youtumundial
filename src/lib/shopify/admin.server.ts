@@ -105,7 +105,10 @@ export interface ShopifyOrderInput {
     /** Precio unitario en la moneda del pedido. */
     price: number;
     sku?: string;
+    /** GID de la variante real de Shopify, si ya se conoce. */
+    variantId?: string;
   }[];
+
   note?: string;
   /** Estado de pago del pedido en Shopify. Por defecto PAID (cobro ya hecho). */
   financialStatus?: 'PAID' | 'PENDING';
@@ -136,6 +139,45 @@ function normalizePhone(raw?: string): string | undefined {
   return e164;
 }
 
+/* ------------------------------------------------------------------ */
+/* Enlace de las líneas con la variante real de la tienda              */
+/* ------------------------------------------------------------------ */
+
+const VARIANT_BY_SKU = `
+  query VariantBySku($query: String!) {
+    productVariants(first: 1, query: $query) {
+      edges { node { id } }
+    }
+  }
+`;
+
+/** Cache en memoria: SKU → GID de variante (o null si no existe). */
+const skuVariantCache = new Map<string, string | null>();
+
+/**
+ * Busca la variante real de Shopify por SKU para que el pedido quede enlazado
+ * al producto (con su foto y su inventario) en vez de crear una línea suelta.
+ * Si no se encuentra o falla la consulta, devolvemos undefined y el pedido se
+ * crea igual con la línea personalizada.
+ */
+async function resolveVariantIdBySku(sku?: string): Promise<string | undefined> {
+  const clean = String(sku ?? '').trim();
+  if (!clean) return undefined;
+  if (skuVariantCache.has(clean)) return skuVariantCache.get(clean) ?? undefined;
+
+  try {
+    const data = await adminRequest<{
+      productVariants: { edges: { node: { id: string } }[] };
+    }>(VARIANT_BY_SKU, { query: `sku:'${clean.replace(/['\\]/g, '')}'` });
+    const id = data?.productVariants?.edges?.[0]?.node?.id ?? null;
+    skuVariantCache.set(clean, id);
+    return id ?? undefined;
+  } catch (error) {
+    console.warn('resolveVariantIdBySku', clean, (error as Error).message);
+    return undefined;
+  }
+}
+
 /** Registra el pedido pagado en Shopify (no cobra: el cobro ya lo hizo Stripe). */
 export async function createShopifyOrder(
   input: ShopifyOrderInput,
@@ -147,7 +189,18 @@ export async function createShopifyOrder(
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
   const phone = normalizePhone(input.phone);
 
-  const buildOrder = (opts: { withPhone: boolean; withAddress: boolean }) => {
+  // Resolvemos las variantes reales (por SKU) una sola vez por pedido.
+  const resolvedVariants = await Promise.all(
+    input.lines.map(async (line) =>
+      line.variantId?.startsWith('gid://shopify/ProductVariant/')
+        ? line.variantId
+        : await resolveVariantIdBySku(line.sku),
+    ),
+  );
+
+
+
+  const buildOrder = (opts: { withPhone: boolean; withAddress: boolean; withVariant: boolean }) => {
     const shippingAddress =
       input.address && opts.withAddress
         ? {
@@ -175,17 +228,21 @@ export async function createShopifyOrder(
       financialStatus: input.financialStatus ?? 'PAID',
 
       ...(shippingAddress && { shippingAddress, billingAddress: shippingAddress }),
-      lineItems: input.lines.map((line) => ({
-        title: line.title.slice(0, 250),
-        quantity: line.quantity,
-        sku: line.sku || undefined,
-        priceSet: {
-          shopMoney: {
-            amount: line.price.toFixed(2),
-            currencyCode: (input.currency || 'USD').toUpperCase(),
+      lineItems: input.lines.map((line, index) => {
+        const variantId = opts.withVariant ? resolvedVariants[index] : undefined;
+        return {
+          // Con `variantId` el pedido queda enlazado al producto real de la
+          // tienda: se ve la foto, la variante y descuenta el inventario.
+          ...(variantId ? { variantId } : { title: line.title.slice(0, 250), sku: line.sku || undefined }),
+          quantity: line.quantity,
+          priceSet: {
+            shopMoney: {
+              amount: line.price.toFixed(2),
+              currencyCode: (input.currency || 'USD').toUpperCase(),
+            },
           },
-        },
-      })),
+        };
+      }),
     };
   };
 
@@ -202,9 +259,11 @@ export async function createShopifyOrder(
     };
   };
 
+  const hasVariants = resolvedVariants.some(Boolean);
+
   try {
-    // Intento 1: pedido completo.
-    let attemptOpts = { withPhone: Boolean(phone), withAddress: true };
+    // Intento 1: pedido completo, enlazado a las variantes reales.
+    let attemptOpts = { withPhone: Boolean(phone), withAddress: true, withVariant: hasVariants };
     let { created, errors } = await send(buildOrder(attemptOpts));
 
     // Reintento automático degradando el dato que Shopify rechazó,
@@ -216,15 +275,26 @@ export async function createShopifyOrder(
           e.message.toLowerCase().includes(needle),
       );
 
+    if (!created && errors.length && attemptOpts.withVariant && (failedOn('variant') || failedOn('lineitem'))) {
+      attemptOpts = { ...attemptOpts, withVariant: false };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
+    }
+
     if (!created && errors.length && (failedOn('phone') || attemptOpts.withPhone)) {
-      attemptOpts = { withPhone: false, withAddress: true };
+      attemptOpts = { ...attemptOpts, withPhone: false, withAddress: true };
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
 
     if (!created && errors.length && (failedOn('address') || failedOn('zip') || failedOn('province') || failedOn('country'))) {
-      attemptOpts = { withPhone: false, withAddress: false };
+      attemptOpts = { ...attemptOpts, withPhone: false, withAddress: false };
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
+
+    if (!created && errors.length && attemptOpts.withVariant) {
+      attemptOpts = { ...attemptOpts, withVariant: false };
+      ({ created, errors } = await send(buildOrder(attemptOpts)));
+    }
+
 
     if (!created) {
       console.error('createShopifyOrder userErrors', input.reference, errors);
