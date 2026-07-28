@@ -38,7 +38,7 @@ export function findShopifyCoupon(code: string, now: Date = new Date()): Shopify
   const found = shopifyCoupons.find((c) => norm(c.code) === wanted && c.active !== false);
   if (!found) return null;
   // Los cupones del 100% nunca se aceptan desde la lista pública.
-  if (found.percentOff >= 100) return null;
+  if ((found.percentOff ?? 0) >= 100) return null;
   if (found.startsAt && now < new Date(found.startsAt)) return null;
   if (found.endsAt && now > new Date(found.endsAt)) return null;
   return found;
