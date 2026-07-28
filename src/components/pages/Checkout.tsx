@@ -148,7 +148,7 @@ const Checkout = () => {
   useEffect(() => {
     if (paying) return;
     if (!shippingKey) return;
-    const check = validateCustomer(customer);
+    const check = validateCustomer(customerData);
     if (!check.ok) return;
 
     if (!abandonedRef.current) {
@@ -171,7 +171,12 @@ const Checkout = () => {
           email: customer.email,
           phone: customer.phone,
           countryCode,
-          address: customer.address,
+          address: addressLine,
+          address1: customer.address1,
+          address2: customer.address2,
+          city: customer.city,
+          province: customer.province,
+          postalCode: customer.postalCode,
           couponCode: coupon?.code,
           items: cart.items.map((i) => ({
             variantId: String(i.variant.id),
@@ -190,7 +195,7 @@ const Checkout = () => {
     customer.lastName,
     customer.email,
     customer.phone,
-    customer.address,
+    addressLine,
     countryCode,
     shippingKey,
     coupon?.code,
@@ -211,7 +216,7 @@ const Checkout = () => {
     );
   }
 
-  const validation = validateCustomer(customer);
+  const validation = validateCustomer(customerData);
   const missingCustomer = !validation.ok;
   const customerName = fullName(customer);
   const customerPhone = toE164(customer.phone);
@@ -286,7 +291,7 @@ const Checkout = () => {
             email: customer.email,
             phone: customerPhone,
             countryCode,
-            address: customer.address,
+            address: addressLine,
 
             couponCode: coupon?.code,
             items: cartLines,
@@ -361,7 +366,7 @@ const Checkout = () => {
             email: customer.email,
             phone: customerPhone,
             countryCode,
-            address: customer.address,
+            address: addressLine,
             couponCode: coupon?.code,
             items: cartLines,
           },
@@ -390,7 +395,7 @@ const Checkout = () => {
           name: customerName,
           email: customer.email,
           phone: customerPhone,
-          address: customer.address,
+          address: addressLine,
           reference,
           orderNumber,
         }),
@@ -420,7 +425,7 @@ const Checkout = () => {
         name: customerName,
         email: customer.email,
         phone: customerPhone,
-        address: customer.address,
+        address: addressLine,
       }),
       '_blank',
       'noopener,noreferrer',
@@ -553,7 +558,7 @@ const Checkout = () => {
                     id="address"
                     autoComplete="street-address"
                     maxLength={300}
-                    value={customer.address}
+                    value={addressLine}
                     onChange={(e) => updateCustomer('address', e.target.value)}
                     onBlur={() => setErrors(validateCustomer(customer).errors)}
                     aria-invalid={Boolean(errors.address)}
