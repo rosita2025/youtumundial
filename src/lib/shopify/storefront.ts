@@ -1,7 +1,8 @@
 /**
  * Shopify Storefront API — catálogo de Youtumundial.
  *
- * Los productos se importan desde SUP Dropshipping hacia Shopify (imágenes en
+ * Los productos se import { cleanDescription } from '@/lib/data/description';
+importan desde SUP Dropshipping hacia Shopify (imágenes en
  * el CDN de Shopify, variantes limpias, precio de venta). La tienda lee ese
  * catálogo por la Storefront API, y el SKU de cada variante conserva el código
  * de SUP para poder crear el pedido al proveedor después del pago.
@@ -131,7 +132,7 @@ export function mapShopifyProduct(raw: RawProduct): Product {
     id: raw.id,
     slug: raw.handle,
     title: raw.title,
-    description: raw.description ?? '',
+    description: cleanDescription(raw.description),
     price,
     compareAtPrice: compare > price ? compare : undefined,
     images: raw.images.edges.map((e, i) => ({
