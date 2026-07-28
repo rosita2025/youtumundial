@@ -454,9 +454,10 @@ const Checkout = () => {
                         : formatPrice(totals.shipping)}
                   </span>
                 </div>
-                {shippingQuote?.fromShopify && totals.shipping > 0 && (
+                {shippingQuote && totals.shipping > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    Tarifa {shippingQuote.title} sincronizada con tu tienda.
+                    {shippingQuote.title}
+                    {shippingQuote.fromShopify ? ' · tarifa sincronizada con tu tienda' : ''}
                   </p>
                 )}
                 <div className="flex justify-between font-medium text-base border-t border-border pt-3">
