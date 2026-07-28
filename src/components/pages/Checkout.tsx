@@ -38,6 +38,7 @@ import { createManualOrder } from '@/lib/checkout/manual-order.functions';
 
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
+import { ExpressPayButtons } from '@/components/checkout/ExpressPayButtons';
 
 
 const methods: { id: PaymentMethod; title: string; description: string; icon: typeof CreditCard }[] = [
@@ -365,7 +366,7 @@ const Checkout = () => {
               <ExpressPayButtons
                 amount={totals.total}
                 countryCode={countryCode}
-                disabled={loading}
+                disabled={paying}
                 onPay={() => {
                   setMethod('card');
                   void handlePay('card');
