@@ -22,7 +22,8 @@ async function handle(request: Request) {
   const secret = process.env.SUP_WEBHOOK_SECRET;
   if (!secret) return new Response("Not configured", { status: 503 });
 
-  const token = (request.headers.get("x-sup-token") ?? new URL(request.url).searchParams.get("token") ?? "").trim();
+  // Solo por header: en la query string el secreto queda en logs y referrers.
+  const token = (request.headers.get("x-sup-token") ?? "").trim();
   if (!token || !timingSafeEqual(token, secret)) return new Response("Unauthorized", { status: 401 });
 
   const environment = new URL(request.url).searchParams.get("env") === "sandbox" ? "sandbox" : "live";
