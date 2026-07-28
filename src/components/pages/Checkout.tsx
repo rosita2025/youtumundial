@@ -297,34 +297,90 @@ const Checkout = () => {
               <h2 className="font-medium text-lg mb-4">1. Datos de envío</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nombre y apellido</Label>
+                  <Label htmlFor="firstName">Nombre *</Label>
                   <Input
-                    id="name"
-                    value={customer.name}
-                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                    placeholder="Ana Pérez"
+                    id="firstName"
+                    autoComplete="given-name"
+                    maxLength={60}
+                    value={customer.firstName}
+                    onChange={(e) => updateCustomer('firstName', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.firstName)}
+                    placeholder="Ana"
                   />
+                  {errors.firstName && (
+                    <p className="text-xs text-destructive">{errors.firstName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="lastName">Apellido *</Label>
+                  <Input
+                    id="lastName"
+                    autoComplete="family-name"
+                    maxLength={60}
+                    value={customer.lastName}
+                    onChange={(e) => updateCustomer('lastName', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.lastName)}
+                    placeholder="Pérez"
+                  />
+                  {errors.lastName && (
+                    <p className="text-xs text-destructive">{errors.lastName}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Correo electrónico *</Label>
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
+                    maxLength={160}
                     value={customer.email}
-                    onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                    onChange={(e) => updateCustomer('email', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.email)}
                     placeholder="ana@email.com"
                   />
+                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Teléfono (con código de país) *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={25}
+                    value={customer.phone}
+                    onChange={(e) => updateCustomer('phone', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.phone)}
+                    placeholder="+51 987 654 321"
+                  />
+                  {errors.phone ? (
+                    <p className="text-xs text-destructive">{errors.phone}</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Lo usamos para coordinar la entrega con el courier.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">Dirección completa</Label>
+                  <Label htmlFor="address">Dirección completa *</Label>
                   <Input
                     id="address"
+                    autoComplete="street-address"
+                    maxLength={300}
                     value={customer.address}
-                    onChange={(e) => setCustomer({ ...customer, address: e.target.value })}
+                    onChange={(e) => updateCustomer('address', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customer).errors)}
+                    aria-invalid={Boolean(errors.address)}
                     placeholder="Calle, número, ciudad, código postal"
                   />
+                  {errors.address && <p className="text-xs text-destructive">{errors.address}</p>}
                 </div>
               </div>
+
 
               <div className="mt-6">
                 <Label className="mb-3 block">País de destino</Label>
