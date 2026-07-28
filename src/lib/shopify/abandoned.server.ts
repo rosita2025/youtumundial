@@ -68,6 +68,11 @@ export interface AbandonedCheckoutInput {
   lastName?: string;
   phone?: string;
   address?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
   countryCode?: string;
   currency?: string;
   lines: AbandonedLine[];
@@ -111,11 +116,16 @@ function buildDraftInput(input: AbandonedCheckoutInput) {
   const firstName = (input.firstName || 'Cliente').slice(0, 60);
   const lastName = (input.lastName || 'Youtumundial').slice(0, 60);
 
-  const shippingAddress = input.address
+  const street = (input.address1 || input.address || '').slice(0, 250);
+  const shippingAddress = street
     ? {
         firstName,
         lastName,
-        address1: input.address.slice(0, 250),
+        address1: street,
+        ...(input.address2 ? { address2: input.address2.slice(0, 120) } : {}),
+        ...(input.city ? { city: input.city.slice(0, 80) } : {}),
+        ...(input.province ? { province: input.province.slice(0, 80) } : {}),
+        ...(input.postalCode ? { zip: input.postalCode.slice(0, 12) } : {}),
         countryCode: (input.countryCode || '').toUpperCase() || undefined,
         ...(phone ? { phone } : {}),
       }
