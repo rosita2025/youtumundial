@@ -611,31 +611,8 @@ const Checkout = () => {
                 })}
               </div>
 
-              {method === 'yape' && (
-                <div className="mt-4 rounded-lg border border-border p-4 flex flex-col sm:flex-row gap-4 items-start">
-                  {checkoutConfig.yapeQrUrl ? (
-                    <img
-                      src={checkoutConfig.yapeQrUrl}
-                      alt="Código QR para pagar con Yape o Plin"
-                      className="h-36 w-36 rounded-md object-contain bg-card"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-36 w-36 rounded-md border border-dashed border-border grid place-items-center text-xs text-muted-foreground text-center px-2">
-                      QR pendiente de cargar
-                    </div>
-                  )}
-                  <div className="text-sm space-y-1">
-                    <p className="font-medium">Pagá S/ {totals.totalPen.toFixed(2)}</p>
-                    {checkoutConfig.yapeNumber && <p>Yape: {checkoutConfig.yapeNumber}</p>}
-                    {checkoutConfig.plinNumber && <p>Plin: {checkoutConfig.plinNumber}</p>}
-                    <p className="text-muted-foreground">
-                      Al confirmar se abre WhatsApp con el detalle del pedido. Adjuntá la captura del pago
-                      y confirmamos el envío.
-                    </p>
-                  </div>
-                </div>
-              )}
+
+
 
               {method === 'card' && showStripe && (
                 <div className="mt-6 rounded-lg border border-border p-4">
