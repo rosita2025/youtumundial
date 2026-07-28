@@ -139,6 +139,45 @@ function normalizePhone(raw?: string): string | undefined {
   return e164;
 }
 
+/* ------------------------------------------------------------------ */
+/* Enlace de las líneas con la variante real de la tienda              */
+/* ------------------------------------------------------------------ */
+
+const VARIANT_BY_SKU = `
+  query VariantBySku($query: String!) {
+    productVariants(first: 1, query: $query) {
+      edges { node { id } }
+    }
+  }
+`;
+
+/** Cache en memoria: SKU → GID de variante (o null si no existe). */
+const skuVariantCache = new Map<string, string | null>();
+
+/**
+ * Busca la variante real de Shopify por SKU para que el pedido quede enlazado
+ * al producto (con su foto y su inventario) en vez de crear una línea suelta.
+ * Si no se encuentra o falla la consulta, devolvemos undefined y el pedido se
+ * crea igual con la línea personalizada.
+ */
+async function resolveVariantIdBySku(sku?: string): Promise<string | undefined> {
+  const clean = String(sku ?? '').trim();
+  if (!clean) return undefined;
+  if (skuVariantCache.has(clean)) return skuVariantCache.get(clean) ?? undefined;
+
+  try {
+    const data = await adminRequest<{
+      productVariants: { edges: { node: { id: string } }[] };
+    }>(VARIANT_BY_SKU, { query: `sku:'${clean.replace(/['\\]/g, '')}'` });
+    const id = data?.productVariants?.edges?.[0]?.node?.id ?? null;
+    skuVariantCache.set(clean, id);
+    return id ?? undefined;
+  } catch (error) {
+    console.warn('resolveVariantIdBySku', clean, (error as Error).message);
+    return undefined;
+  }
+}
+
 /** Registra el pedido pagado en Shopify (no cobra: el cobro ya lo hizo Stripe). */
 export async function createShopifyOrder(
   input: ShopifyOrderInput,
@@ -149,6 +188,17 @@ export async function createShopifyOrder(
 
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
   const phone = normalizePhone(input.phone);
+
+  // Resolvemos las variantes reales (por SKU) una sola vez por pedido.
+  const resolvedVariants = await Promise.all(
+    input.lines.map(async (line) =>
+      line.variantId?.startsWith('gid://shopify/ProductVariant/')
+        ? line.variantId
+        : await resolveVariantIdBySku(line.sku),
+    ),
+  );
+
+
 
   const buildOrder = (opts: { withPhone: boolean; withAddress: boolean }) => {
     const shippingAddress =
