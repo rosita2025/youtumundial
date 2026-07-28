@@ -428,16 +428,52 @@ const Checkout = () => {
 
 
   return (
-    <Layout>
+    <CheckoutShell>
       <PaymentTestModeBanner />
-      <div className="container mx-auto px-4 py-8">
-        <Breadcrumbs items={[{ label: 'Carrito', href: '/cart' }, { label: 'Checkout' }]} />
-
-
-        <h1 className="font-display text-3xl md:text-4xl mt-6 mb-8">Finalizar compra</h1>
-
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2 space-y-8">
+            <section className="text-center">
+              <p className="text-sm text-muted-foreground mb-3">Pago exprés</p>
+              <div className="grid sm:grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMethod('card');
+                    void handlePay();
+                  }}
+                  className="rounded-md bg-foreground text-background py-3 text-sm font-medium hover:opacity-90 transition-opacity"
+                >
+                  Link
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMethod('card');
+                    void handlePay();
+                  }}
+                  className="rounded-md border border-border py-3 text-sm font-medium hover:border-primary/50 transition-colors"
+                >
+                  Google Pay / Apple Pay
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMethod('paypal');
+                    void handlePay();
+                  }}
+                  className="rounded-md bg-[#ffc439] text-[#003087] py-3 text-sm font-semibold hover:brightness-95 transition-all"
+                >
+                  PayPal
+                </button>
+              </div>
+              <div className="flex items-center gap-4 my-6">
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground uppercase">o</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+            </section>
+
             <section>
               <h2 className="font-medium text-lg mb-4">1. Datos de envío</h2>
               <div className="grid sm:grid-cols-2 gap-4">
