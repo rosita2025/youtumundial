@@ -182,6 +182,11 @@ export async function findShopifyOrderByReference(
 export async function createShopifyOrderIdempotent(
   input: ShopifyOrderInput,
 ): Promise<ShopifyOrderResult> {
+  const scopes = await ensureShopifyScopes();
+  if (!scopes.ok && scopes.missing.includes('write_orders')) {
+    return { ok: false, message: scopes.message ?? 'Falta el permiso write_orders en Shopify.' };
+  }
+
   const existing = await findShopifyOrderByReference(input.reference);
   if (existing) return existing;
 
