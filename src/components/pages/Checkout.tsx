@@ -66,9 +66,12 @@ const Checkout = () => {
   const [paying, setPaying] = useState(false);
   const payingRef = useRef(false);
   const freeReferenceRef = useRef<string | null>(null);
+  const manualReferenceRef = useRef<string | null>(null);
   const createSupOrder = useServerFn(createDirectSupOrder);
+  const createManual = useServerFn(createManualOrder);
   const checkCoupon = useServerFn(validateCoupon);
   const fetchShipping = useServerFn(getShippingQuote);
+
 
   const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
   const [customer, setCustomer] = useState<CustomerForm>(emptyCustomer);
