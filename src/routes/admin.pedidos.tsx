@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AdminGate, getAdminToken } from "@/components/admin/AdminGate";
+import { ShopifyOrdersPanel } from "@/components/admin/ShopifyOrdersPanel";
 import { BellRing, ExternalLink, PackageCheck, RefreshCw, Truck, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -395,6 +396,8 @@ function OrdersAdmin() {
           );
         })}
       </ul>
+
+      <ShopifyOrdersPanel />
     </main>
   );
 }
