@@ -4,7 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { fulfillSupOrder, type FulfillmentResult } from '@/lib/suppliers/fulfillment.functions';
 import { getStripeEnvironment } from '@/lib/stripe';
-import { Loader2, PackageCheck, Truck } from 'lucide-react';
+import { Loader2, PackageCheck, RefreshCw, Truck } from 'lucide-react';
 
 
 export const Route = createFileRoute('/checkout/return')({
@@ -36,6 +36,16 @@ function CheckoutReturn() {
   const isFreeOrder = free === '1';
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
   const [result, setResult] = useState<FulfillmentResult | null>(null);
+  const [resyncing, setResyncing] = useState(false);
+
+  const resync = () => {
+    if (!sessionId || resyncing) return;
+    setResyncing(true);
+    fulfillSupOrder({ data: { sessionId, environment: getStripeEnvironment() } })
+      .then((res) => setResult(res))
+      .catch((error: Error) => setResult({ ok: false, paid: false, message: error.message }))
+      .finally(() => setResyncing(false));
+  };
 
   useEffect(() => {
     if (!sessionId) return;
@@ -121,6 +131,23 @@ function CheckoutReturn() {
                   </p>
                 )}
               </div>
+            )}
+
+            {(!result.supOrderId || !result.shopifyOrderNumber) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resync}
+                disabled={resyncing}
+                className="mt-2"
+              >
+                {resyncing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                Reintentar sincronización
+              </Button>
             )}
 
           </div>
