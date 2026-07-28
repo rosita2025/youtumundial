@@ -8,12 +8,14 @@
  * Los tokens estáticos antiguos (`shpat_`, `shpca_`, `shppa_`, `shpss_`) ya no
  * se aceptan: Shopify cambió el modelo de apps y quedaron obsoletos.
  *
-
-
+ * Todo token recibido pasa por una validación estricta de formato antes de
+ * usarse o cachearse. Si el formato es inesperado, se descarta (no se envía a
+ * Shopify ni se guarda) y la operación falla de forma controlada.
  *
  * Ningún valor se registra en logs ni se envía al navegador. El token temporal
  * se guarda solo en memoria del worker y se renueva antes de expirar.
  */
+
 
 import { SHOPIFY_STORE_PERMANENT_DOMAIN } from './storefront';
 import { assertAllowedShopifyUrl } from '../security/connection-audit';
@@ -35,6 +37,22 @@ function env(name: string): string | undefined {
 export function hasShopifyClientCredentials(): boolean {
   return Boolean(env('SHOPIFY_CLIENT_ID') && env('SHOPIFY_CLIENT_SECRET'));
 }
+
+/**
+ * Validación estricta del token del Admin API.
+ *
+ * Aceptamos únicamente los formatos oficiales que emite Shopify hoy:
+ * `shpat_`, `shpca_`, `shpss_`, `shppa_`, `shpua_` seguidos de 24+ caracteres
+ * hexadecimales o alfanuméricos seguros. Cualquier otra cosa (valor pegado por
+ * error, HTML de una página de error, JSON, espacios, comillas, credenciales
+ * confundidas) se rechaza sin usarse.
+ */
+const ADMIN_TOKEN_PATTERN = /^shp(at|ca|ss|pa|ua)_[A-Za-z0-9]{24,255}$/;
+
+export function isValidShopifyAdminToken(token: unknown): token is string {
+  return typeof token === 'string' && ADMIN_TOKEN_PATTERN.test(token);
+}
+
 
 async function requestClientCredentialsToken(): Promise<string | null> {
   const clientId = env('SHOPIFY_CLIENT_ID');
@@ -71,9 +89,17 @@ async function requestClientCredentialsToken(): Promise<string | null> {
       return null;
     }
 
+    // Validación estricta: nunca cacheamos ni enviamos un token con formato raro.
+    if (!isValidShopifyAdminToken(token)) {
+      cached = null;
+      console.error('shopify client_credentials: access_token con formato inesperado (descartado)');
+      return null;
+    }
+
     const ttlMs = Math.max(60_000, Number(json.expires_in ?? 3600) * 1000);
     cached = { token, expiresAt: Date.now() + ttlMs - RENEW_MARGIN_MS };
     return token;
+
   } catch (error) {
     console.error('shopify client_credentials error', (error as Error).message);
     return null;
@@ -96,21 +122,28 @@ export async function resolveShopifyAdminToken(): Promise<string | undefined> {
     );
   }
 
-  if (cached && Date.now() < cached.expiresAt) return cached.token;
+  if (cached && Date.now() < cached.expiresAt) {
+    // Segunda barrera: si algo dejó un valor inválido en cache, lo tiramos.
+    if (isValidShopifyAdminToken(cached.token)) return cached.token;
+    cached = null;
+  }
+
   if (!inFlight) {
     inFlight = requestClientCredentialsToken().finally(() => {
       inFlight = null;
     });
   }
   const token = await inFlight;
-  if (!token) {
+  if (!isValidShopifyAdminToken(token)) {
+    cached = null;
     throw new Error(
-      'Shopify Admin: no se pudo obtener el token con client_credentials. Revisa SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET.',
+      'Shopify Admin: no se pudo obtener un token válido con client_credentials. ' +
+        'Revisa SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET en los secretos del proyecto.',
     );
   }
   return token;
-
 }
+
 
 
 /** Fuerza renovar el token temporal (por ejemplo tras un 401 de Shopify). */
