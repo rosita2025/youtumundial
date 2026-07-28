@@ -2,12 +2,14 @@
  * Resolución del token del Admin API de Shopify (SOLO SERVIDOR).
  *
  * Orden de preferencia:
- *  0. `SHOPIFY_ADMIN_AUTOMATION_TOKEN` — token de automatización (CI/CD) de la app.
- *  1. `SHOPIFY_ADMIN_ORDERS_TOKEN` — token offline `shpat_` de app privada.
- *  2. `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` — intercambio
+ *  1. `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` — intercambio
  *     `grant_type=client_credentials` contra Shopify, que devuelve un token
  *     offline temporal válido para el Admin API (incluye `orderCreate`).
+ *     Es el método actual de las apps de Shopify y el que usa esta tienda.
+ *  2. `SHOPIFY_ADMIN_ORDERS_TOKEN` / `SHOPIFY_ADMIN_AUTOMATION_TOKEN` — solo
+ *     si tienen formato oficial (`shpat_`, `shpca_`, `shppa_`, `shpss_`).
  *  3. `SHOPIFY_ACCESS_TOKEN` — token de la integración (solo productos).
+
  *
  * Ningún valor se registra en logs ni se envía al navegador. El token temporal
  * se guarda solo en memoria del worker y se renueva antes de expirar.
