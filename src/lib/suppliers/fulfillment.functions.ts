@@ -29,7 +29,7 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
   })
   .handler(async ({ data }): Promise<FulfillmentResult> => {
     const { readOrderSnapshot, markSessionFulfilled } = await import('@/lib/stripe.server');
-    const { createPurchaseOrder, getOrderDetail } = await import('./sup-api.server');
+    const { getOrderDetail } = await import('./sup-api.server');
 
     let snapshot;
     try {
