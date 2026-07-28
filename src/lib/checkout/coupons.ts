@@ -41,11 +41,15 @@ export const coupons: Coupon[] = [
     active: true,
   },
   {
+    // DESACTIVADO por seguridad: un cupón del 100% público permite que
+    // cualquiera que conozca el código pida mercadería física gratis
+    // (el pedido se crea automáticamente en SUP y lo pagás vos).
+    // Para una prueba puntual: activalo, hacé la compra y volvé a ponerlo en false.
     code: 'PRUEBA100',
     percentOff: 100,
     freeShipping: true,
     label: 'Pedido de prueba gratis (100% de descuento)',
-    active: true,
+    active: false,
   },
 ];
 
