@@ -48,20 +48,8 @@ const methods: { id: PaymentMethod; title: string; description: string; icon: ty
     description: 'Visa, Mastercard y Amex de Perú, EE.UU., Canadá y Reino Unido. Pago seguro en la misma página.',
     icon: CreditCard,
   },
-
-  {
-    id: 'paypal',
-    title: 'PayPal',
-    description: 'Pagá con tu saldo o tarjeta desde EE.UU., Canadá o Reino Unido.',
-    icon: Wallet,
-  },
-  {
-    id: 'yape',
-    title: 'Yape / Plin',
-    description: 'Solo Perú. Escaneá el QR y enviás la captura por WhatsApp.',
-    icon: Smartphone,
-  },
 ];
+
 
 
 const Checkout = () => {
