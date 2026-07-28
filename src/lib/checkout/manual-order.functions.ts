@@ -39,7 +39,7 @@ export const createManualOrder = createServerFn({ method: 'POST' })
     countryCode: String(input?.countryCode ?? '').slice(0, 5),
     address: String(input?.address ?? '').slice(0, 300),
     couponCode: String(input?.couponCode ?? '').slice(0, 40),
-    items: Array.isArray(input?.items) ? input.items : [],
+    items: Array.isArray(input?.items) ? input.items.slice(0, 30) : [],
   }))
   .handler(async ({ data }): Promise<ManualOrderResult> => {
     const { priceOrder, normalizeCartLines } = await import('./pricing.server');
