@@ -37,6 +37,7 @@ function CheckoutReturn() {
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
   const [result, setResult] = useState<FulfillmentResult | null>(null);
   const [resyncing, setResyncing] = useState(false);
+  const [autoTries, setAutoTries] = useState(0);
 
   const resync = () => {
     if (!sessionId || resyncing) return;
@@ -66,6 +67,26 @@ function CheckoutReturn() {
       active = false;
     };
   }, [sessionId]);
+
+  // Reintento automático: si Shopify todavía no devolvió el número de pedido,
+  // volvemos a pedirlo (la creación es idempotente, no duplica pedidos).
+  useEffect(() => {
+    if (!sessionId || state !== 'done' || resyncing) return;
+    if (result?.shopifyOrderNumber) return;
+    if (autoTries >= 3) return;
+    const timer = setTimeout(() => {
+      setAutoTries((n) => n + 1);
+      setResyncing(true);
+      fulfillSupOrder({ data: { sessionId, environment: getStripeEnvironment() } })
+        .then((res) => setResult(res))
+        .catch(() => undefined)
+        .finally(() => setResyncing(false));
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
+
+  const orderNumber = isFreeOrder ? freeOrderNumber : result?.shopifyOrderNumber;
+
 
   return (
     <Layout>
