@@ -26,6 +26,9 @@ export interface PricedLine {
   variantTitle?: string;
   supVariantId?: string;
   supVariantSku?: string;
+  /** GID de la variante real en Shopify (si el catálogo viene de Shopify). */
+  shopifyVariantId?: string;
+
 }
 
 export interface PricedOrder {
