@@ -11,6 +11,8 @@ import { Loader2, PackageCheck, RefreshCw, Truck } from 'lucide-react';
 export const Route = createFileRoute('/checkout/return')({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
+      { name: "referrer", content: "strict-origin-when-cross-origin" },
       { title: 'Pago confirmado — Ropa de Youtumundial' },
       {
         name: 'description',

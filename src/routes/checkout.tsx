@@ -4,6 +4,8 @@ import Checkout from "@/components/pages/Checkout";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
+      { name: "referrer", content: "strict-origin-when-cross-origin" },
       { title: "Checkout seguro — Ropa de Youtumundial" },
       {
         name: "description",
