@@ -137,9 +137,11 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <p className="text-muted-foreground leading-relaxed">
-              {product.description}
-            </p>
+            {product.description && (
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                {product.description}
+              </p>
+            )}
 
             {/* Variant Selector */}
             <VariantSelector
