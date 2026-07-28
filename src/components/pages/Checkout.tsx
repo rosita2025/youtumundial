@@ -256,7 +256,12 @@ const Checkout = () => {
 
     if (method === 'yape') {
       window.open(
-        buildWhatsappOrderLink(cart, country, totals, customer),
+        buildWhatsappOrderLink(cart, country, totals, {
+        name: customerName,
+        email: customer.email,
+        phone: customerPhone,
+        address: customer.address,
+      }),
         '_blank',
         'noopener,noreferrer',
       );
@@ -265,7 +270,12 @@ const Checkout = () => {
 
     toast.error('Ese método aún no está configurado. Escribinos por WhatsApp y cerramos el pedido.');
     window.open(
-      buildWhatsappOrderLink(cart, country, totals, customer),
+      buildWhatsappOrderLink(cart, country, totals, {
+        name: customerName,
+        email: customer.email,
+        phone: customerPhone,
+        address: customer.address,
+      }),
       '_blank',
       'noopener,noreferrer',
     );
