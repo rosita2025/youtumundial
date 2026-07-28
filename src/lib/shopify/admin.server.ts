@@ -469,16 +469,33 @@ export async function createShopifyOrderIdempotent(
   const { withIdempotency, idempotencyKey } = await import('@/lib/utils/idempotency.server');
 
   return withIdempotency(idempotencyKey('shopify-order', input.reference), async () => {
+    const { recordSync } = await import('@/lib/observability/sync-audit.server');
+    const startedAt = Date.now();
+
     // Verificación automática de permisos (lectura + creación de pedidos).
     const gate = await requireShopifyOrderAccess();
-    if (!gate.ok) return { ok: false, message: gate.message };
+    if (!gate.ok) {
+      await recordSync({
+        entity: 'order', action: 'create', status: 'skipped',
+        reference: input.reference, email: input.email, cause: gate.message,
+      });
+      return { ok: false, message: gate.message };
+    }
 
     const existing = await findShopifyOrderByReference(input.reference);
-    if (existing) return existing;
+    if (existing) {
+      await recordSync({
+        entity: 'order', action: 'create', status: 'ok',
+        reference: input.reference, email: input.email,
+        ids: { orderId: existing.orderId, orderName: existing.orderName },
+        cause: 'Ya existía (idempotencia).', silent: true,
+      });
+      return existing;
+    }
 
     const { withRetry } = await import('@/lib/utils/retry');
     try {
-      return await withRetry(
+      const result = await withRetry(
         async (attempt) => {
           if (attempt > 1) {
             const already = await findShopifyOrderByReference(input.reference);
@@ -490,9 +507,30 @@ export async function createShopifyOrderIdempotent(
         },
         { attempts: 3, baseDelayMs: 800, label: `createShopifyOrder ${input.reference}` },
       );
+      await recordSync({
+        entity: 'order', action: 'create', status: 'ok',
+        reference: input.reference, email: input.email,
+        ids: { orderId: result.orderId, orderName: result.orderName },
+        durationMs: Date.now() - startedAt,
+      });
+      return result;
     } catch (error) {
       const late = await findShopifyOrderByReference(input.reference);
-      if (late) return late;
+      if (late) {
+        await recordSync({
+          entity: 'order', action: 'create', status: 'ok',
+          reference: input.reference, email: input.email,
+          ids: { orderId: late.orderId, orderName: late.orderName },
+          cause: 'Confirmado tras reintento.', silent: true,
+        });
+        return late;
+      }
+      // Shopify rechazó el pedido de forma definitiva: se audita y se alerta.
+      await recordSync({
+        entity: 'order', action: 'create', status: 'rejected',
+        reference: input.reference, email: input.email,
+        cause: (error as Error).message, attempts: 3, durationMs: Date.now() - startedAt,
+      });
       return { ok: false, message: (error as Error).message };
     }
   });
