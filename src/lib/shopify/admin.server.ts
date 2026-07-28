@@ -41,7 +41,7 @@ export function hasShopifyAdminCredentials(): boolean {
 }
 
 
-async function adminRequest<T = any>(
+export async function adminRequest<T = any>(
   query: string,
   variables: Record<string, unknown> = {},
   retry = true,
@@ -135,7 +135,7 @@ export interface ShopifyOrderResult {
  * Shopify rechaza el pedido entero ("Phone is invalid") si el número no es
  * válido, así que si no cumple el formato lo omitimos en vez de fallar.
  */
-function normalizePhone(raw?: string): string | undefined {
+export function normalizePhone(raw?: string): string | undefined {
   const digits = String(raw ?? '').replace(/[^\d+]/g, '');
   if (!digits) return undefined;
   const e164 = digits.startsWith('+') ? `+${digits.slice(1).replace(/\D/g, '')}` : undefined;
