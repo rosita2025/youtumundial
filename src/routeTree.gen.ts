@@ -29,6 +29,7 @@ import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
 import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
+import { Route as ApiPublicAuditConnectionsRouteImport } from './routes/api/public/audit/connections'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -131,6 +132,12 @@ const ApiPublicSupShippingRoute = ApiPublicSupShippingRouteImport.update({
   path: '/api/public/sup/shipping',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAuditConnectionsRoute =
+  ApiPublicAuditConnectionsRouteImport.update({
+    id: '/api/public/audit/connections',
+    path: '/api/public/audit/connections',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
@@ -172,6 +180,7 @@ export interface FileRoutesByTo {
   '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
+  '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
@@ -195,6 +204,7 @@ export interface FileRoutesById {
   '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
+  '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/productos/$sku'
     | '/products/$slug'
     | '/products/'
+    | '/api/public/audit/connections'
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/productos/$sku'
     | '/products/$slug'
     | '/products'
+    | '/api/public/audit/connections'
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
@@ -263,6 +275,7 @@ export interface FileRouteTypes {
     | '/productos/$sku'
     | '/products/$slug'
     | '/products/'
+    | '/api/public/audit/connections'
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
@@ -285,6 +298,7 @@ export interface RootRouteChildren {
   ProductosSkuRoute: typeof ProductosSkuRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  ApiPublicAuditConnectionsRoute: typeof ApiPublicAuditConnectionsRoute
   ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
   ApiPublicSupSyncCatalogRoute: typeof ApiPublicSupSyncCatalogRoute
   ApiPublicSupSyncTrackingRoute: typeof ApiPublicSupSyncTrackingRoute
@@ -432,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSupShippingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/audit/connections': {
+      id: '/api/public/audit/connections'
+      path: '/api/public/audit/connections'
+      fullPath: '/api/public/audit/connections'
+      preLoaderRoute: typeof ApiPublicAuditConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -464,6 +485,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductosSkuRoute: ProductosSkuRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  ApiPublicAuditConnectionsRoute: ApiPublicAuditConnectionsRoute,
   ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
   ApiPublicSupSyncCatalogRoute: ApiPublicSupSyncCatalogRoute,
   ApiPublicSupSyncTrackingRoute: ApiPublicSupSyncTrackingRoute,
@@ -471,3 +493,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
