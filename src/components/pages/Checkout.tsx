@@ -22,6 +22,7 @@ import {
   clearAbandonedCheckout,
 } from '@/lib/checkout/abandoned.functions';
 import {
+  composeAddress,
   emptyCustomer,
   fullName,
   toE164,
@@ -90,6 +91,11 @@ const Checkout = () => {
 
   const [shippingQuote, setShippingQuote] = useState<ShippingQuoteResult | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
+
+  // El país siempre viaja dentro de los datos validados: así el esquema puede
+  // exigir estado/provincia y código postal correctos según el destino.
+  const customerData: CustomerForm = { ...customer, countryCode };
+  const addressLine = composeAddress(customerData);
 
   const country = shippingCountries.find((c) => c.code === countryCode) ?? shippingCountries[0];
   const baseTotals = getTotals(cart, country, coupon);
