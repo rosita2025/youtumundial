@@ -112,7 +112,11 @@ export async function priceOrder(params: {
       variantTitle: variant.title,
       supVariantId: variantMatch ? variantMatch[1] : undefined,
       supVariantSku: sku,
+      shopifyVariantId: String(variant.id).startsWith('gid://shopify/ProductVariant/')
+        ? String(variant.id)
+        : undefined,
     });
+
   }
 
   subtotal = Math.round(subtotal * 100) / 100;
