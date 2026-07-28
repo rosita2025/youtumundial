@@ -26,10 +26,6 @@ import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as ProductosSkuRouteImport } from './routes/productos.$sku'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
-import { Route as AdminSupRouteImport } from './routes/admin.sup'
-import { Route as AdminResenasRouteImport } from './routes/admin.resenas'
-import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
-import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
 import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
 import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
@@ -119,26 +115,6 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/return',
   getParentRoute: () => CheckoutRoute,
 } as any)
-const AdminSupRoute = AdminSupRouteImport.update({
-  id: '/admin/sup',
-  path: '/admin/sup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminResenasRoute = AdminResenasRouteImport.update({
-  id: '/admin/resenas',
-  path: '/admin/resenas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminPedidosRoute = AdminPedidosRouteImport.update({
-  id: '/admin/pedidos',
-  path: '/admin/pedidos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
-  id: '/admin/diagnostico',
-  path: '/admin/diagnostico',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicSupSyncTrackingRoute =
   ApiPublicSupSyncTrackingRouteImport.update({
     id: '/api/public/sup/sync-tracking',
@@ -169,10 +145,6 @@ export interface FileRoutesByFullPath {
   '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/admin/diagnostico': typeof AdminDiagnosticoRoute
-  '/admin/pedidos': typeof AdminPedidosRoute
-  '/admin/resenas': typeof AdminResenasRoute
-  '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/productos/$sku': typeof ProductosSkuRoute
@@ -195,10 +167,6 @@ export interface FileRoutesByTo {
   '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/admin/diagnostico': typeof AdminDiagnosticoRoute
-  '/admin/pedidos': typeof AdminPedidosRoute
-  '/admin/resenas': typeof AdminResenasRoute
-  '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/productos/$sku': typeof ProductosSkuRoute
@@ -222,10 +190,6 @@ export interface FileRoutesById {
   '/shipping': typeof ShippingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/admin/diagnostico': typeof AdminDiagnosticoRoute
-  '/admin/pedidos': typeof AdminPedidosRoute
-  '/admin/resenas': typeof AdminResenasRoute
-  '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/productos/$sku': typeof ProductosSkuRoute
@@ -250,10 +214,6 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/sitemap.xml'
     | '/terms'
-    | '/admin/diagnostico'
-    | '/admin/pedidos'
-    | '/admin/resenas'
-    | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
     | '/productos/$sku'
@@ -276,10 +236,6 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/sitemap.xml'
     | '/terms'
-    | '/admin/diagnostico'
-    | '/admin/pedidos'
-    | '/admin/resenas'
-    | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
     | '/productos/$sku'
@@ -302,10 +258,6 @@ export interface FileRouteTypes {
     | '/shipping'
     | '/sitemap.xml'
     | '/terms'
-    | '/admin/diagnostico'
-    | '/admin/pedidos'
-    | '/admin/resenas'
-    | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
     | '/productos/$sku'
@@ -329,10 +281,6 @@ export interface RootRouteChildren {
   ShippingRoute: typeof ShippingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
-  AdminDiagnosticoRoute: typeof AdminDiagnosticoRoute
-  AdminPedidosRoute: typeof AdminPedidosRoute
-  AdminResenasRoute: typeof AdminResenasRoute
-  AdminSupRoute: typeof AdminSupRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ProductosSkuRoute: typeof ProductosSkuRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
@@ -463,34 +411,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof CheckoutRoute
     }
-    '/admin/sup': {
-      id: '/admin/sup'
-      path: '/admin/sup'
-      fullPath: '/admin/sup'
-      preLoaderRoute: typeof AdminSupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/resenas': {
-      id: '/admin/resenas'
-      path: '/admin/resenas'
-      fullPath: '/admin/resenas'
-      preLoaderRoute: typeof AdminResenasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/pedidos': {
-      id: '/admin/pedidos'
-      path: '/admin/pedidos'
-      fullPath: '/admin/pedidos'
-      preLoaderRoute: typeof AdminPedidosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/diagnostico': {
-      id: '/admin/diagnostico'
-      path: '/admin/diagnostico'
-      fullPath: '/admin/diagnostico'
-      preLoaderRoute: typeof AdminDiagnosticoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/sup/sync-tracking': {
       id: '/api/public/sup/sync-tracking'
       path: '/api/public/sup/sync-tracking'
@@ -540,10 +460,6 @@ const rootRouteChildren: RootRouteChildren = {
   ShippingRoute: ShippingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
-  AdminDiagnosticoRoute: AdminDiagnosticoRoute,
-  AdminPedidosRoute: AdminPedidosRoute,
-  AdminResenasRoute: AdminResenasRoute,
-  AdminSupRoute: AdminSupRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ProductosSkuRoute: ProductosSkuRoute,
   ProductsSlugRoute: ProductsSlugRoute,
