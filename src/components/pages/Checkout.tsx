@@ -103,14 +103,17 @@ const Checkout = () => {
   const stripeItems = cart.items.map((item) => {
     const supMatch = /^sup-(.+)$/.exec(String(item.product.id));
     const variantMatch = /^sup-[^-]+-(.+)$/.exec(String(item.variant.id));
+    // Con el catálogo en Shopify el ID ya no trae el código de SUP: el SKU de
+    // la variante (importado desde SUP) es la referencia para el proveedor.
+    const sku = item.variant.sku || undefined;
     return {
       name: `${item.product.title} — ${item.variant.title}`,
       amountInCents: Math.max(1, Math.round(item.variant.price * discountFactor * 100)),
       quantity: item.quantity,
-      supProductId: supMatch ? supMatch[1] : undefined,
+      supProductId: supMatch ? supMatch[1] : sku,
       variantTitle: item.variant.title,
       supVariantId: variantMatch ? variantMatch[1] : undefined,
-      supVariantSku: item.variant.sku,
+      supVariantSku: sku,
     };
   });
 

@@ -14,6 +14,7 @@ import { fetchStoreCatalog } from '../suppliers/catalog.functions';
 import { SUP_MARGIN } from '../suppliers/sup-selection';
 import { readPublishedIds } from '../suppliers/published-store';
 import supCatalog from '../suppliers/sup-catalog.json';
+import { fetchShopifyProducts } from '../shopify/storefront';
 
 const CACHE_TTL = 5 * 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
@@ -41,6 +42,17 @@ function applyPublishedSelection(products: Product[]): Product[] {
  */
 async function getCatalog(): Promise<Product[]> {
   if (catalogCache && Date.now() - catalogCache.at < CACHE_TTL) return catalogCache.products;
+
+  // 1) Shopify: catálogo publicado (los productos de SUP se importan acá).
+  try {
+    const shopifyProducts = filterInStock(await fetchShopifyProducts(100));
+    if (shopifyProducts.length > 0) {
+      catalogCache = { at: Date.now(), products: shopifyProducts };
+      return shopifyProducts;
+    }
+  } catch {
+    // seguimos con SUP en vivo
+  }
 
   try {
     const res = await fetchStoreCatalog();
