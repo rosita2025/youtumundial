@@ -176,6 +176,7 @@ const Checkout = () => {
 
     if (isFreeOrder) {
       const reference = `YTM-${Date.now()}`;
+      let freeOrderNumber: string | undefined;
       try {
         // Número visible del pedido en Shopify, para mostrarlo al cliente.
         const result = await createSupOrder({
