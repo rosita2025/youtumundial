@@ -23,6 +23,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
+import { Route as ProductosSkuRouteImport } from './routes/productos.$sku'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AdminSupRouteImport } from './routes/admin.sup'
@@ -103,6 +104,11 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductosSkuRoute = ProductosSkuRouteImport.update({
+  id: '/productos/$sku',
+  path: '/productos/$sku',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
   id: '/collections/$slug',
   path: '/collections/$slug',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/admin/sup': typeof AdminSupRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/collections/$slug': typeof CollectionsSlugRoute
+  '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
+    | '/productos/$sku'
     | '/products/$slug'
     | '/products/'
     | '/api/public/sup/shipping'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
+    | '/productos/$sku'
     | '/products/$slug'
     | '/products'
     | '/api/public/sup/shipping'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/admin/sup'
     | '/checkout/return'
     | '/collections/$slug'
+    | '/productos/$sku'
     | '/products/$slug'
     | '/products/'
     | '/api/public/sup/shipping'
@@ -322,6 +334,7 @@ export interface RootRouteChildren {
   AdminResenasRoute: typeof AdminResenasRoute
   AdminSupRoute: typeof AdminSupRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
+  ProductosSkuRoute: typeof ProductosSkuRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
@@ -429,6 +442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/productos/$sku': {
+      id: '/productos/$sku'
+      path: '/productos/$sku'
+      fullPath: '/productos/$sku'
+      preLoaderRoute: typeof ProductosSkuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/collections/$slug': {
       id: '/collections/$slug'
       path: '/collections/$slug'
@@ -525,6 +545,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminResenasRoute: AdminResenasRoute,
   AdminSupRoute: AdminSupRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
+  ProductosSkuRoute: ProductosSkuRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
@@ -534,3 +555,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
