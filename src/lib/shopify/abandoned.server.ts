@@ -307,11 +307,23 @@ async function syncAbandonedCheckoutNow(
 /**
  * El cliente terminó de comprar: el carrito ya no está abandonado.
  * Borra el borrador para que no quede duplicado con el pedido real.
+ * Idempotente por referencia: si el webhook de Shopify y el retorno de Stripe
+ * llegan a la vez, el borrador se borra una sola vez.
  * Reintenta ante fallos transitorios y avisa al admin si no lo logra.
  */
 export async function closeAbandonedCheckout(reference: string): Promise<AbandonedResult> {
   if (!reference) return { ok: false };
+
+  const { withIdempotency, idempotencyKey } = await import('@/lib/utils/idempotency.server');
+  return withIdempotency(idempotencyKey('shopify-draft-close', reference), () =>
+    closeAbandonedCheckoutNow(reference),
+  );
+}
+
+async function closeAbandonedCheckoutNow(reference: string): Promise<AbandonedResult> {
   if (!(await canWriteDrafts())) return { ok: false };
+
+
 
   let lastCause = 'Motivo desconocido.';
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
