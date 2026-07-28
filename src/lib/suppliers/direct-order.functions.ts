@@ -14,8 +14,11 @@ export interface DirectOrderInput {
 export interface DirectOrderResult {
   ok: boolean;
   supOrderId?: string;
+  /** El pedido quedó registrado en la tienda pero todavía no en SUP. */
+  pending?: boolean;
   message?: string;
 }
+
 
 /**
  * Crea el pedido en SUP Dropshipping para compras sin cargo (cupón del 100%).
