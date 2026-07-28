@@ -141,7 +141,17 @@ const Checkout = () => {
     );
   }
 
-  const missingCustomer = !customer.name || !customer.email || !customer.address;
+  const validation = validateCustomer(customer);
+  const missingCustomer = !validation.ok;
+  const customerName = fullName(customer);
+  const customerPhone = toE164(customer.phone);
+
+  const updateCustomer = (field: keyof CustomerForm, value: string) => {
+    setCustomer((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+    setShowStripe(false);
+  };
+
   const isFreeOrder = totals.total < 0.5;
 
   const applyCoupon = async () => {
