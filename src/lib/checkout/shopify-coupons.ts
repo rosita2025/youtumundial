@@ -20,19 +20,15 @@ export interface ShopifyCoupon extends Coupon {
   endsAt?: string;
 }
 
-/** Snapshot sincronizado el 2026-07-28 desde la tienda de Shopify. */
-export const shopifyCoupons: ShopifyCoupon[] = [
-  {
-    code: 'PRUEBA100',
-    percentOff: 100,
-    freeShipping: true,
-    label: 'Pedido de prueba (100% de descuento)',
-    active: true,
-    shopifyPriceRuleId: '1607706673427',
-    startsAt: '2026-07-28T04:00:00.000Z',
-    endsAt: '2026-08-11T23:59:59.000Z',
-  },
-];
+/**
+ * Snapshot sincronizado desde la tienda de Shopify.
+ *
+ * REGLA DE SEGURIDAD: acá NO se sincronizan cupones del 100% de descuento.
+ * Un cupón público del 100% permitiría crear pedidos físicos en $0 y generar
+ * costos reales con el proveedor (SUP). Las pruebas gratis se hacen únicamente
+ * con el cupón secreto del servidor (`TEST_COUPON_CODE`).
+ */
+export const shopifyCoupons: ShopifyCoupon[] = [];
 
 const norm = (s: string) => s.trim().toUpperCase().replace(/[\s-]+/g, '');
 
