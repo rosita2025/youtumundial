@@ -280,3 +280,72 @@ export async function listCountries() {
   return pickList(payload);
 }
 
+
+/** Extrae el número de pedido de una respuesta de SUP (los campos varían). */
+export function extractSupOrderId(payload: unknown): string {
+  if (!payload || typeof payload !== "object") return "";
+  const raw = payload as AnyRecord;
+  const body = (raw.data ?? raw) as AnyRecord;
+  const value = body.order_id ?? body.id ?? body.order_sn ?? body.order_no;
+  return value === undefined || value === null ? "" : String(value);
+}
+
+/**
+ * Busca en SUP un pedido ya creado con la misma referencia (out_trade_no).
+ * Evita duplicados cuando se reintenta o se re-sincroniza manualmente.
+ */
+export async function findSupOrderByReference(reference: string): Promise<string> {
+  if (!reference) return "";
+  try {
+    for (const page of [1, 2]) {
+      const orders = await listSupOrders({ page, limit: 50 });
+      for (const order of orders) {
+        const marks = [order.out_trade_no, order.outTradeNo, order.remark, order.note]
+          .filter(Boolean)
+          .map((v) => String(v));
+        if (marks.some((m) => m.includes(reference))) {
+          const id = extractSupOrderId(order) || String(order.order_id ?? order.id ?? "");
+          if (id) return id;
+        }
+      }
+      if (orders.length < 50) break;
+    }
+  } catch (error) {
+    console.warn("findSupOrderByReference", reference, (error as Error).message);
+  }
+  return "";
+}
+
+/**
+ * Crea el pedido en SUP con reintentos automáticos y sin duplicar:
+ * antes de cada intento verifica si el pedido ya existe por su referencia.
+ */
+export async function createPurchaseOrderIdempotent(
+  reference: string,
+  order: unknown,
+): Promise<{ ok: boolean; supOrderId?: string; message?: string }> {
+  const existing = await findSupOrderByReference(reference);
+  if (existing) return { ok: true, supOrderId: existing };
+
+  const { withRetry } = await import("@/lib/utils/retry");
+  try {
+    const supOrderId = await withRetry(
+      async (attempt) => {
+        if (attempt > 1) {
+          const already = await findSupOrderByReference(reference);
+          if (already) return already;
+        }
+        const id = extractSupOrderId(await createPurchaseOrder(order));
+        if (!id) throw new Error("SUP no devolvió el número de pedido");
+        return id;
+      },
+      { attempts: 3, baseDelayMs: 900, label: `createPurchaseOrder ${reference}` },
+    );
+    return { ok: true, supOrderId };
+  } catch (error) {
+    const late = await findSupOrderByReference(reference);
+    if (late) return { ok: true, supOrderId: late };
+    console.error("createPurchaseOrderIdempotent", reference, (error as Error).message);
+    return { ok: false, message: "No se pudo registrar el pedido con el proveedor." };
+  }
+}
