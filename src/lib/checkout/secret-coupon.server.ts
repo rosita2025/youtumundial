@@ -6,7 +6,6 @@
  * pueda adivinar el código y pedir mercadería real sin pagar.
  */
 import type { Coupon } from './coupons';
-import { findShopifyCoupon } from './shopify-coupons';
 
 export function getSecretTestCoupon(): Coupon | null {
   const code = (process.env.TEST_COUPON_CODE ?? '').trim().toUpperCase();
