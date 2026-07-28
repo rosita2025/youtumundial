@@ -123,6 +123,10 @@ const customerCache = new Map<string, string>();
 
 /**
  * Crea o actualiza el cliente en Shopify a partir del correo del checkout.
+ *
+ * Idempotente: la clave combina el correo con los datos enviados, así las
+ * llamadas repetidas con la misma información (checkout + carrito abandonado +
+ * pedido) no generan clientes duplicados ni actualizaciones redundantes.
  * Nunca rompe la compra: si falla, devuelve `{ ok: false }`.
  */
 export async function upsertShopifyCustomer(
@@ -131,10 +135,23 @@ export async function upsertShopifyCustomer(
   const email = String(input.email ?? '').trim().toLowerCase();
   if (!isEmail(email)) return { ok: false, message: 'Correo no válido.' };
 
+  const { withIdempotency, idempotencyKey } = await import('@/lib/utils/idempotency.server');
+  return withIdempotency(
+    idempotencyKey('shopify-customer', email, buildInput({ ...input, email })),
+    () => upsertShopifyCustomerNow({ ...input, email }),
+  );
+}
+
+async function upsertShopifyCustomerNow(
+  input: ShopifyCustomerInput,
+): Promise<ShopifyCustomerResult> {
+  const email = String(input.email).trim().toLowerCase();
+
   const gate = await requireShopifyScope('write_customers');
   if (!gate.ok) return { ok: false, message: gate.message };
 
   const payload = buildInput({ ...input, email });
+
 
   try {
     let customerId = customerCache.get(email);
