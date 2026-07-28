@@ -18,6 +18,15 @@ import {
 import { type Coupon } from '@/lib/checkout/coupons';
 import { validateCoupon } from '@/lib/checkout/coupon.functions';
 import { getShippingQuote, type ShippingQuoteResult } from '@/lib/checkout/shipping.functions';
+import {
+  emptyCustomer,
+  fullName,
+  toE164,
+  validateCustomer,
+  type CustomerErrors,
+  type CustomerForm,
+} from '@/lib/checkout/customer';
+
 import { CreditCard, Smartphone, Wallet, ShieldCheck, Truck, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
