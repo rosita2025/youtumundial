@@ -308,9 +308,87 @@ export async function checkShopifyAdminScopes(): Promise<ShopifyScopeReport> {
 /** Cache corta para no consultar los permisos en cada pedido. */
 let scopeCache: { at: number; report: ShopifyScopeReport } | null = null;
 
+/** Éxito: 5 min. Fallo: 60 s, para reaccionar rápido si reautorizas la app. */
+function scopeCacheTtl(report: ShopifyScopeReport) {
+  return report.ok ? 5 * 60_000 : 60_000;
+}
+
 export async function ensureShopifyScopes(): Promise<ShopifyScopeReport> {
-  if (scopeCache && Date.now() - scopeCache.at < 5 * 60_000) return scopeCache.report;
+  if (scopeCache && Date.now() - scopeCache.at < scopeCacheTtl(scopeCache.report)) {
+    return scopeCache.report;
+  }
   const report = await checkShopifyAdminScopes();
   scopeCache = { at: Date.now(), report };
   return report;
 }
+
+/** Invalida la cache de permisos (tras reautorizar la app en Shopify). */
+export function resetShopifyScopeCache() {
+  scopeCache = null;
+}
+
+export interface ShopifyScopeGate {
+  ok: boolean;
+  missing: string[];
+  message?: string;
+}
+
+/**
+ * Verificación automática de un permiso concreto antes de una acción de pedido.
+ * Nunca expone el token ni detalles internos: solo el permiso que falta.
+ */
+export async function requireShopifyScope(
+  scope: (typeof REQUIRED_SHOPIFY_SCOPES)[number],
+): Promise<ShopifyScopeGate> {
+  const report = await ensureShopifyScopes();
+  if (!report.configured) {
+    return {
+      ok: false,
+      missing: [scope],
+      message: 'La integración de Shopify no está configurada en el servidor.',
+    };
+  }
+  if (report.missing.includes(scope)) {
+    return {
+      ok: false,
+      missing: [scope],
+      message: `La app de Shopify no tiene el permiso "${scope}".`,
+    };
+  }
+  // Si no se pudo verificar (granted vacío por error de red/permiso), bloqueamos.
+  if (!report.ok && report.granted.length === 0) {
+    return {
+      ok: false,
+      missing: [scope],
+      message: 'No se pudieron verificar los permisos de pedidos en Shopify.',
+    };
+  }
+  return { ok: true, missing: [] };
+}
+
+/** Exige lectura y creación de pedidos antes de tocar pedidos en Shopify. */
+export async function requireShopifyOrderAccess(): Promise<ShopifyScopeGate> {
+  const report = await ensureShopifyScopes();
+  const needed = ['read_orders', 'write_orders'] as const;
+
+  if (!report.configured) {
+    return {
+      ok: false,
+      missing: [...needed],
+      message: 'La integración de Shopify no está configurada en el servidor.',
+    };
+  }
+
+  const missing = needed.filter(
+    (scope) => report.missing.includes(scope) || report.granted.length === 0,
+  );
+  if (missing.length) {
+    return {
+      ok: false,
+      missing,
+      message: `Faltan permisos de pedidos en Shopify: ${missing.join(', ')}.`,
+    };
+  }
+  return { ok: true, missing: [] };
+}
+
