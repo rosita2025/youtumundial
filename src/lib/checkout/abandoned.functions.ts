@@ -8,6 +8,11 @@ export interface AbandonedCheckoutRequest {
   phone?: string;
   countryCode: string;
   address: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
   couponCode?: string;
   items: { variantId: string; quantity: number }[];
 }
@@ -34,17 +39,27 @@ export const saveAbandonedCheckout = createServerFn({ method: 'POST' })
     phone: String(input?.phone ?? '').slice(0, 40),
     countryCode: String(input?.countryCode ?? '').slice(0, 5),
     address: String(input?.address ?? '').slice(0, 300),
+    address1: String(input?.address1 ?? '').slice(0, 200),
+    address2: String(input?.address2 ?? '').slice(0, 120),
+    city: String(input?.city ?? '').slice(0, 80),
+    province: String(input?.province ?? '').slice(0, 80),
+    postalCode: String(input?.postalCode ?? '').slice(0, 12),
     couponCode: String(input?.couponCode ?? '').slice(0, 40),
     items: Array.isArray(input?.items) ? input.items.slice(0, 30) : [],
   }))
   .handler(async ({ data }): Promise<AbandonedCheckoutResponse> => {
-    const { customerSchema } = await import('./customer');
+    const { customerSchema, composeAddress } = await import('./customer');
     const parsed = customerSchema.safeParse({
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
       phone: data.phone,
-      address: data.address,
+      address1: data.address1,
+      address2: data.address2,
+      city: data.city,
+      province: data.province,
+      postalCode: data.postalCode,
+      countryCode: data.countryCode,
     });
     if (!parsed.success || !data.reference) {
       return { ok: false, message: 'Datos incompletos.' };
@@ -69,7 +84,12 @@ export const saveAbandonedCheckout = createServerFn({ method: 'POST' })
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
       phone: parsed.data.phone,
-      address: parsed.data.address,
+      address: composeAddress(parsed.data),
+      address1: parsed.data.address1,
+      address2: parsed.data.address2,
+      city: parsed.data.city,
+      province: parsed.data.province,
+      postalCode: parsed.data.postalCode,
       countryCode: data.countryCode,
       currency: 'USD',
       lines: priced.lines.map((line) => ({

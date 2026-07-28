@@ -7,7 +7,20 @@
 
 import { z } from 'zod';
 
-export const customerSchema = z.object({
+/** Código postal por país: si no está en la lista, pedimos algo genérico. */
+const POSTAL_RULES: Record<string, { regex: RegExp; message: string }> = {
+  US: { regex: /^\d{5}(-\d{4})?$/, message: 'El ZIP de EE. UU. tiene 5 dígitos (ej. 33101).' },
+  CA: {
+    regex: /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/,
+    message: 'El código postal de Canadá es tipo M5V 3L9.',
+  },
+  PE: { regex: /^\d{5}$/, message: 'El código postal de Perú tiene 5 dígitos (ej. 15001).' },
+};
+
+/** Países donde el estado/provincia es obligatorio para el courier. */
+const PROVINCE_REQUIRED = new Set(['US', 'CA']);
+
+const baseCustomerSchema = z.object({
   firstName: z
     .string()
     .trim()
@@ -34,21 +47,70 @@ export const customerSchema = z.object({
     .refine((value) => value.replace(/\D/g, '').length >= 8, {
       message: 'El teléfono necesita al menos 8 dígitos.',
     }),
-  address: z
+  address1: z
     .string()
     .trim()
-    .min(8, { message: 'Escribí tu dirección completa (calle, número, ciudad, código postal).' })
-    .max(300, { message: 'La dirección es demasiado larga.' }),
+    .min(5, { message: 'Escribí la calle y el número.' })
+    .max(200, { message: 'La dirección es demasiado larga.' }),
+  address2: z
+    .string()
+    .trim()
+    .max(120, { message: 'El dato adicional es demasiado largo.' })
+    .optional()
+    .or(z.literal('')),
+  city: z
+    .string()
+    .trim()
+    .min(2, { message: 'Escribí tu ciudad.' })
+    .max(80, { message: 'La ciudad es demasiado larga.' }),
+  province: z
+    .string()
+    .trim()
+    .max(80, { message: 'El estado/provincia es demasiado largo.' })
+    .optional()
+    .or(z.literal('')),
+  postalCode: z
+    .string()
+    .trim()
+    .min(3, { message: 'Escribí tu código postal.' })
+    .max(12, { message: 'El código postal es demasiado largo.' }),
+  countryCode: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z]{2}$/, { message: 'Elegí el país de destino.' }),
 });
 
-export type CustomerForm = z.infer<typeof customerSchema>;
+/** Esquema completo con las reglas que dependen del país elegido. */
+export const customerSchema = baseCustomerSchema.superRefine((value, ctx) => {
+  const country = (value.countryCode || '').toUpperCase();
+
+  if (PROVINCE_REQUIRED.has(country) && !value.province?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['province'],
+      message: country === 'US' ? 'Escribí el estado (ej. FL).' : 'Escribí la provincia (ej. ON).',
+    });
+  }
+
+  const rule = POSTAL_RULES[country];
+  if (rule && !rule.regex.test(value.postalCode)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['postalCode'], message: rule.message });
+  }
+});
+
+export type CustomerForm = z.infer<typeof baseCustomerSchema>;
 
 export const emptyCustomer: CustomerForm = {
   firstName: '',
   lastName: '',
   email: '',
   phone: '',
-  address: '',
+  address1: '',
+  address2: '',
+  city: '',
+  province: '',
+  postalCode: '',
+  countryCode: '',
 };
 
 export type CustomerErrors = Partial<Record<keyof CustomerForm, string>>;
@@ -70,6 +132,22 @@ export function validateCustomer(value: CustomerForm): {
   return { ok: false, errors };
 }
 
+/** Dirección en una sola línea (para SUP, notas y recibos). */
+export function composeAddress(value: CustomerForm): string {
+  return [
+    value.address1,
+    value.address2,
+    value.city,
+    value.province,
+    value.postalCode,
+    (value.countryCode || '').toUpperCase(),
+  ]
+    .map((part) => String(part ?? '').trim())
+    .filter(Boolean)
+    .join(', ')
+    .slice(0, 300);
+}
+
 /** Teléfono en formato E.164 aproximado (lo que aceptan Shopify y SUP). */
 export function toE164(phone: string): string {
   const digits = String(phone ?? '').replace(/\D/g, '');
@@ -79,4 +157,35 @@ export function toE164(phone: string): string {
 
 export function fullName(value: Pick<CustomerForm, 'firstName' | 'lastName'>): string {
   return `${value.firstName} ${value.lastName}`.trim();
+}
+
+/**
+ * Validación mínima de los datos de envío que llegan al servidor en los
+ * pedidos (Yape/manual, SUP directo). El navegador ya valida campo por campo,
+ * pero acá volvemos a exigir lo indispensable para poder despachar: nombre,
+ * correo, teléfono, dirección con calle/ciudad/código postal y país.
+ */
+export function validateShippingSnapshot(input: {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  countryCode?: string;
+}): { ok: boolean; message?: string } {
+  const name = String(input.name ?? '').trim();
+  const email = String(input.email ?? '').trim();
+  const phone = String(input.phone ?? '').trim();
+  const address = String(input.address ?? '').trim();
+  const country = String(input.countryCode ?? '').trim();
+
+  if (name.length < 3 || !name.includes(' ')) return { ok: false, message: 'Falta el nombre y apellido.' };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 160) {
+    return { ok: false, message: 'El correo no es válido.' };
+  }
+  if (phone.replace(/\D/g, '').length < 8) return { ok: false, message: 'Falta un teléfono válido.' };
+  if (address.length < 12 || address.split(',').filter((p) => p.trim()).length < 3) {
+    return { ok: false, message: 'Falta la dirección completa (calle, ciudad, código postal y país).' };
+  }
+  if (!/^[A-Za-z]{2}$/.test(country)) return { ok: false, message: 'Falta el país de destino.' };
+  return { ok: true };
 }

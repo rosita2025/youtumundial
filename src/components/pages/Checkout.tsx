@@ -22,6 +22,7 @@ import {
   clearAbandonedCheckout,
 } from '@/lib/checkout/abandoned.functions';
 import {
+  composeAddress,
   emptyCustomer,
   fullName,
   toE164,
@@ -91,6 +92,11 @@ const Checkout = () => {
   const [shippingQuote, setShippingQuote] = useState<ShippingQuoteResult | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
 
+  // El país siempre viaja dentro de los datos validados: así el esquema puede
+  // exigir estado/provincia y código postal correctos según el destino.
+  const customerData: CustomerForm = { ...customer, countryCode };
+  const addressLine = composeAddress(customerData);
+
   const country = shippingCountries.find((c) => c.code === countryCode) ?? shippingCountries[0];
   const baseTotals = getTotals(cart, country, coupon);
   // El envío internacional (EE.UU., Canadá y demás destinos) se sincroniza con
@@ -148,7 +154,7 @@ const Checkout = () => {
   useEffect(() => {
     if (paying) return;
     if (!shippingKey) return;
-    const check = validateCustomer(customer);
+    const check = validateCustomer(customerData);
     if (!check.ok) return;
 
     if (!abandonedRef.current) {
@@ -171,7 +177,12 @@ const Checkout = () => {
           email: customer.email,
           phone: customer.phone,
           countryCode,
-          address: customer.address,
+          address: addressLine,
+          address1: customer.address1,
+          address2: customer.address2,
+          city: customer.city,
+          province: customer.province,
+          postalCode: customer.postalCode,
           couponCode: coupon?.code,
           items: cart.items.map((i) => ({
             variantId: String(i.variant.id),
@@ -190,7 +201,7 @@ const Checkout = () => {
     customer.lastName,
     customer.email,
     customer.phone,
-    customer.address,
+    addressLine,
     countryCode,
     shippingKey,
     coupon?.code,
@@ -211,7 +222,7 @@ const Checkout = () => {
     );
   }
 
-  const validation = validateCustomer(customer);
+  const validation = validateCustomer(customerData);
   const missingCustomer = !validation.ok;
   const customerName = fullName(customer);
   const customerPhone = toE164(customer.phone);
@@ -286,7 +297,7 @@ const Checkout = () => {
             email: customer.email,
             phone: customerPhone,
             countryCode,
-            address: customer.address,
+            address: addressLine,
 
             couponCode: coupon?.code,
             items: cartLines,
@@ -361,7 +372,7 @@ const Checkout = () => {
             email: customer.email,
             phone: customerPhone,
             countryCode,
-            address: customer.address,
+            address: addressLine,
             couponCode: coupon?.code,
             items: cartLines,
           },
@@ -390,7 +401,7 @@ const Checkout = () => {
           name: customerName,
           email: customer.email,
           phone: customerPhone,
-          address: customer.address,
+          address: addressLine,
           reference,
           orderNumber,
         }),
@@ -420,7 +431,7 @@ const Checkout = () => {
         name: customerName,
         email: customer.email,
         phone: customerPhone,
-        address: customer.address,
+        address: addressLine,
       }),
       '_blank',
       'noopener,noreferrer',
@@ -548,19 +559,90 @@ const Checkout = () => {
                   )}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">Dirección completa *</Label>
+                  <Label htmlFor="address1">Dirección (calle y número) *</Label>
                   <Input
-                    id="address"
-                    autoComplete="street-address"
-                    maxLength={300}
-                    value={customer.address}
-                    onChange={(e) => updateCustomer('address', e.target.value)}
-                    onBlur={() => setErrors(validateCustomer(customer).errors)}
-                    aria-invalid={Boolean(errors.address)}
-                    placeholder="Calle, número, ciudad, código postal"
+                    id="address1"
+                    autoComplete="address-line1"
+                    maxLength={200}
+                    value={customer.address1}
+                    onChange={(e) => updateCustomer('address1', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.address1)}
+                    placeholder="Av. Siempre Viva 742"
                   />
-                  {errors.address && <p className="text-xs text-destructive">{errors.address}</p>}
+                  {errors.address1 && (
+                    <p className="text-xs text-destructive">{errors.address1}</p>
+                  )}
                 </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="address2">Departamento, piso, referencia (opcional)</Label>
+                  <Input
+                    id="address2"
+                    autoComplete="address-line2"
+                    maxLength={120}
+                    value={customer.address2 ?? ''}
+                    onChange={(e) => updateCustomer('address2', e.target.value)}
+                    aria-invalid={Boolean(errors.address2)}
+                    placeholder="Dpto. 302 / Torre B"
+                  />
+                  {errors.address2 && (
+                    <p className="text-xs text-destructive">{errors.address2}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ciudad *</Label>
+                  <Input
+                    id="city"
+                    autoComplete="address-level2"
+                    maxLength={80}
+                    value={customer.city}
+                    onChange={(e) => updateCustomer('city', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.city)}
+                    placeholder="Lima"
+                  />
+                  {errors.city && <p className="text-xs text-destructive">{errors.city}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="province">
+                    Estado / Provincia {countryCode === 'US' || countryCode === 'CA' ? '*' : '(opcional)'}
+                  </Label>
+                  <Input
+                    id="province"
+                    autoComplete="address-level1"
+                    maxLength={80}
+                    value={customer.province ?? ''}
+                    onChange={(e) => updateCustomer('province', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.province)}
+                    placeholder={countryCode === 'US' ? 'FL' : 'Lima'}
+                  />
+                  {errors.province && (
+                    <p className="text-xs text-destructive">{errors.province}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Código postal *</Label>
+                  <Input
+                    id="postalCode"
+                    autoComplete="postal-code"
+                    maxLength={12}
+                    value={customer.postalCode}
+                    onChange={(e) => updateCustomer('postalCode', e.target.value)}
+                    onBlur={() => setErrors(validateCustomer(customerData).errors)}
+                    aria-invalid={Boolean(errors.postalCode)}
+                    placeholder={countryCode === 'US' ? '33101' : '15001'}
+                  />
+                  {errors.postalCode && (
+                    <p className="text-xs text-destructive">{errors.postalCode}</p>
+                  )}
+                </div>
+                <div className="space-y-2 flex items-end">
+                  <p className="text-xs text-muted-foreground">
+                    País de destino: <strong>{country.name}</strong> (se elige abajo).
+                  </p>
+                </div>
+
               </div>
 
 

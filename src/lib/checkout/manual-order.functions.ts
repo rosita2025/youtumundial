@@ -42,6 +42,13 @@ export const createManualOrder = createServerFn({ method: 'POST' })
     items: Array.isArray(input?.items) ? input.items.slice(0, 30) : [],
   }))
   .handler(async ({ data }): Promise<ManualOrderResult> => {
+
+    // Segunda barrera: los datos de envío se revalidan en el servidor.
+    const { validateShippingSnapshot } = await import('@/lib/checkout/customer');
+    const shippingCheck = validateShippingSnapshot(data);
+    if (!shippingCheck.ok) {
+      return { ok: false, message: shippingCheck.message };
+    }
     const { priceOrder, normalizeCartLines } = await import('./pricing.server');
     const { checkoutConfig } = await import('./config');
 
