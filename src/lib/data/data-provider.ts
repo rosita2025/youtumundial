@@ -7,7 +7,6 @@
  */
 
 import { Product, Collection, FilterOptions, SortOption } from './types';
-import { dummyProducts, dummyCollections } from './dummy-data';
 import { mapSupCatalog, filterInStock, SupRawProduct } from '../suppliers/sup';
 import { readSupCatalog } from '../suppliers/local-catalog';
 import { fetchStoreCatalog } from '../suppliers/catalog.functions';
@@ -16,8 +15,9 @@ import { readPublishedIds } from '../suppliers/published-store';
 import supCatalog from '../suppliers/sup-catalog.json';
 import { fetchShopifyProducts } from '../shopify/storefront';
 
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
+
 
 /**
  * Publicación manual: si el admin eligió productos concretos, solo esos se
