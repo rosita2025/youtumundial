@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -63,6 +63,9 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [method, setMethod] = useState<PaymentMethod>('card');
   const [showStripe, setShowStripe] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const payingRef = useRef(false);
+  const freeReferenceRef = useRef<string | null>(null);
   const createSupOrder = useServerFn(createDirectSupOrder);
   const checkCoupon = useServerFn(validateCoupon);
   const fetchShipping = useServerFn(getShippingQuote);
