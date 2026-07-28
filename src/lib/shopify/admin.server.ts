@@ -285,15 +285,16 @@ export interface ShopifyScopeReport {
  * No expone el token: solo devuelve la lista de scopes concedidos y faltantes.
  */
 export async function checkShopifyAdminScopes(): Promise<ShopifyScopeReport> {
-  if (!adminToken()) {
+  if (!hasShopifyAdminCredentials()) {
     return {
       ok: false,
       configured: false,
       granted: [],
       missing: [...REQUIRED_SHOPIFY_SCOPES],
-      message: 'SHOPIFY_ACCESS_TOKEN no está configurado en el servidor.',
+      message: 'Faltan credenciales de Shopify Admin en el servidor.',
     };
   }
+
 
   try {
     const data = await adminRequest<{
