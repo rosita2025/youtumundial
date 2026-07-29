@@ -27,7 +27,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
       )}
     >
       {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
         <img
           src={product.images[0]?.url}
           alt={product.title}
