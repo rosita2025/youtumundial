@@ -27,6 +27,7 @@ const ADMIN_PRODUCTS_QUERY = `
           handle
           createdAt
           tags
+          vendor
           productType
           status
           totalInventory
@@ -79,6 +80,7 @@ interface AdminProduct {
   createdAt: string;
   tags: string[];
   productType: string | null;
+  vendor: string | null;
   status: string;
   totalInventory: number | null;
   collections?: { edges: Array<{ node: { handle: string; title: string } }> };
@@ -147,6 +149,7 @@ function mapProduct(raw: AdminProduct): Product {
       (raw.collections?.edges ?? []).map((e) => [e.node.handle.toLowerCase(), e.node.title]),
     ),
     productType: raw.productType ?? undefined,
+    vendor: raw.vendor ?? undefined,
     tags: raw.tags ?? [],
     available: variants.some((v) => v.available),
     createdAt: raw.createdAt,
