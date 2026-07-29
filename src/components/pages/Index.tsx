@@ -12,14 +12,23 @@ interface IndexProps {
 
 const Index = ({ catalog = [] }: IndexProps) => {
   const collections = selectCollections(catalog);
-  const featuredProducts = selectProducts(catalog).slice(0, 8);
+  // Orden por fecha de publicación en Shopify: lo más nuevo primero.
   const newestFirst = selectProducts(catalog, undefined, 'newest');
-  const tagged = selectProducts(catalog, { collection: 'new-arrivals' }, 'newest');
-  const newArrivals = (tagged.length > 0 ? tagged : newestFirst).slice(0, 4);
+  const latestProduct = newestFirst[0] ?? null;
+  const newArrivals = newestFirst.slice(0, 4);
+  const featuredProducts = selectProducts(catalog).slice(0, 8);
 
   return (
     <Layout>
-      <Hero />
+      <Hero latestProduct={latestProduct} />
+      {newArrivals.length > 0 && (
+        <TrendingProducts
+          products={newArrivals}
+          title="New Arrivals"
+          subtitle="The latest products, synced automatically from our store"
+          viewAllLink="/products?sort=newest"
+        />
+      )}
       {collections.length > 0 && <FeaturedCollections collections={collections} />}
       {featuredProducts.length > 0 && (
         <TrendingProducts
@@ -28,17 +37,10 @@ const Index = ({ catalog = [] }: IndexProps) => {
           subtitle="Our most popular picks this season"
         />
       )}
-      {newArrivals.length > 0 && (
-        <TrendingProducts
-          products={newArrivals}
-          title="New Arrivals"
-          subtitle="Fresh styles just landed"
-          viewAllLink="/products"
-        />
-      )}
       <Newsletter />
     </Layout>
   );
 };
+
 
 export default Index;
