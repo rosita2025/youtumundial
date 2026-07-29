@@ -19,6 +19,7 @@ export const Route = createFileRoute("/products/")({
     ],
   }),
   loader: () => fetchCatalog(),
+  staleTime: 5 * 60 * 1000,
   component: ProductsRoute,
 });
 

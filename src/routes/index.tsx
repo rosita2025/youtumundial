@@ -26,6 +26,7 @@ export const Route = createFileRoute("/")({
     links: [{ rel: "canonical", href: "https://youtumundial.com/" }],
   }),
   loader: () => fetchCatalog(),
+  staleTime: 5 * 60 * 1000,
   component: HomeRoute,
 });
 

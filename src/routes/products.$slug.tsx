@@ -4,6 +4,7 @@ import ProductDetail from "@/components/pages/ProductDetail";
 
 export const Route = createFileRoute("/products/$slug")({
   loader: () => fetchCatalog(),
+  staleTime: 5 * 60 * 1000,
   component: ProductDetailRoute,
 });
 

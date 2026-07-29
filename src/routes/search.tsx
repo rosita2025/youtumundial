@@ -10,6 +10,7 @@ export const Route = createFileRoute("/search")({
     ],
   }),
   loader: () => fetchCatalog(),
+  staleTime: 5 * 60 * 1000,
   component: SearchRoute,
 });
 

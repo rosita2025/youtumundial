@@ -4,6 +4,7 @@ import Collection from "@/components/pages/Collection";
 
 export const Route = createFileRoute("/collections/$slug")({
   loader: () => fetchCatalog(),
+  staleTime: 5 * 60 * 1000,
   component: CollectionRoute,
 });
 
