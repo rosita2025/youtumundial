@@ -60,8 +60,24 @@ async function getCatalog(): Promise<Product[]> {
       return shopifyProducts;
     }
   } catch {
+    // seguimos con el catálogo del Admin API
+  }
+
+  // 2) Shopify Admin: productos activos que todavía no están publicados en el
+  // canal de venta (la Storefront API no los devuelve). Así los productos
+  // recién importados aparecen igual en la tienda.
+  try {
+    const { fetchShopifyCatalogAdmin } = await import('../shopify/catalog.functions');
+    const res = await fetchShopifyCatalogAdmin();
+    const products = filterInStock(res.products as Product[]);
+    if (products.length > 0) {
+      catalogCache = { at: Date.now(), products };
+      return products;
+    }
+  } catch {
     // seguimos con SUP en vivo
   }
+
 
   try {
     const res = await fetchStoreCatalog();
