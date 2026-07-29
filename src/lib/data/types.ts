@@ -44,6 +44,10 @@ export interface Product {
   images: ProductImage[];
   variants: ProductVariant[];
   collections: string[];
+  /** Nombre legible de cada colección (handle → título de Shopify). */
+  collectionTitles?: Record<string, string>;
+  /** Tipo de producto de Shopify (ej. "Vestidos"). */
+  productType?: string;
   tags: string[];
   available: boolean;
   createdAt: string;
