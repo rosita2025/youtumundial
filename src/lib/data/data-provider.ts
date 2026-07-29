@@ -222,7 +222,11 @@ const titleize = (slug: string) =>
  * colecciones de demo.
  */
 export async function getCollections(): Promise<Collection[]> {
-  const catalog = await getCatalog();
+  return selectCollections(await getCatalog());
+}
+
+/** Versión sincrónica sobre un catálogo ya cargado. */
+export function selectCollections(catalog: Product[]): Collection[] {
   const map = new Map<string, Product[]>();
   const titles = new Map<string, string>();
   for (const product of catalog) {
@@ -263,14 +267,19 @@ export async function getCollection(slug: string): Promise<Collection | null> {
  * Get all distinct vendors (brands) present in the catalog
  */
 export async function getVendors(): Promise<string[]> {
-  const products = await getCatalog();
+  return selectVendors(await getCatalog());
+}
+
+/** Versión sincrónica sobre un catálogo ya cargado. */
+export function selectVendors(catalog: Product[]): string[] {
   const set = new Set<string>();
-  for (const p of products) {
+  for (const p of catalog) {
     const v = (p.vendor || '').trim();
     if (v) set.add(v);
   }
   return [...set].sort((a, b) => a.localeCompare(b));
 }
+
 
 
 
