@@ -112,8 +112,11 @@ export async function quoteShipping(params: {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_TTL) return hit.quote;
 
+  // Solo algunos países tienen dirección de muestra; para el resto del mundo
+  // se cotiza únicamente con el país del comprador y, si Shopify no responde,
+  // se aplica la tarifa internacional fija.
   const sample = SAMPLE_ADDRESS[countryCode];
-  if (!sample) return fallbackQuote(countryCode);
+
 
   try {
     const res = await storefrontApiRequest<QuoteResponse>(CART_SHIPPING_MUTATION, {
