@@ -2,22 +2,35 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useServerFn } from '@tanstack/react-start';
+import { subscribeNewsletter } from '@/lib/marketing/newsletter.functions';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const subscribe = useServerFn(subscribeNewsletter);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    const value = email.trim();
+    if (!value || loading) return;
 
     setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setLoading(false);
-    setEmail('');
-    toast.success('Thanks for subscribing! Check your inbox for 15% off.');
+    try {
+      const result = await subscribe({ data: { email: value } });
+      if (result.ok) {
+        setEmail('');
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error('No pudimos registrar tu correo. Inténtalo más tarde.');
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <section className="bg-primary text-primary-foreground">
