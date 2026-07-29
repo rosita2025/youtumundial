@@ -206,23 +206,26 @@ const titleize = (slug: string) =>
 export async function getCollections(): Promise<Collection[]> {
   const catalog = await getCatalog();
   const map = new Map<string, Product[]>();
+  const titles = new Map<string, string>();
   for (const product of catalog) {
     for (const slug of product.collections) {
       const key = String(slug).trim().toLowerCase();
       if (!key) continue;
       map.set(key, [...(map.get(key) ?? []), product]);
+      const real = product.collectionTitles?.[key];
+      if (real && !titles.has(key)) titles.set(key, real);
     }
   }
 
   return [...map.entries()].map(([slug, products]) => ({
     id: `col-${slug}`,
     slug,
-    title: titleize(slug),
+    title: titles.get(slug) ?? titleize(slug),
     description: '',
     image: products[0]?.images[0] ?? {
       id: `col-${slug}-img`,
       url: '',
-      altText: titleize(slug),
+      altText: titles.get(slug) ?? titleize(slug),
       width: 800,
       height: 1000,
     },
