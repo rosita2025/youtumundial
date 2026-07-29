@@ -17,7 +17,7 @@ import { fetchShopifyProducts } from '../shopify/storefront';
 
 // Cache corta: los cambios de título/descripción hechos en Shopify se ven casi
 // al instante en la tienda.
-const CACHE_TTL = 30 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
 
 /** Fuerza releer el catálogo de Shopify en la próxima consulta. */
@@ -47,7 +47,7 @@ function applyPublishedSelection(products: Product[]): Product[] {
  * Regla de stock: solo se publican productos con stock en SUP y se ocultan
  * los talles/variantes agotados.
  */
-async function getCatalog(): Promise<Product[]> {
+export async function getCatalog(): Promise<Product[]> {
   if (catalogCache && Date.now() - catalogCache.at < CACHE_TTL) {
     return catalogCache.products;
   }
@@ -115,7 +115,20 @@ export async function getProducts(
   filters?: FilterOptions,
   sort: SortOption = 'featured'
 ): Promise<Product[]> {
-  let products = [...(await getCatalog())];
+  return selectProducts(await getCatalog(), filters, sort);
+}
+
+/**
+ * Versión sincrónica: filtra y ordena un catálogo ya cargado (por ejemplo el
+ * que llega desde el loader de la ruta, renderizado en el servidor).
+ */
+export function selectProducts(
+  catalog: Product[],
+  filters?: FilterOptions,
+  sort: SortOption = 'featured'
+): Product[] {
+  let products = [...catalog];
+
 
 
   // Apply filters
@@ -209,7 +222,11 @@ const titleize = (slug: string) =>
  * colecciones de demo.
  */
 export async function getCollections(): Promise<Collection[]> {
-  const catalog = await getCatalog();
+  return selectCollections(await getCatalog());
+}
+
+/** Versión sincrónica sobre un catálogo ya cargado. */
+export function selectCollections(catalog: Product[]): Collection[] {
   const map = new Map<string, Product[]>();
   const titles = new Map<string, string>();
   for (const product of catalog) {
@@ -250,14 +267,19 @@ export async function getCollection(slug: string): Promise<Collection | null> {
  * Get all distinct vendors (brands) present in the catalog
  */
 export async function getVendors(): Promise<string[]> {
-  const products = await getCatalog();
+  return selectVendors(await getCatalog());
+}
+
+/** Versión sincrónica sobre un catálogo ya cargado. */
+export function selectVendors(catalog: Product[]): string[] {
   const set = new Set<string>();
-  for (const p of products) {
+  for (const p of catalog) {
     const v = (p.vendor || '').trim();
     if (v) set.add(v);
   }
   return [...set].sort((a, b) => a.localeCompare(b));
 }
+
 
 
 
@@ -313,4 +335,19 @@ export async function getRelatedProducts(
     )
     .slice(0, limit);
   return related;
+}
+
+/** Relacionados a partir de un catálogo ya cargado. */
+export function selectRelatedProducts(
+  catalog: Product[],
+  currentProduct: Product,
+  limit: number = 4
+): Product[] {
+  return catalog
+    .filter(
+      p =>
+        p.id !== currentProduct.id &&
+        p.collections.some(c => currentProduct.collections.includes(c))
+    )
+    .slice(0, limit);
 }

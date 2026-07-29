@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { fetchCatalog } from "@/lib/data/catalog.functions";
 import Products from "@/components/pages/Products";
 
 export const Route = createFileRoute("/products/")({
@@ -17,5 +18,12 @@ export const Route = createFileRoute("/products/")({
       },
     ],
   }),
-  component: Products,
+  loader: () => fetchCatalog(),
+  staleTime: 5 * 60 * 1000,
+  component: ProductsRoute,
 });
+
+function ProductsRoute() {
+  const catalog = Route.useLoaderData();
+  return <Products catalog={catalog} />;
+}

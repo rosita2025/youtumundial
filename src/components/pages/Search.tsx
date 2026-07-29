@@ -5,29 +5,22 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { searchProducts } from '@/lib/data/data-provider';
+import { selectProducts } from '@/lib/data/data-provider';
 import { Product } from '@/lib/data/types';
 import { Search as SearchIcon } from 'lucide-react';
 
-const Search = () => {
+interface SearchProps {
+  catalog?: Product[];
+}
+
+const Search = ({ catalog = [] }: SearchProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const [products, setProducts] = useState<Product[]>([]);
   const [inputValue, setInputValue] = useState(query);
-  const [loading, setLoading] = useState(false);
+  const products = query ? selectProducts(catalog, { search: query }) : [];
+  const loading = false;
 
   useEffect(() => {
-    async function search() {
-      if (!query) {
-        setProducts([]);
-        return;
-      }
-      setLoading(true);
-      const results = await searchProducts(query);
-      setProducts(results);
-      setLoading(false);
-    }
-    search();
     setInputValue(query);
   }, [query]);
 
