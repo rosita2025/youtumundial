@@ -81,7 +81,7 @@ const Products = ({ catalog = [] }: ProductsProps) => {
               value={currentCollection || 'all'}
               onValueChange={handleCollectionChange}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px]" aria-label="Filter by collection">
                 <SelectValue placeholder="Collection" />
               </SelectTrigger>
               <SelectContent>
@@ -96,7 +96,7 @@ const Products = ({ catalog = [] }: ProductsProps) => {
 
             {/* Vendor (brand) Filter */}
             <Select value={currentVendor || 'all'} onValueChange={handleVendorChange}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px]" aria-label="Filter by brand">
                 <SelectValue placeholder="Brand" />
               </SelectTrigger>
               <SelectContent>
@@ -111,7 +111,7 @@ const Products = ({ catalog = [] }: ProductsProps) => {
 
             {/* Sort */}
             <Select value={currentSort} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px]" aria-label="Sort products">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>

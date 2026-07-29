@@ -1,0 +1,19 @@
+# Ropa de Youtumundial
+
+> Youtumundial is an independent multi-brand clothing store: sportswear and women's fashion inspired by China, South Korea, the United States and Europe, manufactured in China and shipped worldwide.
+
+## Pages
+
+- [Home](/): Latest drops and featured collections.
+- [All products](/products): Full catalog with brand, collection and sorting filters.
+- [Search](/search): Search the catalog by title, brand or product type.
+- [About](/about): Our story, multi-brand sourcing and manufacturing.
+- [Contact](/contact): Support by email (youtumundial@gmail.com) and WhatsApp.
+- [Shipping](/shipping): International shipping times and costs.
+- [Order tracking](/seguimiento): Track an order with its number and email.
+
+## Optional
+
+- [Privacy policy](/privacy): How we handle customer data.
+- [Terms and conditions](/terms): Purchase and use terms.
+- [Legal disclaimer](/disclaimer): Brand non-affiliation notice.
