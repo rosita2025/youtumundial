@@ -50,7 +50,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       return { ok: false, message: shippingCheck.message };
     }
     const { priceOrder, normalizeCartLines } = await import('@/lib/checkout/pricing.server');
-    const { shippingCountries } = await import('@/lib/checkout/config');
+    const { shippingCountryFor } = await import('@/lib/checkout/config');
     const { isFreeOrderAllowed } = await import('@/lib/checkout/secret-coupon.server');
 
     // Este endpoint despacha sin cobrar: solo el cupón de prueba secreto lo abre.
@@ -79,7 +79,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       return { ok: false, message: 'El pedido no tiene productos de SUP.' };
     }
 
-    const country = shippingCountries.find((c) => c.code === data.countryCode);
+    const country = shippingCountryFor(data.countryCode);
     const { createPurchaseOrderIdempotent } = await import('./sup-api.server');
 
     // Los pedidos con cupón también se registran en Shopify (total 0) para que
