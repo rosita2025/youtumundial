@@ -7,7 +7,7 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
-import { selectRelatedProducts, selectProducts } from '@/lib/data/data-provider';
+import { selectRelatedProducts } from '@/lib/data/data-provider';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { formatPrice, calculateDiscount } from '@/lib/utils/format';
 import { ProductReviews } from '@/components/product/ProductReviews';
