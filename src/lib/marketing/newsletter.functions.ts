@@ -32,7 +32,7 @@ export const subscribeNewsletter = createServerFn({ method: 'POST' })
       const result = await upsertShopifyCustomer({
         email: data.email,
         acceptsMarketing: true,
-        extraTags: ['newsletter'],
+        extraTags: ['newsletter', 'newsletter-youtumundial'],
       });
 
       if (!result.ok) {
