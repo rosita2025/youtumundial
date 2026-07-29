@@ -115,7 +115,20 @@ export async function getProducts(
   filters?: FilterOptions,
   sort: SortOption = 'featured'
 ): Promise<Product[]> {
-  let products = [...(await getCatalog())];
+  return selectProducts(await getCatalog(), filters, sort);
+}
+
+/**
+ * Versión sincrónica: filtra y ordena un catálogo ya cargado (por ejemplo el
+ * que llega desde el loader de la ruta, renderizado en el servidor).
+ */
+export function selectProducts(
+  catalog: Product[],
+  filters?: FilterOptions,
+  sort: SortOption = 'featured'
+): Product[] {
+  let products = [...catalog];
+
 
 
   // Apply filters
