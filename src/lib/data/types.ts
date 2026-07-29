@@ -85,6 +85,7 @@ export type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc' | 
 
 export interface FilterOptions {
   collection?: string;
+  vendor?: string;
   minPrice?: number;
   maxPrice?: number;
   available?: boolean;
