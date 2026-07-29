@@ -87,6 +87,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Tienda online de Ropa de Youtumundial: hoodies, camisetas, joggers y accesorios con envío a Perú, EE.UU., Canadá y Reino Unido.",
       },
       { name: "author", content: "Ropa de Youtumundial" },
+      {
+        name: "google-site-verification",
+        content: "uLI1HwNfdRBtkcYbCoReWrntfwB6Hy7yw-02m-KfE7E",
+      },
       { property: "og:site_name", content: "Ropa de Youtumundial" },
       { property: "og:locale", content: "es_ES" },
       { property: "og:type", content: "website" },
