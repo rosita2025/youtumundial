@@ -84,7 +84,9 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         const xml = [
           `<?xml version="1.0" encoding="UTF-8"?>`,
+          `<?xml-stylesheet type="text/xsl" href="${BASE_URL}/sitemap.xsl"?>`,
           `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
+
           ...urls,
           `</urlset>`,
         ].join("\n");
