@@ -24,6 +24,33 @@ export const Route = createFileRoute("/")({
       { name: "twitter:image", content: IMAGE },
     ],
     links: [{ rel: "canonical", href: "https://youtumundial.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Youtumundial",
+          url: "https://youtumundial.com",
+          email: "youtumundial@gmail.com",
+          description: DESCRIPTION,
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Ropa de Youtumundial",
+          url: "https://youtumundial.com",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://youtumundial.com/search?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+    ],
   }),
   loader: () => fetchCatalog(),
   staleTime: 5 * 60 * 1000,
