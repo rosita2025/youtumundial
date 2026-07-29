@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
-import { checkoutConfig, shippingCountries } from '@/lib/checkout/config';
+import { checkoutConfig, shippingCountries, shippingCountryFor } from '@/lib/checkout/config';
 import {
   
   buildWhatsappOrderLink,
@@ -70,7 +70,7 @@ const Checkout = () => {
   const abandonedRef = useRef<string | null>(null);
 
 
-  const [countryCode, setCountryCode] = useState(shippingCountries[0].code);
+  const [countryCode, setCountryCode] = useState('PE');
   const [customer, setCustomer] = useState<CustomerForm>(emptyCustomer);
   const [errors, setErrors] = useState<CustomerErrors>({});
 
@@ -85,7 +85,7 @@ const Checkout = () => {
   const customerData: CustomerForm = { ...customer, countryCode };
   const addressLine = composeAddress(customerData);
 
-  const country = shippingCountries.find((c) => c.code === countryCode) ?? shippingCountries[0];
+  const country = shippingCountryFor(countryCode);
   const baseTotals = getTotals(cart, country, coupon);
   // El envío internacional (EE.UU., Canadá y demás destinos) se sincroniza con
   // los perfiles de envío de Shopify; el servidor vuelve a validarlo al cobrar.
@@ -541,26 +541,27 @@ const Checkout = () => {
 
 
               <div className="mt-6">
-                <Label className="mb-3 block">País de destino</Label>
-                <div className="grid sm:grid-cols-4 gap-3">
+                <Label htmlFor="country" className="mb-2 block">
+                  País de destino *
+                </Label>
+                <select
+                  id="country"
+                  autoComplete="country"
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background p-3 text-sm focus:border-primary focus:outline-none"
+                >
                   {shippingCountries.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      onClick={() => setCountryCode(c.code)}
-                      className={`rounded-lg border p-3 text-left transition-colors ${
-                        c.code === countryCode
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/40'
-                      }`}
-                    >
-                      <span className="text-lg">{c.flag}</span>
-                      <span className="block text-sm font-medium">{c.name}</span>
-                      <span className="block text-xs text-muted-foreground">{c.eta}</span>
-                    </button>
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.name}
+                    </option>
                   ))}
-                </div>
+                </select>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Enviamos a todo el mundo · {country.name}: {country.eta} hábiles
+                </p>
               </div>
+
             </section>
 
             <section>

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { StaticPage, Section } from "@/components/pages/StaticPage";
-import { shippingCountries, FREE_SHIPPING_THRESHOLD } from "@/lib/checkout/config";
+import { featuredShippingCountries, FREE_SHIPPING_THRESHOLD } from "@/lib/checkout/config";
 
 export const Route = createFileRoute("/shipping")({
   head: () => ({
@@ -40,7 +40,7 @@ function ShippingPage() {
               </tr>
             </thead>
             <tbody>
-              {shippingCountries.map((c) => (
+              {featuredShippingCountries.map((c) => (
                 <tr key={c.code} className="border-t border-border">
                   <td className="p-3">
                     {c.flag} {c.name}

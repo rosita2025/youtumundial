@@ -10,7 +10,7 @@
 import { fetchShopifyProducts } from '@/lib/shopify/storefront';
 import { fetchStoreCatalog } from '@/lib/suppliers/catalog.functions';
 import { findCoupon, couponDiscount, type Coupon } from './coupons';
-import { shippingCountries } from './config';
+import { shippingCountryFor } from './config';
 import type { Product } from '@/lib/data/types';
 
 export interface CartLineRequest {
@@ -132,8 +132,7 @@ export async function priceOrder(params: {
 
   const discount = couponDiscount(coupon, subtotal);
   const discounted = Math.max(0, subtotal - discount);
-  const country =
-    shippingCountries.find((c) => c.code === params.countryCode) ?? shippingCountries[0];
+  const country = shippingCountryFor(params.countryCode);
   // Tarifa real sincronizada desde los perfiles de envío de Shopify
   // (EE.UU., Canadá, Perú, Reino Unido) con fallback a la tarifa fija.
   const { resolveShippingCost } = await import('./shipping.server');

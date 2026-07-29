@@ -5,6 +5,8 @@
  * sobreescribir con variables de entorno (VITE_*) sin tocar el código.
  */
 
+import { worldCountries } from './countries';
+
 const env = import.meta.env as Record<string, string | undefined>;
 
 export const checkoutConfig = {
@@ -82,41 +84,48 @@ export function marketForCountry(countryCode: string): ShippingMarket {
   return shippingMarkets.INTL;
 }
 
-export const shippingCountries: ShippingCountry[] = [
-  {
-    code: 'PE',
-    name: 'Perú',
-    flag: '🇵🇪',
-    shipping: shippingMarkets.INTL.shipping,
-    eta: shippingMarkets.INTL.eta,
-    market: 'INTL',
-  },
-  {
-    code: 'US',
-    name: 'Estados Unidos',
-    flag: '🇺🇸',
-    shipping: shippingMarkets.US.shipping,
-    eta: shippingMarkets.US.eta,
-    market: 'US',
-  },
-  {
-    code: 'CA',
-    name: 'Canadá',
-    flag: '🇨🇦',
-    shipping: shippingMarkets.CA.shipping,
-    eta: shippingMarkets.CA.eta,
-    market: 'CA',
-  },
-  {
-    code: 'GB',
-    name: 'Reino Unido',
-    flag: '🇬🇧',
-    shipping: shippingMarkets.INTL.shipping,
-    eta: shippingMarkets.INTL.eta,
-    market: 'INTL',
-  },
-];
+/**
+ * Todos los países del mundo son destinos válidos. La tarifa y el plazo salen
+ * del mercado al que pertenece cada país (EE.UU., Canadá o Internacional), y
+ * el precio definitivo siempre se recalcula en el servidor contra Shopify.
+ */
+export const shippingCountries: ShippingCountry[] = worldCountries.map((c) => {
+  const market = marketForCountry(c.code);
+  return {
+    code: c.code,
+    name: c.name,
+    flag: c.flag,
+    shipping: market.shipping,
+    eta: market.eta,
+    market: market.key,
+  };
+});
+
+const shippingByCode = new Map(shippingCountries.map((c) => [c.code, c]));
+
+/** País de destino por código ISO; si no existe, cae al mercado internacional. */
+export function shippingCountryFor(code: string): ShippingCountry {
+  const key = String(code ?? '').toUpperCase().slice(0, 2);
+  return (
+    shippingByCode.get(key) ?? {
+      code: key || 'PE',
+      name: key || 'Internacional',
+      flag: '🌍',
+      shipping: shippingMarkets.INTL.shipping,
+      eta: shippingMarkets.INTL.eta,
+      market: 'INTL',
+    }
+  );
+}
+
+/** Destinos destacados (los que se muestran en la página de envíos). */
+export const featuredCountryCodes = ['PE', 'US', 'CA', 'GB', 'ES', 'MX', 'AR', 'CL'] as const;
+
+export const featuredShippingCountries: ShippingCountry[] = featuredCountryCodes.map((code) =>
+  shippingCountryFor(code),
+);
 
 /** Umbral de envío gratis (USD). */
 export const FREE_SHIPPING_THRESHOLD = 100;
+
 
