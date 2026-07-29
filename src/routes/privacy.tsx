@@ -76,10 +76,10 @@ function PrivacyPage() {
           Podés pedirnos en cualquier momento acceder, corregir o eliminar tus datos personales, así
           como oponerte a su uso para comunicaciones comerciales. Escribinos a{" "}
           <a
-            href="mailto:hola@youtumundial.com"
+            href="mailto:youtumundial@gmail.com"
             className="text-foreground underline underline-offset-4"
           >
-            hola@youtumundial.com
+            youtumundial@gmail.com
           </a>{" "}
           y respondemos dentro de los plazos legales.
         </p>
