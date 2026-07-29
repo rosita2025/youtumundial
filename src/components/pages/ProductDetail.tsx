@@ -7,7 +7,7 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
-import { getProduct, getRelatedProducts } from '@/lib/data/data-provider';
+import { selectRelatedProducts, selectProducts } from '@/lib/data/data-provider';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { formatPrice, calculateDiscount } from '@/lib/utils/format';
 import { ProductReviews } from '@/components/product/ProductReviews';
@@ -16,16 +16,27 @@ import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
 import { Minus, Plus, Truck, RotateCcw, Shield } from 'lucide-react';
 
-const ProductDetail = () => {
+interface ProductDetailProps {
+  catalog?: Product[];
+}
+
+const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
   const { slug } = useParams<{ slug: string }>();
   const { addToCart } = useCart();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const product = catalog.find((p) => p.slug === slug) ?? null;
+  const relatedProducts = product ? selectRelatedProducts(catalog, product, 4) : [];
+  const [variantId, setVariantId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(true);
   const reviewSummary = useReviewSummary(product?.slug ?? slug ?? '');
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+
+  const selectedVariant: ProductVariant | null = product
+    ? product.variants.find((v) => v.id === variantId) ??
+      product.variants.find((v) => v.available) ??
+      product.variants[0] ??
+      null
+    : null;
+  const setSelectedVariant = (variant: ProductVariant) => setVariantId(variant.id);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -33,22 +44,8 @@ const ProductDetail = () => {
   }, []);
 
   useEffect(() => {
-    async function loadData() {
-      if (!slug) return;
-      setLoading(true);
-      const prod = await getProduct(slug);
-      if (prod) {
-        setProduct(prod);
-        // Select first available variant
-        const firstAvailable = prod.variants.find((v) => v.available) || prod.variants[0];
-        setSelectedVariant(firstAvailable);
-        
-        const related = await getRelatedProducts(prod, 4);
-        setRelatedProducts(related);
-      }
-      setLoading(false);
-    }
-    loadData();
+    setVariantId(null);
+    setQuantity(1);
   }, [slug]);
 
   const handleAddToCart = () => {
@@ -56,23 +53,6 @@ const ProductDetail = () => {
     addToCart(product, selectedVariant, quantity);
     setQuantity(1);
   };
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="container-wide py-8">
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="aspect-square bg-muted rounded-lg animate-pulse" />
-            <div className="space-y-4">
-              <div className="h-8 bg-muted rounded w-3/4 animate-pulse" />
-              <div className="h-6 bg-muted rounded w-1/4 animate-pulse" />
-              <div className="h-24 bg-muted rounded animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   if (!product) {
     return (
