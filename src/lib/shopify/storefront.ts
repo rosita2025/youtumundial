@@ -100,6 +100,7 @@ interface RawProduct {
   createdAt: string;
   tags: string[];
   productType: string;
+  collections?: { edges: Edge<{ handle: string; title: string }>[] };
   availableForSale: boolean;
   priceRange: { minVariantPrice: { amount: string } };
   compareAtPriceRange: { minVariantPrice: { amount: string } } | null;
@@ -112,6 +113,14 @@ const num = (v: unknown) => {
   const n = parseFloat(String(v ?? ''));
   return Number.isFinite(n) ? n : 0;
 };
+
+/** Handles de colecciones reales de Shopify + el tipo de producto como respaldo. */
+export function buildCollections(handles: string[], productType?: string | null): string[] {
+  const list = handles.map((h) => String(h ?? '').trim().toLowerCase()).filter(Boolean);
+  const type = String(productType ?? '').trim().toLowerCase().replace(/\s+/g, '-');
+  if (type && !list.includes(type)) list.push(type);
+  return [...new Set(list)];
+}
 
 function mapVariant(raw: RawVariant): ProductVariant {
   const compare = num(raw.compareAtPrice?.amount);
@@ -144,7 +153,14 @@ export function mapShopifyProduct(raw: RawProduct): Product {
       height: e.node.height ?? 1000,
     })),
     variants: raw.variants.edges.map((e) => mapVariant(e.node)),
-    collections: raw.productType ? [raw.productType.toLowerCase()] : [],
+    collections: buildCollections(
+      (raw.collections?.edges ?? []).map((e) => e.node.handle),
+      raw.productType,
+    ),
+    collectionTitles: Object.fromEntries(
+      (raw.collections?.edges ?? []).map((e) => [e.node.handle.toLowerCase(), e.node.title]),
+    ),
+    productType: raw.productType || undefined,
     tags: raw.tags ?? [],
     available: raw.availableForSale,
     createdAt: raw.createdAt,
