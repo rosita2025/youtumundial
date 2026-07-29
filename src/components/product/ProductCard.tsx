@@ -68,6 +68,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
       {/* Product Info */}
       <div className="mt-4 space-y-1">
+        {product.vendor && (
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+            {product.vendor}
+          </p>
+        )}
         <h3 className="font-medium text-foreground group-hover:underline transition-all">
           {product.title}
         </h3>

@@ -108,9 +108,9 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              {product.productType && (
+              {(product.vendor || product.productType) && (
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {product.productType}
+                  {[product.vendor, product.productType].filter(Boolean).join(' · ')}
                 </p>
               )}
               <h1 className="font-heading text-3xl md:text-4xl font-medium">
