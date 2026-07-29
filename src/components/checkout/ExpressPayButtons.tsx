@@ -97,43 +97,67 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
     );
   }
 
-  if (!support.link && !support.googlePay && !support.applePay) return null;
+  // Si no hay ningún proveedor exprés (por ejemplo, Stripe sin configurar),
+  // igual explicamos al comprador cómo seguir en vez de dejar un hueco vacío.
+  if (!support.link && !support.googlePay && !support.applePay) {
+    return (
+      <p className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        El pago exprés no está disponible en este navegador. Podés pagar con tarjeta usando el
+        formulario de abajo.
+      </p>
+    );
+  }
 
   const walletLabel = support.applePay && !support.googlePay ? 'apple' : 'google';
+  const walletAvailable = support.googlePay || support.applePay;
 
   return (
-    <div className="grid sm:grid-cols-2 gap-3">
-      {support.link && (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onPay}
-          aria-label="Pagar con Link"
-          // Colores oficiales de la marca Link (no son tokens del tema).
-          style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
-          className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60"
-        >
-          Link
-        </button>
-      )}
+    <div className="space-y-2">
+      <div className="grid sm:grid-cols-2 gap-3">
+        {support.link && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={onPay}
+            aria-label="Pagar con Link"
+            // Colores oficiales de la marca Link (no son tokens del tema).
+            style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
+            className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60"
+          >
+            Link
+          </button>
+        )}
 
-      {(support.googlePay || support.applePay) && (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onPay}
-          aria-label={walletLabel === 'apple' ? 'Pagar con Apple Pay' : 'Pagar con Google Pay'}
-          // Botón negro exigido por las guías de marca de Google/Apple Pay.
-          style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
-          className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60"
-        >
-          {walletLabel === 'apple' ? (
-            <span className="font-medium"> Pay</span>
-          ) : (
-            <GooglePayMark />
-          )}
-        </button>
-      )}
+        {walletAvailable ? (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={onPay}
+            aria-label={walletLabel === 'apple' ? 'Pagar con Apple Pay' : 'Pagar con Google Pay'}
+            // Botón negro exigido por las guías de marca de Google/Apple Pay.
+            style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
+            className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60"
+          >
+            {walletLabel === 'apple' ? (
+              <span className="font-medium"> Pay</span>
+            ) : (
+              <GooglePayMark />
+            )}
+          </button>
+        ) : (
+          // Fallback visible: el botón sigue presente pero explica por qué no
+          // se puede usar la cartera en este navegador o dispositivo.
+          <div
+            role="note"
+            aria-live="polite"
+            className="rounded-md border border-dashed border-border bg-muted/40 px-3 py-3 text-center text-xs leading-snug text-muted-foreground"
+          >
+            <span className="block font-medium text-foreground">Google Pay / Apple Pay</span>
+            No disponible en este navegador. Usá Link o pagá con tarjeta abajo.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
