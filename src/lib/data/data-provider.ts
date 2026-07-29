@@ -246,6 +246,21 @@ export async function getCollection(slug: string): Promise<Collection | null> {
   return collections.find(c => c.slug === slug) || null;
 }
 
+/**
+ * Get all distinct vendors (brands) present in the catalog
+ */
+export async function getVendors(): Promise<string[]> {
+  const products = await getCatalog();
+  const set = new Set<string>();
+  for (const p of products) {
+    const v = (p.vendor || '').trim();
+    if (v) set.add(v);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+
+
 
 /**
  * Get products for a specific collection
