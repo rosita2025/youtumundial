@@ -121,8 +121,7 @@ const ProductDetail = () => {
                   {product.collections.map((slug) => (
                     <Link
                       key={slug}
-                      to="/collections/$slug"
-                      params={{ slug }}
+                      to={`/collections/${slug}`}
                       className="text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
                     >
                       {product.collectionTitles?.[slug] ??
