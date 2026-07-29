@@ -50,7 +50,7 @@ function ContactPage() {
             <h3 className="font-medium text-foreground">Email</h3>
             <p className="text-sm mt-1">For claims, invoicing and returns.</p>
             <Button asChild variant="outline" className="mt-4">
-              <a href="mailto:hola@youtumundial.com">hola@youtumundial.com</a>
+              <a href="mailto:youtumundial@gmail.com">youtumundial@gmail.com</a>
             </Button>
           </div>
         </div>
