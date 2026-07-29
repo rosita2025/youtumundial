@@ -14,7 +14,7 @@
 import type { Product, ProductVariant } from '../data/types';
 import { cleanDescription } from '../data/description';
 import { adminRequest, hasShopifyAdminCredentials } from './admin.server';
-import { SHOPIFY_STORE_PERMANENT_DOMAIN } from './storefront';
+import { SHOPIFY_STORE_PERMANENT_DOMAIN, buildCollections } from './storefront';
 
 const ADMIN_PRODUCTS_QUERY = `
   query AdminProducts($first: Int!) {
@@ -30,6 +30,7 @@ const ADMIN_PRODUCTS_QUERY = `
           productType
           status
           totalInventory
+          collections(first: 10) { edges { node { handle title } } }
           media(first: 10) {
             edges {
               node {
@@ -80,6 +81,7 @@ interface AdminProduct {
   productType: string | null;
   status: string;
   totalInventory: number | null;
+  collections?: { edges: Array<{ node: { handle: string; title: string } }> };
   media: {
     edges: Array<{
       node: { image?: { url: string; altText: string | null; width: number | null; height: number | null } | null };
@@ -137,7 +139,14 @@ function mapProduct(raw: AdminProduct): Product {
     compareAtPrice: compare > price ? compare : undefined,
     images,
     variants,
-    collections: raw.productType ? [raw.productType.toLowerCase()] : [],
+    collections: buildCollections(
+      (raw.collections?.edges ?? []).map((e) => e.node.handle),
+      raw.productType,
+    ),
+    collectionTitles: Object.fromEntries(
+      (raw.collections?.edges ?? []).map((e) => [e.node.handle.toLowerCase(), e.node.title]),
+    ),
+    productType: raw.productType ?? undefined,
     tags: raw.tags ?? [],
     available: variants.some((v) => v.available),
     createdAt: raw.createdAt,
