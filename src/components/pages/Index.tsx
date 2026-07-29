@@ -1,61 +1,40 @@
-import { useEffect, useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Hero } from '@/components/home/Hero';
 import { FeaturedCollections } from '@/components/home/FeaturedCollections';
 import { TrendingProducts } from '@/components/home/TrendingProducts';
 import { Newsletter } from '@/components/home/Newsletter';
-import { getCollections, getFeaturedProducts, getNewArrivals } from '@/lib/data/data-provider';
-import { Collection, Product } from '@/lib/data/types';
+import { selectCollections, selectProducts } from '@/lib/data/data-provider';
+import { Product } from '@/lib/data/types';
 
-const Index = () => {
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+interface IndexProps {
+  catalog?: Product[];
+}
 
-  useEffect(() => {
-    async function loadData() {
-      const [cols, featured, arrivals] = await Promise.all([
-        getCollections(),
-        getFeaturedProducts(8),
-        getNewArrivals(4),
-      ]);
-      setCollections(cols);
-      setFeaturedProducts(featured);
-      setNewArrivals(arrivals);
-      setLoading(false);
-    }
-    loadData();
-  }, []);
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground">Loading...</div>
-        </div>
-      </Layout>
-    );
-  }
+const Index = ({ catalog = [] }: IndexProps) => {
+  const collections = selectCollections(catalog);
+  const featuredProducts = selectProducts(catalog).slice(0, 8);
+  const newestFirst = selectProducts(catalog, undefined, 'newest');
+  const tagged = selectProducts(catalog, { collection: 'new-arrivals' }, 'newest');
+  const newArrivals = (tagged.length > 0 ? tagged : newestFirst).slice(0, 4);
 
   return (
     <Layout>
       <Hero />
       {collections.length > 0 && <FeaturedCollections collections={collections} />}
       {featuredProducts.length > 0 && (
-      <TrendingProducts
-        products={featuredProducts}
-        title="Trending Now"
-        subtitle="Our most popular picks this season"
-      />
+        <TrendingProducts
+          products={featuredProducts}
+          title="Trending Now"
+          subtitle="Our most popular picks this season"
+        />
       )}
       {newArrivals.length > 0 && (
-      <TrendingProducts
-        products={newArrivals}
-        title="New Arrivals"
-        subtitle="Fresh styles just landed"
-        viewAllLink="/products"
-      />
+        <TrendingProducts
+          products={newArrivals}
+          title="New Arrivals"
+          subtitle="Fresh styles just landed"
+          viewAllLink="/products"
+        />
       )}
       <Newsletter />
     </Layout>
