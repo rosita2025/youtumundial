@@ -5,23 +5,23 @@ import { Instagram, Facebook } from 'lucide-react';
 
 const footerLinks = {
   shop: [
-    { label: 'Todos los productos', href: '/products' },
-    { label: 'Colección hombre', href: '/collections/mens' },
-    { label: 'Colección mujer', href: '/collections/womens' },
-    { label: 'Nuevos ingresos', href: '/collections/new-arrivals' },
-    { label: 'Ofertas', href: '/collections/sale' },
+    { label: 'All products', href: '/products' },
+    { label: 'Men', href: '/collections/mens' },
+    { label: 'Women', href: '/collections/womens' },
+    { label: 'New arrivals', href: '/collections/new-arrivals' },
+    { label: 'Sale', href: '/collections/sale' },
   ],
   help: [
-    { label: 'Contacto', href: '/contact' },
-    { label: 'Seguimiento de pedido', href: '/seguimiento' },
-    { label: 'Envíos y devoluciones', href: '/shipping' },
-    { label: 'Términos y condiciones', href: '/terms' },
-    { label: 'Política de privacidad', href: '/privacy' },
+    { label: 'Contact', href: '/contact' },
+    { label: 'Track your order', href: '/seguimiento' },
+    { label: 'Shipping & returns', href: '/shipping' },
+    { label: 'Terms & conditions', href: '/terms' },
+    { label: 'Privacy policy', href: '/privacy' },
   ],
   company: [
-    { label: 'Sobre nosotros', href: '/about' },
-    { label: 'Aviso legal', href: '/disclaimer' },
-    { label: 'Buscar productos', href: '/search' },
+    { label: 'About us', href: '/about' },
+    { label: 'Legal disclaimer', href: '/disclaimer' },
+    { label: 'Search products', href: '/search' },
   ],
 };
 
@@ -37,8 +37,9 @@ export function Footer() {
               Youtumundial
             </Link>
             <p className="mt-4 text-muted-foreground max-w-sm">
-              Thoughtfully designed essentials made from sustainable materials. 
-              Better for you, better for the planet.
+              Multi-brand sportswear and women's fashion from China, South Korea,
+              the US and Europe. Made in China, shipped worldwide at factory-direct
+              prices.
             </p>
 
             {/* Newsletter */}
@@ -55,14 +56,14 @@ export function Footer() {
                 </Button>
               </form>
               <p className="text-sm text-muted-foreground mt-2">
-                15% off your first order when you sign up.
+                New drops, restocks and offers. No spam.
               </p>
             </div>
           </div>
 
           {/* Shop Links */}
           <div>
-            <h4 className="font-medium mb-4">Tienda</h4>
+            <h4 className="font-medium mb-4">Shop</h4>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
                 <li key={link.label}>
@@ -79,7 +80,7 @@ export function Footer() {
 
           {/* Help Links */}
           <div>
-            <h4 className="font-medium mb-4">Ayuda</h4>
+            <h4 className="font-medium mb-4">Help</h4>
             <ul className="space-y-3">
               {footerLinks.help.map((link) => (
                 <li key={link.label}>
@@ -96,7 +97,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-medium mb-4">Empresa</h4>
+            <h4 className="font-medium mb-4">Company</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
@@ -117,6 +118,11 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Youtumundial. All rights reserved.
           </p>
+          <p className="text-xs text-muted-foreground max-w-xl md:text-center">
+            Youtumundial is an independent multi-brand retailer. Products are manufactured in China
+            and imported through Taobao and partner suppliers. All brand names and trademarks belong
+            to their respective owners; we are not an official distributor or affiliate.
+          </p>
 
           {/* Social Links */}
           <div className="flex items-center gap-4">
@@ -125,7 +131,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Instagram de Youtumundial"
+              aria-label="Youtumundial on Instagram"
             >
               <Instagram size={20} />
             </a>
@@ -134,7 +140,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Facebook de Youtumundial"
+              aria-label="Youtumundial on Facebook"
             >
               <Facebook size={20} />
             </a>
