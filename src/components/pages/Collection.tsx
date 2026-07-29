@@ -45,7 +45,7 @@ const Collection = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="aspect-[3/4] bg-muted rounded-lg" />
+                <div className="aspect-square bg-muted rounded-lg" />
                 <div className="mt-4 h-4 bg-muted rounded w-3/4" />
                 <div className="mt-2 h-4 bg-muted rounded w-1/4" />
               </div>

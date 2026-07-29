@@ -62,7 +62,7 @@ const ProductDetail = () => {
       <Layout>
         <div className="container-wide py-8">
           <div className="grid md:grid-cols-2 gap-12">
-            <div className="aspect-[3/4] bg-muted rounded-lg animate-pulse" />
+            <div className="aspect-square bg-muted rounded-lg animate-pulse" />
             <div className="space-y-4">
               <div className="h-8 bg-muted rounded w-3/4 animate-pulse" />
               <div className="h-6 bg-muted rounded w-1/4 animate-pulse" />
