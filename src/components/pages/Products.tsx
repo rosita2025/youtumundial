@@ -4,7 +4,7 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { selectProducts, selectCollections, selectVendors } from '@/lib/data/data-provider';
-import { Product, Collection, SortOption } from '@/lib/data/types';
+import { Product, SortOption } from '@/lib/data/types';
 
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'featured', label: 'Featured' },

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getCollection, getCollectionProducts } from '@/lib/data/data-provider';
-import { Collection as CollectionType, Product, SortOption } from '@/lib/data/types';
+import { selectCollections, selectProducts } from '@/lib/data/data-provider';
+import { Product, SortOption } from '@/lib/data/types';
 
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'featured', label: 'Featured' },
@@ -15,46 +15,16 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'name-asc', label: 'Name: A-Z' },
 ];
 
-const Collection = () => {
+interface CollectionProps {
+  catalog?: Product[];
+}
+
+const Collection = ({ catalog = [] }: CollectionProps) => {
   const { slug } = useParams<{ slug: string }>();
-  const [collection, setCollection] = useState<CollectionType | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
   const [sort, setSort] = useState<SortOption>('featured');
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadData() {
-      if (!slug) return;
-      setLoading(true);
-      const [col, prods] = await Promise.all([
-        getCollection(slug),
-        getCollectionProducts(slug, sort),
-      ]);
-      setCollection(col);
-      setProducts(prods);
-      setLoading(false);
-    }
-    loadData();
-  }, [slug, sort]);
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="container-wide py-8">
-          <div className="h-64 bg-muted rounded-xl animate-pulse mb-8" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-square bg-muted rounded-lg" />
-                <div className="mt-4 h-4 bg-muted rounded w-3/4" />
-                <div className="mt-2 h-4 bg-muted rounded w-1/4" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  const collection = selectCollections(catalog).find((c) => c.slug === slug) ?? null;
+  const products = selectProducts(catalog, { collection: slug }, sort);
 
   if (!collection) {
     return (
