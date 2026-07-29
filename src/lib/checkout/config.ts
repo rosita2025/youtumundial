@@ -5,6 +5,8 @@
  * sobreescribir con variables de entorno (VITE_*) sin tocar el código.
  */
 
+import { worldCountries } from './countries';
+
 const env = import.meta.env as Record<string, string | undefined>;
 
 export const checkoutConfig = {
