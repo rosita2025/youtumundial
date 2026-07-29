@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
 import { useSearchParams } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getProducts, getCollections, getVendors } from '@/lib/data/data-provider';
+import { selectProducts, selectCollections, selectVendors } from '@/lib/data/data-provider';
 import { Product, Collection, SortOption } from '@/lib/data/types';
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -15,37 +14,27 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'name-asc', label: 'Name: A-Z' },
 ];
 
-const Products = () => {
+interface ProductsProps {
+  catalog?: Product[];
+}
+
+const Products = ({ catalog = [] }: ProductsProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [vendors, setVendors] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const currentCollection = searchParams.get('collection') || '';
   const currentVendor = searchParams.get('vendor') || '';
   const currentSort = (searchParams.get('sort') as SortOption) || 'featured';
 
-  useEffect(() => {
-    async function loadData() {
-      const [prods, cols, vends] = await Promise.all([
-        getProducts(
-          {
-            ...(currentCollection ? { collection: currentCollection } : {}),
-            ...(currentVendor ? { vendor: currentVendor } : {}),
-          },
-          currentSort
-        ),
-        getCollections(),
-        getVendors(),
-      ]);
-      setProducts(prods);
-      setCollections(cols);
-      setVendors(vends);
-      setLoading(false);
-    }
-    loadData();
-  }, [currentCollection, currentVendor, currentSort]);
+  const products = selectProducts(
+    catalog,
+    {
+      ...(currentCollection ? { collection: currentCollection } : {}),
+      ...(currentVendor ? { vendor: currentVendor } : {}),
+    },
+    currentSort
+  );
+  const collections = selectCollections(catalog);
+  const vendors = selectVendors(catalog);
 
   const handleSortChange = (value: SortOption) => {
     const params = new URLSearchParams(searchParams);
@@ -136,19 +125,7 @@ const Products = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-square bg-muted rounded-lg" />
-                <div className="mt-4 h-4 bg-muted rounded w-3/4" />
-                <div className="mt-2 h-4 bg-muted rounded w-1/4" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <ProductGrid products={products} />
-        )}
+        <ProductGrid products={products} />
       </div>
     </Layout>
   );
