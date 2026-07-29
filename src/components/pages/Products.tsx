@@ -4,7 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getProducts, getCollections } from '@/lib/data/data-provider';
+import { getProducts, getCollections, getVendors } from '@/lib/data/data-provider';
 import { Product, Collection, SortOption } from '@/lib/data/types';
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -19,26 +19,33 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [vendors, setVendors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const currentCollection = searchParams.get('collection') || '';
+  const currentVendor = searchParams.get('vendor') || '';
   const currentSort = (searchParams.get('sort') as SortOption) || 'featured';
 
   useEffect(() => {
     async function loadData() {
-      const [prods, cols] = await Promise.all([
+      const [prods, cols, vends] = await Promise.all([
         getProducts(
-          currentCollection ? { collection: currentCollection } : undefined,
+          {
+            ...(currentCollection ? { collection: currentCollection } : {}),
+            ...(currentVendor ? { vendor: currentVendor } : {}),
+          },
           currentSort
         ),
         getCollections(),
+        getVendors(),
       ]);
       setProducts(prods);
       setCollections(cols);
+      setVendors(vends);
       setLoading(false);
     }
     loadData();
-  }, [currentCollection, currentSort]);
+  }, [currentCollection, currentVendor, currentSort]);
 
   const handleSortChange = (value: SortOption) => {
     const params = new URLSearchParams(searchParams);
@@ -52,6 +59,16 @@ const Products = () => {
       params.set('collection', value);
     } else {
       params.delete('collection');
+    }
+    setSearchParams(params);
+  };
+
+  const handleVendorChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value && value !== 'all') {
+      params.set('vendor', value);
+    } else {
+      params.delete('vendor');
     }
     setSearchParams(params);
   };
@@ -83,6 +100,21 @@ const Products = () => {
                 {collections.map((col) => (
                   <SelectItem key={col.id} value={col.slug}>
                     {col.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Vendor (brand) Filter */}
+            <Select value={currentVendor || 'all'} onValueChange={handleVendorChange}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Brand" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Brands</SelectItem>
+                {vendors.map((v) => (
+                  <SelectItem key={v} value={v}>
+                    {v}
                   </SelectItem>
                 ))}
               </SelectContent>

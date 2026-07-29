@@ -123,6 +123,10 @@ export async function getProducts(
     if (filters.collection) {
       products = products.filter(p => p.collections.includes(filters.collection!));
     }
+    if (filters.vendor) {
+      const vendorLower = filters.vendor.toLowerCase();
+      products = products.filter(p => (p.vendor || '').toLowerCase() === vendorLower);
+    }
     if (filters.minPrice !== undefined) {
       products = products.filter(p => p.price >= filters.minPrice!);
     }
@@ -138,6 +142,7 @@ export async function getProducts(
         p =>
           p.title.toLowerCase().includes(searchLower) ||
           p.description.toLowerCase().includes(searchLower) ||
+          (p.vendor || '').toLowerCase().includes(searchLower) ||
           p.tags.some(t => t.toLowerCase().includes(searchLower))
       );
     }
@@ -240,6 +245,21 @@ export async function getCollection(slug: string): Promise<Collection | null> {
   const collections = await getCollections();
   return collections.find(c => c.slug === slug) || null;
 }
+
+/**
+ * Get all distinct vendors (brands) present in the catalog
+ */
+export async function getVendors(): Promise<string[]> {
+  const products = await getCatalog();
+  const set = new Set<string>();
+  for (const p of products) {
+    const v = (p.vendor || '').trim();
+    if (v) set.add(v);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+
 
 
 /**
