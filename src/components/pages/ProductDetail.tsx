@@ -108,9 +108,29 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
+              {product.productType && (
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                  {product.productType}
+                </p>
+              )}
               <h1 className="font-heading text-3xl md:text-4xl font-medium">
                 {product.title}
               </h1>
+              {product.collections.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {product.collections.map((slug) => (
+                    <Link
+                      key={slug}
+                      to="/collections/$slug"
+                      params={{ slug }}
+                      className="text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+                    >
+                      {product.collectionTitles?.[slug] ??
+                        slug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </Link>
+                  ))}
+                </div>
+              )}
               {reviewSummary.total > 0 && (
                 <a href="#resenas" className="mt-2 inline-flex items-center gap-2 text-sm">
                   <StarRating rating={reviewSummary.average} size={15} />
