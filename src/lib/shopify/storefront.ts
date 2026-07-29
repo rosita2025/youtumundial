@@ -57,6 +57,7 @@ const PRODUCTS_QUERY = `
           createdAt
           tags
           productType
+          collections(first: 10) { edges { node { handle title } } }
           availableForSale
           priceRange { minVariantPrice { amount currencyCode } }
           compareAtPriceRange { minVariantPrice { amount } }
