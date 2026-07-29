@@ -42,10 +42,36 @@ export const Route = createFileRoute("/sitemap.xml")({
           })),
         ];
 
-        const urls = entries.map((e) =>
-          [
-            `  <url>`,
-            `    <loc>${BASE_URL}${e.path}</loc>`,
+        const escapeXml = (value: string) =>
+          value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&apos;");
+
+        // Encode each path segment so slugs with spaces or reserved chars
+        // produce a valid URL, then XML-escape the whole <loc> value.
+        const toLoc = (path: string) =>
+          escapeXml(
+            BASE_URL +
+              path
+                .split("/")
+                .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+                .join("/"),
+          );
+
+        const seen = new Set<string>();
+        const urls = entries
+          .filter((e) => {
+            if (!e.path || seen.has(e.path)) return false;
+            seen.add(e.path);
+            return true;
+          })
+          .map((e) =>
+            [
+              `  <url>`,
+              `    <loc>${toLoc(e.path)}</loc>`,
             e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
             e.priority ? `    <priority>${e.priority}</priority>` : null,
             `  </url>`,
