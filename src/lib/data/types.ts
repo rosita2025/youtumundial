@@ -48,6 +48,8 @@ export interface Product {
   collectionTitles?: Record<string, string>;
   /** Tipo de producto de Shopify (ej. "Vestidos"). */
   productType?: string;
+  /** Marca / proveedor de Shopify (Vendor). */
+  vendor?: string;
   tags: string[];
   available: boolean;
   createdAt: string;

@@ -56,6 +56,7 @@ const PRODUCTS_QUERY = `
           handle
           createdAt
           tags
+          vendor
           productType
           collections(first: 10) { edges { node { handle title } } }
           availableForSale
@@ -100,6 +101,7 @@ interface RawProduct {
   createdAt: string;
   tags: string[];
   productType: string;
+  vendor: string;
   collections?: { edges: Edge<{ handle: string; title: string }>[] };
   availableForSale: boolean;
   priceRange: { minVariantPrice: { amount: string } };
@@ -161,6 +163,7 @@ export function mapShopifyProduct(raw: RawProduct): Product {
       (raw.collections?.edges ?? []).map((e) => [e.node.handle.toLowerCase(), e.node.title]),
     ),
     productType: raw.productType || undefined,
+    vendor: raw.vendor || undefined,
     tags: raw.tags ?? [],
     available: raw.availableForSale,
     createdAt: raw.createdAt,
