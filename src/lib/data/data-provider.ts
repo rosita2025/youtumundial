@@ -17,7 +17,7 @@ import { fetchShopifyProducts } from '../shopify/storefront';
 
 // Cache corta: los cambios de título/descripción hechos en Shopify se ven casi
 // al instante en la tienda.
-const CACHE_TTL = 30 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
 
 /** Fuerza releer el catálogo de Shopify en la próxima consulta. */
@@ -47,7 +47,7 @@ function applyPublishedSelection(products: Product[]): Product[] {
  * Regla de stock: solo se publican productos con stock en SUP y se ocultan
  * los talles/variantes agotados.
  */
-async function getCatalog(): Promise<Product[]> {
+export async function getCatalog(): Promise<Product[]> {
   if (catalogCache && Date.now() - catalogCache.at < CACHE_TTL) {
     return catalogCache.products;
   }
@@ -335,4 +335,19 @@ export async function getRelatedProducts(
     )
     .slice(0, limit);
   return related;
+}
+
+/** Relacionados a partir de un catálogo ya cargado. */
+export function selectRelatedProducts(
+  catalog: Product[],
+  currentProduct: Product,
+  limit: number = 4
+): Product[] {
+  return catalog
+    .filter(
+      p =>
+        p.id !== currentProduct.id &&
+        p.collections.some(c => currentProduct.collections.includes(c))
+    )
+    .slice(0, limit);
 }
