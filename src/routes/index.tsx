@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { fetchCatalog } from "@/lib/data/catalog.functions";
 import Index from "@/components/pages/Index";
 
 const TITLE = "Ropa de Youtumundial — Hoodies, camisetas y joggers";
@@ -24,5 +25,11 @@ export const Route = createFileRoute("/")({
     ],
     links: [{ rel: "canonical", href: "https://youtumundial.com/" }],
   }),
-  component: Index,
+  loader: () => fetchCatalog(),
+  component: HomeRoute,
 });
+
+function HomeRoute() {
+  const catalog = Route.useLoaderData();
+  return <Index catalog={catalog} />;
+}
