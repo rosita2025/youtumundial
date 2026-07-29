@@ -123,23 +123,28 @@ export async function quoteShipping(params: {
       input: {
         lines,
         buyerIdentity: { countryCode },
-        delivery: {
-          addresses: [
-            {
-              selected: true,
-              address: {
-                deliveryAddress: {
-                  countryCode,
-                  city: sample.city,
-                  provinceCode: sample.provinceCode,
-                  zip: sample.zip,
-                },
+        ...(sample
+          ? {
+              delivery: {
+                addresses: [
+                  {
+                    selected: true,
+                    address: {
+                      deliveryAddress: {
+                        countryCode,
+                        city: sample.city,
+                        provinceCode: sample.provinceCode,
+                        zip: sample.zip,
+                      },
+                    },
+                  },
+                ],
               },
-            },
-          ],
-        },
+            }
+          : {}),
       },
     });
+
 
     const options =
       res?.data?.cartCreate?.cart?.deliveryGroups?.edges?.flatMap(
