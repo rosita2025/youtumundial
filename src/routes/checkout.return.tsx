@@ -4,9 +4,12 @@ import { fbEvent } from '@/lib/facebook-pixel';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { fulfillSupOrder, type FulfillmentResult } from '@/lib/suppliers/fulfillment.functions';
+import { getOrderSummary, type OrderSummary } from '@/lib/checkout/order-summary.functions';
 import { getStripeEnvironment } from '@/lib/stripe';
 import { clearAbandonedCheckout } from '@/lib/checkout/abandoned.functions';
 import { Loader2, PackageCheck, RefreshCw, Truck } from 'lucide-react';
+
+
 
 
 export const Route = createFileRoute('/checkout/return')({
