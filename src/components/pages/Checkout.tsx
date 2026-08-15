@@ -139,7 +139,7 @@ const Checkout = () => {
                 <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-3 w-auto" />
                 <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-5 w-auto" />
                 <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-4 w-auto" />
-                <img src="https://cdn.worldvectorlogo.com/logos/apple-pay-1.svg" alt="Apple Pay" className="h-5 w-auto" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto" />
                 <img src="https://cdn.worldvectorlogo.com/logos/google-pay-2.svg" alt="Google Pay" className="h-4 w-auto" />
               </div>
             </div>
