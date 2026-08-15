@@ -19,12 +19,13 @@ const MESSAGES = [
 ];
 
 export function AnnouncementBar() {
-  const [isVisible, setIsVisible] = useState<boolean | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    // Initial check for dismissed state
+    setIsMounted(true);
     const dismissed = localStorage.getItem('announcement-dismissed');
     if (dismissed === 'true') {
       setIsVisible(false);
@@ -69,13 +70,12 @@ export function AnnouncementBar() {
     document.documentElement.style.setProperty('--announcement-bar-height', '0px');
   };
 
-  if (isVisible === null || isVisible === false) return null;
+  if (!isMounted || !isVisible) return null;
 
   const currentMessage = MESSAGES[currentMessageIndex];
 
   return (
     <div 
-      data-testid="announcement-bar"
       className={cn(
         "w-full bg-[#00D66F] text-black py-2.5 px-4 text-center text-xs md:text-sm font-bold sticky top-0 z-[60] shadow-md transition-all duration-300",
         isTransitioning ? "opacity-90" : "opacity-100"
@@ -126,6 +126,7 @@ export function AnnouncementBar() {
     </div>
   );
 }
+
 
 
 
