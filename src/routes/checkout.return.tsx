@@ -13,13 +13,13 @@ export const Route = createFileRoute('/checkout/return')({
     meta: [
       { name: "robots", content: "noindex, nofollow" },
       { name: "referrer", content: "strict-origin-when-cross-origin" },
-      { title: 'Pago confirmado — Ropa de Youtumundial' },
+      { title: 'Payment Confirmed — Youtumundial' },
       {
         name: 'description',
-        content: 'Confirmación de tu pedido en Ropa de Youtumundial con envío internacional.',
+        content: 'Your order at Youtumundial has been confirmed. International shipping is being prepared.',
       },
-      { property: 'og:title', content: 'Pago confirmado — Ropa de Youtumundial' },
-      { property: 'og:description', content: 'Gracias por tu compra en Youtumundial.' },
+      { property: 'og:title', content: 'Payment Confirmed — Youtumundial' },
+      { property: 'og:description', content: 'Thank you for your purchase at Youtumundial.' },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
@@ -122,37 +122,37 @@ function CheckoutReturn() {
       <div className="container mx-auto px-4 py-24 text-center max-w-xl">
         <h1 className="font-display text-3xl md:text-4xl mb-4">
           {isManualOrder
-            ? '¡Pedido registrado!'
+            ? 'Order Registered!'
             : confirmed
-              ? '¡Gracias por tu compra!'
-              : 'No encontramos tu pago'}
+              ? 'Thank you for your purchase!'
+              : 'Payment not found'}
         </h1>
         <p className="text-muted-foreground mb-8">
           {isManualOrder
-            ? 'Tu pedido quedó registrado como pendiente de pago. Enviános la captura de tu Yape o Plin por WhatsApp y lo confirmamos para despacharlo.'
+            ? 'Your order has been registered as pending. Please send us your payment confirmation via WhatsApp to proceed with shipping.'
             : isFreeOrder
-              ? 'Tu pedido con cupón quedó confirmado automáticamente. Te escribimos por email con el seguimiento del envío.'
+              ? 'Your order has been automatically confirmed. We will send you an email with shipping tracking details shortly.'
               : sessionId
-                ? 'Recibimos tu pago y ya estamos preparando el envío. Te escribimos por email con el seguimiento.'
-                : 'Si creés que hubo un error, escribinos y lo revisamos.'}
+                ? 'We have received your payment and are preparing your shipment. You will receive an email with tracking information soon.'
+                : 'If you think there has been an error, please contact us.'}
         </p>
 
 
         {confirmed && (
           <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-6 mb-8">
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
-              Número de pedido
+              Order number
             </p>
             {orderNumber ? (
               <p className="font-display text-4xl font-bold">{orderNumber}</p>
             ) : (
               <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Generando tu número de pedido…
+                Generating your order number...
               </p>
             )}
             {isManualOrder && reference && (
-              <p className="mt-2 text-xs text-muted-foreground">Referencia: {reference}</p>
+              <p className="mt-2 text-xs text-muted-foreground">Reference: {reference}</p>
             )}
           </div>
         )}
@@ -161,7 +161,7 @@ function CheckoutReturn() {
         {sessionId && state === 'loading' && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Registrando tu pedido con el proveedor…
+            Registering your order with the supplier...
           </div>
         )}
 
@@ -171,14 +171,14 @@ function CheckoutReturn() {
             {result.supOrderId ? (
               <>
                 <p className="flex items-center gap-2 font-medium">
-                  <PackageCheck className="h-4 w-4" /> Pedido enviado al proveedor
+                  <PackageCheck className="h-4 w-4" /> Order sent to supplier
                 </p>
-                <p className="text-muted-foreground">N° con el proveedor: {result.supOrderId}</p>
-                {result.status && <p className="text-muted-foreground">Estado: {result.status}</p>}
+                <p className="text-muted-foreground">Supplier ID: {result.supOrderId}</p>
+                {result.status && <p className="text-muted-foreground">Status: {result.status}</p>}
                 {result.tracking && (
                   <p className="flex items-center gap-2">
                     <Truck className="h-4 w-4" />
-                    Seguimiento: <span className="font-medium">{result.tracking}</span>
+                    Tracking: <span className="font-medium">{result.tracking}</span>
                     {result.carrier ? ` (${result.carrier})` : ''}
                   </p>
                 )}
@@ -186,11 +186,11 @@ function CheckoutReturn() {
             ) : (
               <div className="space-y-1">
                 <p className="text-muted-foreground">
-                  {result.message ?? 'Estamos preparando tu pedido manualmente.'}
+                  {result.message ?? 'We are preparing your order.'}
                 </p>
                 {result.pending && (
                   <p className="text-muted-foreground">
-                    Te enviamos un email con el detalle y te avisamos apenas salga el envío.
+                    We have sent you an email and will notify you as soon as the package is shipped.
                   </p>
                 )}
               </div>
@@ -209,7 +209,7 @@ function CheckoutReturn() {
                 ) : (
                   <RefreshCw className="h-4 w-4" />
                 )}
-                Reintentar sincronización
+                Retry synchronization
               </Button>
             )}
 
@@ -217,14 +217,14 @@ function CheckoutReturn() {
         )}
 
         {sessionId && (
-          <p className="text-xs text-muted-foreground mb-8 break-all">Referencia: {sessionId}</p>
+          <p className="text-xs text-muted-foreground mb-8 break-all">Reference: {sessionId}</p>
         )}
         <div className="flex flex-wrap justify-center gap-3">
           <Button asChild size="lg">
-            <Link to="/products">Seguir comprando</Link>
+            <Link to="/products">Continue shopping</Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <Link to="/seguimiento">Ver estado y tracking</Link>
+            <Link to="/seguimiento">View tracking status</Link>
           </Button>
         </div>
 
