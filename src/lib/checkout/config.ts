@@ -66,16 +66,57 @@ export interface ShippingMarket {
 }
 
 export const shippingMarkets: Record<ShippingMarketKey, ShippingMarket> = {
-  US: { key: 'US', name: 'United States', service: 'Express', shipping: 14.9, eta: '5-9 days' },
-  CA: { key: 'CA', name: 'Canada', service: 'Economy', shipping: 9.9, eta: '10-18 days' },
+  US: { key: 'US', name: 'United States', service: 'Express', shipping: 5.0, eta: '5-9 days' },
+  CA: { key: 'CA', name: 'Canada', service: 'Economy', shipping: 5.0, eta: '10-18 days' },
   INTL: {
     key: 'INTL',
     name: 'International',
     service: 'Standard',
-    shipping: 11.9,
+    shipping: 6.0, // Default to Europe rate as base fallback
     eta: '8-15 days',
   },
 };
+
+/**
+ * Regional shipping rates as requested by the user.
+ */
+export function getRegionalShippingRate(countryCode: string): number {
+  const code = (countryCode || '').toUpperCase();
+
+  // English-speaking / Angloparlante ($5.00)
+  const englishSpeaking = ['US', 'CA', 'GB', 'AU', 'NZ', 'IE'];
+  if (englishSpeaking.includes(code)) return 5.0;
+
+  // Latin America ($8.00)
+  const latam = [
+    'AR', 'BO', 'BR', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV', 
+    'GT', 'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'UY', 'VE'
+  ];
+  if (latam.includes(code)) return 8.0;
+
+  // Europe ($6.00)
+  const europe = [
+    'DE', 'FR', 'IT', 'ES', 'PT', 'NL', 'BE', 'CH', 'AT', 'SE', 
+    'NO', 'FI', 'DK', 'PL', 'GR', 'IE', 'CZ', 'HU', 'RO', 'BG'
+  ];
+  if (europe.includes(code)) return 6.0;
+
+  // Asia ($5.00)
+  const asia = [
+    'JP', 'CN', 'KR', 'SG', 'MY', 'TH', 'ID', 'PH', 'VN', 'IN',
+    'HK', 'TW', 'PK', 'BD'
+  ];
+  if (asia.includes(code)) return 5.0;
+
+  // Africa ($5.00)
+  const africa = [
+    'ZA', 'NG', 'KE', 'EG', 'MA', 'DZ', 'GH', 'ET', 'TZ', 'UG'
+  ];
+  if (africa.includes(code)) return 5.0;
+
+  // Default fallback for any other country
+  return 6.0;
+}
 
 export function marketForCountry(countryCode: string): ShippingMarket {
   const code = (countryCode || '').toUpperCase();
@@ -96,7 +137,7 @@ export const shippingCountries: ShippingCountry[] = worldCountries.map((c) => {
     code: c.code,
     name: c.name,
     flag: c.flag,
-    shipping: isSingapore ? 0 : market.shipping,
+    shipping: isSingapore ? 0 : getRegionalShippingRate(c.code),
     eta: isSingapore ? '3-5 days' : market.eta,
     market: market.key,
   };
@@ -113,7 +154,7 @@ export function shippingCountryFor(code: string): ShippingCountry {
       code: key || 'SG',
       name: key || 'Singapore',
       flag: '🇸🇬',
-      shipping: isSingapore ? 0 : shippingMarkets.INTL.shipping,
+      shipping: isSingapore ? 0 : getRegionalShippingRate(key),
       eta: isSingapore ? '3-5 days' : shippingMarkets.INTL.eta,
       market: 'INTL',
     }
