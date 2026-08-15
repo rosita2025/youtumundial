@@ -262,17 +262,24 @@ const Checkout = () => {
     const validation = validateCustomer(customerData);
     if (!validation.ok) {
       setErrors(validation.errors);
-      toast.error('Por favor, completa tus datos de envío.', {
-        description: 'Correo, nombre, dirección, ciudad y teléfono son obligatorios.',
+      const messages = Object.values(validation.errors).filter(Boolean) as string[];
+      toast.error('Please review your shipping details.', {
+        description: messages.slice(0, 3).join(' '),
         duration: 3500,
       });
-      
-      // Auto-scroll to first error
+
+      // Focus/scroll to the first field that actually failed (if it is rendered)
       const firstError = Object.keys(validation.errors)[0];
-      const element = document.getElementsByName(firstError)[0] || document.querySelector(`[placeholder*="${firstError}"]`);
-      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const element = firstError
+        ? (document.getElementsByName(firstError)[0] as HTMLElement | undefined)
+        : undefined;
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (element as HTMLInputElement).focus?.({ preventScroll: true });
+      }
       return;
     }
+
 
     setPaying(true);
     payingRef.current = true;
