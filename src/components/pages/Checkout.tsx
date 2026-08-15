@@ -102,6 +102,37 @@ const Checkout = () => {
     }).catch(() => {});
   }, [getVisitorGeo]);
 
+  // Address autocomplete: resolve city/state from postal code (reduces typing errors)
+  useEffect(() => {
+    const code = customer.postalCode.trim();
+    if (code.length < 3) {
+      setCitySuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setLookingUpPostal(true);
+      lookupPostal({ data: { countryCode, postalCode: code.slice(0, 12) } })
+        .then((result) => {
+          if (cancelled) return;
+          setCitySuggestions(result.places);
+          if (result.places.length > 0) {
+            const best = result.places[0];
+            setCustomer((prev) => {
+              if (prev.city.trim()) return prev;
+              return { ...prev, city: best.city };
+            });
+            setErrors((prev) => ({ ...prev, city: undefined }));
+          }
+        })
+        .catch(() => { if (!cancelled) setCitySuggestions([]); })
+        .finally(() => { if (!cancelled) setLookingUpPostal(false); });
+    }, 450);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [customer.postalCode, countryCode, lookupPostal]);
+
+
+
 
   useEffect(() => {
     if (cart.items.length > 0) {
