@@ -55,7 +55,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
 
     // Este endpoint despacha sin cobrar: solo el cupón de prueba secreto lo abre.
     if (!isFreeOrderAllowed(data.couponCode)) {
-      return { ok: false, message: 'Este pedido requiere pago. Elegí un método de pago.' };
+      return { ok: false, message: 'This order requires payment. Please choose a payment method.' };
     }
 
     let priced;
@@ -71,12 +71,12 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
 
     // Solo se despacha sin pago si el total real, calculado acá, es cero.
     if (priced.total >= 0.5) {
-      return { ok: false, message: 'Este pedido requiere pago. Elegí un método de pago.' };
+      return { ok: false, message: 'This order requires payment. Please choose a payment method.' };
     }
 
     const supItems = priced.lines.filter((line) => line.supProductId);
     if (!supItems.length) {
-      return { ok: false, message: 'El pedido no tiene productos de SUP.' };
+      return { ok: false, message: 'Order does not contain supplier products.' };
     }
 
     const country = shippingCountryFor(data.countryCode);
@@ -139,7 +139,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
         ok: true,
         pending: true,
         shopifyOrderNumber,
-        message: 'Pedido registrado. Lo confirmamos con el proveedor en breve.',
+        message: 'Order registered. We will confirm with the supplier shortly.',
       };
     }
 
@@ -155,7 +155,7 @@ export const resyncDirectOrder = createServerFn({ method: 'POST' })
     reference: String(input?.reference ?? '').trim().slice(0, 60),
   }))
   .handler(async ({ data }): Promise<DirectOrderResult> => {
-    if (!data.reference) return { ok: false, message: 'Falta la referencia del pedido.' };
+    if (!data.reference) return { ok: false, message: 'Missing order reference.' };
 
     const { findShopifyOrderByReference } = await import('@/lib/shopify/admin.server');
     const { findSupOrderByReference } = await import('./sup-api.server');
@@ -169,8 +169,8 @@ export const resyncDirectOrder = createServerFn({ method: 'POST' })
       shopifyOrderNumber: shopify?.orderName,
       pending: !supOrderId,
       message: supOrderId
-        ? 'Pedido sincronizado con el proveedor.'
-        : 'Todavía no figura en el proveedor. Lo seguimos reintentando.',
+        ? 'Order synchronized with the supplier.'
+        : 'Not yet visible at the supplier. We continue to retry.',
     };
   });
 
