@@ -41,47 +41,122 @@ export function createStripeClient(env: StripeEnv): Stripe {
   });
 }
 
-export function getStripeErrorMessage(error: unknown): string {
-  if (error && typeof error === 'object') {
-    const stripeError = error as {
+/** Categoría del fallo, para que la interfaz elija la acción correcta. */
+export type StripeErrorKind = 'card' | 'data' | 'temporary' | 'config';
+
+export interface FriendlyStripeError {
+  message: string;
+  kind: StripeErrorKind;
+}
+
+const CARD_MESSAGES: Record<string, string> = {
+  card_declined: 'Tu banco rechazó la tarjeta. Probá con otra tarjeta o con otro método de pago.',
+  insufficient_funds: 'La tarjeta no tiene fondos suficientes. Probá con otra tarjeta.',
+  expired_card: 'La tarjeta está vencida. Usá una tarjeta vigente.',
+  incorrect_cvc: 'El código de seguridad no coincide. Revisalo e intentá de nuevo.',
+  incorrect_number: 'El número de tarjeta no es válido. Revisalo e intentá de nuevo.',
+  processing_error: 'Hubo un problema al procesar la tarjeta. Intentá de nuevo en un momento.',
+  authentication_required: 'Tu banco pidió una verificación extra. Intentá de nuevo y confirmá la operación.',
+};
+
+const TEMPORARY_MESSAGE =
+  'El pago no está disponible en este momento. Esperá unos segundos e intentá de nuevo.';
+const DATA_MESSAGE =
+  'Algunos datos del pedido no son válidos. Revisá tu correo, teléfono y dirección, y volvé a intentar.';
+const CONFIG_MESSAGE =
+  'Disculpanos: el pago no está disponible ahora mismo. Escribinos y completamos tu pedido.';
+const GENERIC_MESSAGE =
+  'No pudimos iniciar el pago. Intentá de nuevo o probá con otro método de pago.';
+
+/** Traduce cualquier fallo de Stripe a un mensaje claro para el cliente. */
+export function getFriendlyStripeError(error: unknown): FriendlyStripeError {
+  const raw = (error && typeof error === 'object' ? error : {}) as {
+    message?: string;
+    type?: string;
+    code?: string;
+    decline_code?: string;
+    param?: string;
+    requestId?: string;
+    raw?: {
       message?: string;
       type?: string;
       code?: string;
       decline_code?: string;
       param?: string;
       requestId?: string;
-      raw?: {
-        message?: string;
-        type?: string;
-        code?: string;
-        decline_code?: string;
-        param?: string;
-        requestId?: string;
-      };
     };
+  };
 
-    const message = stripeError.raw?.message ?? stripeError.message;
-    if (message) {
-      const details = [
-        stripeError.raw?.type ?? stripeError.type,
-        stripeError.raw?.code ?? stripeError.code,
-        stripeError.raw?.decline_code ?? stripeError.decline_code,
-        stripeError.raw?.param ?? stripeError.param,
-        stripeError.raw?.requestId ?? stripeError.requestId,
-      ].filter(Boolean);
-      return details.length ? `${message} (${details.join(', ')})` : message;
-    }
+  const type = raw.raw?.type ?? raw.type;
+  const code = raw.raw?.code ?? raw.code;
+  const declineCode = raw.raw?.decline_code ?? raw.decline_code;
+
+  // El detalle técnico queda sólo en los logs del servidor.
+  console.error('[Stripe Error]', {
+    type,
+    code,
+    declineCode,
+    param: raw.raw?.param ?? raw.param,
+    requestId: raw.raw?.requestId ?? raw.requestId,
+    message: raw.raw?.message ?? raw.message,
+  });
+
+  if (code === 'account_invalid' || type === 'authentication_error') {
+    return { message: CONFIG_MESSAGE, kind: 'config' };
+  }
+
+  const cardMessage =
+    (declineCode && CARD_MESSAGES[declineCode]) || (code && CARD_MESSAGES[code]) || null;
+  if (cardMessage) {
+    return { message: cardMessage, kind: 'card' };
+  }
+
+  if (type === 'card_error') {
+    return { message: CARD_MESSAGES.card_declined, kind: 'card' };
+  }
+
+  if (
+    type === 'rate_limit_error' ||
+    code === 'rate_limit' ||
+    type === 'api_connection_error' ||
+    type === 'api_error' ||
+    type === 'idempotency_error'
+  ) {
+    return { message: TEMPORARY_MESSAGE, kind: 'temporary' };
+  }
+
+  if (type === 'invalid_request_error' || code === 'amount_too_small' || code === 'amount_too_large') {
+    // Un pedido inválido casi siempre viene del formulario, no de la cuenta.
+    return {
+      message: code === 'amount_too_small'
+        ? 'El monto del pedido es demasiado bajo para procesarlo. Agregá otro producto e intentá de nuevo.'
+        : DATA_MESSAGE,
+      kind: 'data',
+    };
   }
 
   if (error instanceof Stripe.errors.StripeError) {
-    if (error.code === 'account_invalid' || error.type === 'invalid_request_error') {
-      console.error('[Stripe Config Error]', error.message);
-      return 'Disculpas: la pasarela de pago no está activa para esta cuenta. Por favor contactanos.';
-    }
+    return { message: GENERIC_MESSAGE, kind: 'temporary' };
   }
 
-  return 'No se pudo iniciar el pago. Revisa los datos o intenta con otro método.';
+  // Errores propios del checkout (stock, cupón, carrito) ya vienen con un
+  // texto pensado para el cliente; los mantenemos tal cual.
+  if (error instanceof Error && error.message) {
+    if (/is not configured/i.test(error.message)) {
+      return { message: CONFIG_MESSAGE, kind: 'config' };
+    }
+    return { message: error.message, kind: 'data' };
+  }
+
+  return { message: GENERIC_MESSAGE, kind: 'temporary' };
 }
+
+
+/** Compatibilidad: devuelve sólo el texto para el cliente. */
+export function getStripeErrorMessage(error: unknown): string {
+  return getFriendlyStripeError(error).message;
+}
+
 
 export interface CheckoutLineInput {
   name: string;

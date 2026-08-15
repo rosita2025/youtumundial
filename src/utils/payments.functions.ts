@@ -1,8 +1,9 @@
 import { createServerFn } from '@tanstack/react-start';
 import {
   type CartCheckoutInput,
+  type StripeErrorKind,
   createCartSession,
-  getStripeErrorMessage,
+  getFriendlyStripeError,
 } from '@/lib/stripe.server';
 
 export const createCartCheckout = createServerFn({ method: 'POST' })
@@ -26,11 +27,15 @@ export const createCartCheckout = createServerFn({ method: 'POST' })
     return { ...data, customerEmail: email, customerName: name, customerPhone: phone };
   })
 
-  .handler(async ({ data }): Promise<{ clientSecret: string } | { error: string }> => {
+  .handler(async ({ data }): Promise<
+    { clientSecret: string } | { error: string; errorKind: StripeErrorKind }
+  > => {
     try {
       const clientSecret = await createCartSession(data);
       return { clientSecret };
     } catch (error) {
-      return { error: getStripeErrorMessage(error) };
+      const friendly = getFriendlyStripeError(error);
+      return { error: friendly.message, errorKind: friendly.kind };
     }
   });
+
