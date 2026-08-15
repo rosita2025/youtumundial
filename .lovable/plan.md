@@ -1,30 +1,19 @@
-# Plan - Synchronize Shopify Products and Fix Catalog
+# Plan - Sticky Promotional Banner and Welcome Coupon
 
-The user reports that Shopify products are not synchronized with the store. Currently, the application uses a multi-layered catalog fetching strategy (Shopify Storefront API -> Shopify Admin API fallback -> SUP Dropshipping -> Local Fallbacks). The issue likely stems from products not being published to the "Lovable" sales channel (preventing Storefront API access) and potential issues with the Admin API fallback or cache.
+Add a sticky promotional banner at the top of the site with free shipping information and a "WELCOME5" coupon code for first orders.
 
-## Proposed Changes
+## User-facing changes
+- **Promotional Banner**: A new sticky green banner at the top of every page.
+- **Message**: "Enjoy 5% off for your first order. Use code **WELCOME5** | Free shipping on orders over $45 worldwide"
+- **New Coupon**: Customers can now use the code "WELCOME5" during checkout to get a 5% discount.
 
-### 1. Catalog Sourcing & Fallback Enhancement
-- Refactor `src/lib/data/data-provider.ts` to improve the robustness of the Shopify catalog load.
-- Ensure that the cache is invalidated more aggressively or bypassed when an empty catalog is detected from the primary source.
-- Add logging to track which catalog source is being used during the `getCatalog` execution.
+## Technical details
+- **New Component**: Create `src/components/layout/AnnouncementBar.tsx` for the promotional banner.
+- **Layout Integration**: Update `src/components/layout/Layout.tsx` to include the banner above the header.
+- **Coupon Logic**: Update `src/lib/checkout/coupons.ts` to add the `WELCOME5` coupon (5% off).
+- **Styling**: Use a sticky layout and high-contrast green background for the banner to improve conversion visibility.
 
-### 2. Shopify Admin API Fallback Fixes
-- Review `src/lib/shopify/catalog-admin.server.ts` to ensure it correctly handles cases where the Storefront API returns 0 results but the Admin API has "ACTIVE" products.
-- Verify that the `productType` and `vendor` fields are correctly mapped from both APIs to ensure filtering works as expected.
-
-### 3. Cache Invalidation Utility
-- Add a hidden or triggered mechanism to clear the catalog cache manually if synchronization lag is observed.
-- Reduce the `CACHE_TTL` in `src/lib/data/data-provider.ts` slightly to ensure fresher data during frequent updates.
-
-### 4. Verification
-- Use `fetch` to test the Shopify Storefront API and Admin API responses (via server functions) to confirm if products are being returned.
-- Verify that the "ACTIVE" status filter in `catalog-admin.server.ts` isn't accidentally filtering out products that should be visible.
-
-## Technical Details
-- **Primary Catalog:** `src/lib/data/data-provider.ts` calls `fetchShopifyProducts` (Storefront).
-- **Fallback:** If Storefront returns 0, it calls `fetchShopifyCatalogAdmin`.
-- **Cache:** `catalogCache` in `data-provider.ts` has a 5-minute TTL.
-- **Filtering:** `selectProducts` applies filtering on the loaded catalog.
-
-The "no sincronizado" error usually means the Storefront API isn't seeing the products (likely not published to the app channel) OR the Admin API fallback is failing/not triggering correctly.
+## Progress
+- [ ] Create `AnnouncementBar.tsx`
+- [ ] Add `WELCOME5` to `coupons.ts`
+- [ ] Integrate into `Layout.tsx`
