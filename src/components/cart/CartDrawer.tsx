@@ -1,4 +1,5 @@
 import { Link } from '@/lib/router-compat';
+import { fbEvent } from '@/lib/facebook-pixel';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
@@ -130,8 +131,10 @@ export function CartDrawer() {
                   Shipping and taxes calculated at checkout
                 </p>
                 <Button className="w-full" size="lg" asChild>
-                  <Link to="/checkout" onClick={closeCart}>
-                    Ir al checkout
+                  <Link to="/checkout" onClick={() => {
+                    closeCart();
+                  }}>
+                    Proceed to Checkout
                   </Link>
                 </Button>
 
