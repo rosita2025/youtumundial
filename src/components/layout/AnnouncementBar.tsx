@@ -78,7 +78,7 @@ export function AnnouncementBar() {
         isTransitioning ? "opacity-90" : "opacity-100"
       )}
     >
-      <div className="container-wide flex items-center justify-between relative h-5">
+      <div className="max-w-[1400px] mx-auto w-full flex items-center justify-between relative h-5">
         <button
           onClick={handlePrev}
           className="p-1 hover:opacity-70 transition-opacity hidden md:block"
@@ -123,6 +123,7 @@ export function AnnouncementBar() {
     </div>
   );
 }
+
 
 
 
