@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fbEvent } from '@/lib/facebook-pixel';
 import { Link, useNavigate } from '@/lib/router-compat';
 import { CheckoutShell } from '@/components/checkout/CheckoutShell';
 import { Button } from '@/components/ui/button';
@@ -72,6 +73,18 @@ const Checkout = () => {
       }
     }).catch(() => {});
   }, [getVisitorGeo]);
+
+  useEffect(() => {
+    if (cart.items.length > 0) {
+      fbEvent.track('InitiateCheckout', {
+        content_ids: cart.items.map(i => i.product.id),
+        content_type: 'product',
+        value: totals.subtotal,
+        currency: 'USD',
+        num_items: cart.items.reduce((acc, i) => acc + i.quantity, 0)
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (!shippingKey) return;
