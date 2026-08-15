@@ -12,7 +12,7 @@
  */
 
 import { storefrontApiRequest } from '@/lib/shopify/storefront';
-import { marketForCountry, FREE_SHIPPING_THRESHOLD } from './config';
+import { marketForCountry, FREE_SHIPPING_THRESHOLD, getRegionalShippingRate } from './config';
 
 export interface ShippingQuote {
   countryCode: string;
@@ -79,7 +79,7 @@ function fallbackQuote(countryCode: string): ShippingQuote {
   const market = marketForCountry(countryCode);
   return {
     countryCode: countryCode.toUpperCase().slice(0, 2),
-    amount: market.shipping,
+    amount: getRegionalShippingRate(countryCode),
     currencyCode: 'USD',
     title: `${market.name} · ${market.service}`,
     fromShopify: false,
