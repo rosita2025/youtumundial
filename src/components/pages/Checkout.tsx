@@ -60,6 +60,7 @@ const Checkout = () => {
     shipping: liveShipping,
     total: Math.max(0, totalWithShipping),
     totalPen: Math.round(Math.max(0, totalWithShipping) * checkoutConfig.usdToPen * 100) / 100,
+    tax: 0, // In many Shopify checkouts, tax is calculated later or included
   };
 
   const shippingKey = cart.items.map((i) => `${i.variant.id}x${i.quantity}`).join(',');
@@ -231,7 +232,9 @@ const Checkout = () => {
             ))}
             <div className="pt-4 border-t border-gray-200 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>{formatPrice(totals.subtotal)}</span></div>
+              {totals.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(totals.discount)}</span></div>}
               <div className="flex justify-between text-gray-600"><span>Shipping</span><span>{loadingShipping ? 'Calculating...' : totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}</span></div>
+              <div className="flex justify-between text-gray-600"><span>Taxes</span><span>{formatPrice(totals.tax)}</span></div>
               <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200"><span>Total</span><span>{formatPrice(totals.total)}</span></div>
             </div>
           </div>
@@ -372,9 +375,12 @@ const Checkout = () => {
                 <div className="border border-blue-500 rounded-lg overflow-hidden">
                   <div className="bg-blue-50 px-4 py-4 flex items-center justify-between border-b border-gray-200">
                     <span className="font-medium text-sm text-gray-900">Credit Card</span>
-                    <div className="flex gap-1">
-                      <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-2.5 w-auto grayscale" />
-                      <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-4 w-auto grayscale" />
+                    <div className="flex gap-1.5 items-center">
+                      <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-2.5 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-4 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/american-express-1.svg" alt="Amex" className="h-3 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/discover-2.svg" alt="Discover" className="h-2.5 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-3 w-auto" />
                     </div>
                   </div>
                   <div className="p-4 bg-white">
