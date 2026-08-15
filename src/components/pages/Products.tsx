@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useSearchParams } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { ProductGrid } from '@/components/product/ProductGrid';
@@ -25,16 +26,17 @@ const Products = ({ catalog = [] }: ProductsProps) => {
   const currentVendor = searchParams.get('vendor') || '';
   const currentSort = (searchParams.get('sort') as SortOption) || 'featured';
 
-  const products = selectProducts(
+  const products = useMemo(() => selectProducts(
     catalog,
     {
       ...(currentCollection ? { collection: currentCollection } : {}),
       ...(currentVendor ? { vendor: currentVendor } : {}),
     },
     currentSort
-  );
-  const collections = selectCollections(catalog);
-  const vendors = selectVendors(catalog);
+  ), [catalog, currentCollection, currentVendor, currentSort]);
+
+  const collections = useMemo(() => selectCollections(catalog), [catalog]);
+  const vendors = useMemo(() => selectVendors(catalog), [catalog]);
 
   const handleSortChange = (value: SortOption) => {
     const params = new URLSearchParams(searchParams);
