@@ -437,6 +437,8 @@ const Checkout = () => {
                 <Input 
                   placeholder="Address" 
                   required
+                  name="address1"
+                  autoComplete="address-line1"
                   className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.address1 ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                   value={customer.address1} 
                   onChange={(e) => updateCustomer('address1', e.target.value)} 
@@ -446,6 +448,8 @@ const Checkout = () => {
 
                 <Input 
                   placeholder="Apartment, suite, etc. (optional)" 
+                  name="address2"
+                  autoComplete="address-line2"
                   className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                   value={customer.address2 ?? ''} 
                   onChange={(e) => updateCustomer('address2', e.target.value)} 
@@ -456,6 +460,9 @@ const Checkout = () => {
                     <Input 
                       placeholder="Postal code" 
                       required
+                      name="postalCode"
+                      autoComplete="postal-code"
+                      inputMode="text"
                       className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.postalCode ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.postalCode} 
                       onChange={(e) => updateCustomer('postalCode', e.target.value)} 
@@ -467,14 +474,52 @@ const Checkout = () => {
                     <Input 
                       placeholder="City" 
                       required
+                      name="city"
+                      autoComplete="address-level2"
+                      list="checkout-city-options"
                       className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.city ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.city} 
                       onChange={(e) => updateCustomer('city', e.target.value)} 
                       aria-invalid={Boolean(errors.city)}
                     />
+                    <datalist id="checkout-city-options">
+                      {citySuggestions.map((place) => (
+                        <option key={`${place.city}-${place.state}`} value={place.city}>
+                          {place.state ? `${place.city}, ${place.state}` : place.city}
+                        </option>
+                      ))}
+                    </datalist>
                     {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                   </div>
                 </div>
+
+                {lookingUpPostal && (
+                  <p className="flex items-center gap-2 text-xs text-gray-500" aria-live="polite">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Looking up your postal code...
+                  </p>
+                )}
+
+                {!lookingUpPostal && citySuggestions.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2" aria-live="polite">
+                    <span className="text-xs text-gray-500">Suggestions:</span>
+                    {citySuggestions.map((place) => (
+                      <button
+                        key={`chip-${place.city}-${place.state}`}
+                        type="button"
+                        onClick={() => updateCustomer('city', place.city)}
+                        className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                          customer.city.trim().toLowerCase() === place.city.toLowerCase()
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                        }`}
+                      >
+                        {place.state ? `${place.city}, ${place.state}` : place.city}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
 
                 {/* Shipping Estimator & Timeframe Display */}
                 <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50/50 p-4">
