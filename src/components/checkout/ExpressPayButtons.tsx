@@ -62,7 +62,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
       }
       try {
         const stripe = await getStripe();
-        if (!stripe) throw new Error('Stripe no disponible');
+        if (!stripe) throw new Error('Stripe not available');
 
         const paymentRequest = stripe.paymentRequest({
           country: countryCode === 'PE' ? 'US' : countryCode,
@@ -103,8 +103,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
   if (!support.link && !support.googlePay && !support.applePay) {
     return (
       <p className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-        El pago exprés no está disponible en este navegador. Podés pagar con tarjeta usando el
-        formulario de abajo.
+        Express checkout is not available in this browser. You can pay with a card using the form below.
       </p>
     );
   }
@@ -120,7 +119,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
             type="button"
             disabled={disabled}
             onClick={onPay}
-            aria-label="Pagar con Link"
+            aria-label="Pay with Link"
             // Colores oficiales de la marca Link (no son tokens del tema).
             style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
             className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60"
@@ -134,7 +133,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
             type="button"
             disabled={disabled}
             onClick={onPay}
-            aria-label={walletLabel === 'apple' ? 'Pagar con Apple Pay' : 'Pagar con Google Pay'}
+            aria-label={walletLabel === 'apple' ? 'Pay with Apple Pay' : 'Pay with Google Pay'}
             // Botón negro exigido por las guías de marca de Google/Apple Pay.
             style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
             className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60"
@@ -154,7 +153,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
             className="rounded-md border border-dashed border-border bg-muted/40 px-3 py-3 text-center text-xs leading-snug text-muted-foreground"
           >
             <span className="block font-medium text-foreground">Google Pay / Apple Pay</span>
-            No disponible en este navegador. Usá Link o pagá con tarjeta abajo.
+            Not available in this browser. Use Link or pay with a card below.
           </div>
         )}
       </div>

@@ -21,7 +21,7 @@ const str = (v: unknown) => (v === undefined || v === null ? '' : String(v));
 
 const EMPTY: PublicTracking = {
   found: false,
-  status: 'No encontramos ese pedido',
+  status: 'Order not found',
   statusStep: 'recibido',
   items: [],
 };
@@ -30,15 +30,15 @@ const EMPTY: PublicTracking = {
 function readStatus(detail: Record<string, unknown>, tracking: string, shippedAt: string) {
   const raw = str(detail.statusInfo).toLowerCase();
   if (/complete|finish|deliver/.test(raw)) {
-    return { status: 'Entregado', step: 'entregado' as const };
+    return { status: 'Delivered', step: 'entregado' as const };
   }
   if (tracking || shippedAt || /shipp|transit|sent/.test(raw)) {
-    return { status: 'Enviado · en camino', step: 'enviado' as const };
+    return { status: 'Shipped · On the way', step: 'enviado' as const };
   }
   if (/process|paid|purchas|prepar/.test(raw)) {
-    return { status: 'Preparando tu envío', step: 'preparando' as const };
+    return { status: 'Preparing shipment', step: 'preparando' as const };
   }
-  return { status: 'Pedido recibido', step: 'recibido' as const };
+  return { status: 'Order received', step: 'recibido' as const };
 }
 
 function toPublic(detail: Record<string, unknown>): PublicTracking {
@@ -73,7 +73,7 @@ function toPublic(detail: Record<string, unknown>): PublicTracking {
 /** Busca el pedido por número de SUP, o por el ID de la sesión de pago de Stripe. */
 export async function trackPublicOrder(reference: string): Promise<PublicTracking> {
   const ref = reference.trim();
-  if (!ref) return { ...EMPTY, message: 'Escribí el número de tu pedido.' };
+  if (!ref) return { ...EMPTY, message: 'Please enter your order number.' };
 
   try {
     let supOrderId = '';
@@ -91,10 +91,10 @@ export async function trackPublicOrder(reference: string): Promise<PublicTrackin
             return {
               found: true,
               reference: ref,
-              status: 'Pedido recibido',
+              status: 'Order received',
               statusStep: 'recibido',
               items: [],
-              message: 'Tu pago está confirmado. En cuanto salga del almacén verás acá el tracking.',
+              message: 'Your payment is confirmed. Tracking will appear here once it leaves the warehouse.',
             };
           }
         } catch {
@@ -102,13 +102,13 @@ export async function trackPublicOrder(reference: string): Promise<PublicTrackin
         }
       }
       if (!supOrderId) {
-        return { ...EMPTY, message: 'No encontramos ese número de pago.' };
+        return { ...EMPTY, message: 'Payment reference not found.' };
       }
     } else {
       // Solo aceptamos la referencia completa del pedido: los IDs internos
       // son secuenciales y permitirían adivinar pedidos ajenos.
       if (ref.length < 8) {
-        return { ...EMPTY, message: 'Ingresá el número completo de tu pedido.' };
+        return { ...EMPTY, message: 'Please enter the full order number.' };
       }
       const rows = (await listSupOrders({ limit: 100 })) as Record<string, unknown>[];
       const match = rows.find(
@@ -117,7 +117,7 @@ export async function trackPublicOrder(reference: string): Promise<PublicTrackin
           str(row.out_trade_no).toLowerCase() === ref.toLowerCase(),
       );
       if (!match) {
-        return { ...EMPTY, message: 'No encontramos un pedido con ese número.' };
+        return { ...EMPTY, message: 'Order not found.' };
       }
       supOrderId = str(match.id ?? match.order_sn);
     }
@@ -126,7 +126,7 @@ export async function trackPublicOrder(reference: string): Promise<PublicTrackin
   } catch (error) {
     // El detalle real (credenciales, endpoints de SUP) queda solo en el log.
     console.error('trackPublicOrder', (error as Error).message);
-    return { ...EMPTY, message: 'No pudimos consultar tu pedido en este momento. Probá de nuevo en unos minutos.' };
+    return { ...EMPTY, message: 'Could not retrieve your order at this time. Please try again in a few minutes.' };
   }
 
 }

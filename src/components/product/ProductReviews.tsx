@@ -30,7 +30,7 @@ export function ProductReviews({ slug }: { slug: string }) {
 
   if (!total) {
     return (
-      <section className="mt-20 border-t border-border pt-12" id="resenas">
+      <section className="mt-20 border-t border-border pt-12" id="reviews">
         <h2 className="heading-section mb-4">Customer Reviews</h2>
         <p className="mb-6 text-sm text-muted-foreground">
           No reviews for this product yet. If you've already purchased it, be the first to share your thoughts.
@@ -41,7 +41,7 @@ export function ProductReviews({ slug }: { slug: string }) {
   }
 
   return (
-    <section className="mt-20 border-t border-border pt-12" id="resenas">
+    <section className="mt-20 border-t border-border pt-12" id="reviews">
       <h2 className="heading-section mb-8">Customer Reviews</h2>
 
       <div className="grid gap-10 md:grid-cols-[260px_1fr]">

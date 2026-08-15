@@ -13,16 +13,16 @@ export const Route = createFileRoute('/seguimiento')({
   ssr: false,
   head: () => ({
     meta: [
-      { title: 'Seguimiento de pedido | Youtumundial' },
+      { title: 'Order Tracking | Youtumundial' },
       {
         name: 'description',
         content:
-          'Consultá el estado de tu compra en Youtumundial y el número de seguimiento de tu envío internacional.',
+          'Check the status of your Youtumundial purchase and your international shipment tracking number.',
       },
-      { property: 'og:title', content: 'Seguimiento de pedido | Youtumundial' },
+      { property: 'og:title', content: 'Order Tracking | Youtumundial' },
       {
         property: 'og:description',
-        content: 'Ingresá tu número de pedido y mirá en qué etapa está tu envío.',
+        content: 'Enter your order number and see which stage your shipment is in.',
       },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary' },
@@ -32,10 +32,10 @@ export const Route = createFileRoute('/seguimiento')({
 });
 
 const STEPS = [
-  { key: 'recibido', label: 'Pedido recibido', icon: Clock },
-  { key: 'preparando', label: 'Preparando envío', icon: Package },
-  { key: 'enviado', label: 'En camino', icon: Truck },
-  { key: 'entregado', label: 'Entregado', icon: CheckCircle2 },
+  { key: 'recibido', label: 'Order received', icon: Clock },
+  { key: 'preparando', label: 'Preparing shipment', icon: Package },
+  { key: 'enviado', label: 'On the way', icon: Truck },
+  { key: 'entregado', label: 'Delivered', icon: CheckCircle2 },
 ] as const;
 
 function TrackingPage() {
@@ -51,10 +51,10 @@ function TrackingPage() {
     } catch (e) {
       setResult({
         found: false,
-        status: 'No pudimos consultar tu pedido',
+        status: 'Unable to check your order',
         statusStep: 'recibido',
         items: [],
-        message: (e as Error).message,
+        message: 'Order tracking is currently unavailable. Please try again in a few minutes.',
       });
     } finally {
       setLoading(false);
@@ -68,15 +68,14 @@ function TrackingPage() {
   return (
     <Layout>
       <div className="container mx-auto max-w-3xl px-4 py-16">
-        <h1 className="font-display text-3xl">Seguimiento de tu pedido</h1>
+        <h1 className="font-display text-3xl">Track your order</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Ingresá el número de pedido que te enviamos por correo (o el código que aparece al terminar
-          la compra). Los envíos internacionales pueden tardar hasta 72 h en mostrar movimientos.
+          Enter the order number sent to your email. International shipments may take up to 72 hours to show movements.
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <Label htmlFor="reference">Número de pedido</Label>
+            <Label htmlFor="reference">Order number</Label>
             <Input
               id="reference"
               value={reference}
@@ -84,22 +83,22 @@ function TrackingPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') void search();
               }}
-              placeholder="Ej. P20250516110728718"
+              placeholder="e.g. P20250516110728718"
               className="mt-2"
             />
           </div>
           <Button onClick={() => void search()} disabled={loading || !reference.trim()} size="lg">
             <Search className="mr-2 h-4 w-4" />
-            {loading ? 'Buscando…' : 'Consultar'}
+            {loading ? 'Searching...' : 'Search'}
           </Button>
         </div>
 
         {result && (
           <div className="mt-10 rounded-lg border p-6">
-            <p className="text-sm text-muted-foreground">Estado</p>
+            <p className="text-sm text-muted-foreground">Status</p>
             <p className="mt-1 text-xl font-semibold">{result.status}</p>
             {result.reference && (
-              <p className="mt-1 text-sm text-muted-foreground">Pedido {result.reference}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Order {result.reference}</p>
             )}
 
             {result.found && (
@@ -126,7 +125,7 @@ function TrackingPage() {
 
             {result.tracking && (
               <div className="mt-8 rounded-md border bg-muted/30 p-4">
-                <p className="text-sm text-muted-foreground">Número de seguimiento</p>
+                <p className="text-sm text-muted-foreground">Tracking number</p>
                 <p className="mt-1 font-mono text-sm">{result.tracking}</p>
                 {result.trackingUrl && (
                   <a
@@ -135,7 +134,7 @@ function TrackingPage() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Rastrear el envío
+                    Track shipment
                   </a>
                 )}
               </div>
@@ -154,8 +153,8 @@ function TrackingPage() {
 
             {(result.placedAt || result.shippedAt) && (
               <p className="mt-6 text-xs text-muted-foreground">
-                {result.placedAt && <>Compra: {result.placedAt}. </>}
-                {result.shippedAt && <>Despacho: {result.shippedAt}.</>}
+                {result.placedAt && <>Ordered: {result.placedAt}. </>}
+                {result.shippedAt && <>Shipped: {result.shippedAt}.</>}
               </p>
             )}
 

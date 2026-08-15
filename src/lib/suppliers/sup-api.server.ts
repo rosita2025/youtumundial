@@ -67,7 +67,7 @@ export async function getAccessToken(): Promise<string> {
     const direct = process.env.SUP_ACCESS_TOKEN;
     if (direct) return direct;
     throw new Error(
-      "Faltan las credenciales de SUP. Guardá SUP_USERNAME y SUP_PASSWORD en los secretos del proyecto.",
+      "Supplier credentials are not configured. Check the dashboard settings.",
     );
   }
 
@@ -81,24 +81,24 @@ export async function getAccessToken(): Promise<string> {
   });
 
   const text = await res.text();
-  if (!res.ok) throw new Error(`SUP login [${res.status}]: ${text.slice(0, 400)}`);
+  if (!res.ok) throw new Error(`Supplier authentication failed (${res.status}).`);
 
   let payload: Record<string, unknown> = {};
   try {
     payload = JSON.parse(text) as Record<string, unknown>;
   } catch {
-    throw new Error(`SUP devolvió una respuesta no-JSON al iniciar sesión: ${text.slice(0, 200)}`);
+    throw new Error("Received an invalid response from the supplier.");
   }
 
   if (Number(payload.code) !== 200 && Number(payload.code) !== 0) {
-    throw new Error(`SUP login rechazado: ${String(payload.message ?? text.slice(0, 200))}`);
+    throw new Error(`Supplier login rejected: ${String(payload.message ?? "Invalid credentials")}`);
   }
 
   const data = (payload.data ?? {}) as Record<string, unknown>;
   const token = String(
     data.access_token ?? data.accessToken ?? data.token ?? data.auth_token ?? "",
   );
-  if (!token) throw new Error(`SUP no devolvió token: ${text.slice(0, 300)}`);
+  if (!token) throw new Error("Supplier did not provide an authentication token.");
 
   const expiresIn = Number(data.expires_in ?? data.expiresIn ?? 7200);
   cachedToken = { token, expiresAt: Date.now() + expiresIn * 1000 };
@@ -129,11 +129,11 @@ export async function supRequest<T = unknown>(
   });
 
   const text = await res.text();
-  if (!res.ok) throw new Error(`SUP ${path} [${res.status}]: ${text.slice(0, 500)}`);
+  if (!res.ok) throw new Error(`Supplier request failed (${res.status}).`);
   try {
     return JSON.parse(text) as T;
   } catch {
-    throw new Error(`SUP ${path} devolvió una respuesta no-JSON: ${text.slice(0, 200)}`);
+    throw new Error("Invalid response from supplier API.");
   }
 }
 
@@ -357,6 +357,6 @@ async function createPurchaseOrderNow(
     const late = await findSupOrderByReference(reference);
     if (late) return { ok: true, supOrderId: late };
     console.error("createPurchaseOrderIdempotent", reference, (error as Error).message);
-    return { ok: false, message: "No se pudo registrar el pedido con el proveedor." };
+    return { ok: false, message: "Could not register the order with the supplier at this time." };
   }
 }

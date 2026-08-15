@@ -4,16 +4,16 @@ import { StaticPage, Section } from "@/components/pages/StaticPage";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Política de privacidad — Youtumundial" },
+      { title: "Privacy Policy — Youtumundial" },
       {
         name: "description",
         content:
-          "Cómo Youtumundial recolecta, usa y protege tus datos personales al comprar en la tienda.",
+          "How Youtumundial collects, uses, and protects your personal data when shopping in our store.",
       },
-      { property: "og:title", content: "Política de privacidad — Youtumundial" },
+      { property: "og:title", content: "Privacy Policy — Youtumundial" },
       {
         property: "og:description",
-        content: "Cómo tratamos y protegemos tus datos personales.",
+        content: "How we treat and protect your personal data.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -25,77 +25,77 @@ export const Route = createFileRoute("/privacy")({
 function PrivacyPage() {
   return (
     <StaticPage
-      title="Política de privacidad"
-      intro="Esta página explica qué datos pedimos, para qué los usamos y qué podés hacer con ellos. Es mantenida por Youtumundial como información editable para nuestros clientes."
-      updatedAt="29 de julio de 2026"
+      title="Privacy Policy"
+      intro="This page explains what data we request, what we use it for, and what you can do with it. It is maintained by Youtumundial as editable information for our customers."
+      updatedAt="July 29, 2026"
     >
-      <Section heading="Qué datos recolectamos">
+      <Section heading="What data we collect">
         <p>
-          Para procesar un pedido pedimos: nombre y apellido, email, teléfono, dirección de envío,
-          ciudad, código postal y país. También guardamos el detalle de tu compra.
+          To process an order we ask for: first and last name, email, phone, shipping address,
+          city, postal code, and country. We also save your purchase details.
         </p>
         <p>
-          Los datos de tu tarjeta <strong>no pasan por nuestros servidores</strong>: el pago se
-          procesa directamente en el formulario seguro de Stripe, nuestro proveedor de pagos.
+          Your card details <strong>do not pass through our servers</strong>: the payment is
+          processed directly in the secure form of Stripe, our payment provider.
         </p>
         <p>
-          Si te suscribís al newsletter, guardamos tu email y tu preferencia de recepción de
-          comunicaciones comerciales.
-        </p>
-      </Section>
-
-      <Section heading="Para qué los usamos">
-        <p>
-          Usamos tus datos únicamente para: preparar y despachar tu pedido, calcular envíos,
-          comunicarte el estado del envío, sincronizar la orden con nuestros proveedores de
-          dropshipping, atender consultas, enviarte novedades si aceptás el newsletter, y cumplir
-          obligaciones contables o legales.
+          If you subscribe to the newsletter, we save your email and your preference for receiving
+          commercial communications.
         </p>
       </Section>
 
-      <Section heading="Con quién los compartimos">
+      <Section heading="How we use your data">
         <p>
-          Compartimos solo lo imprescindible con: el proveedor de pagos (Stripe), nuestra plataforma
-          de tienda (Shopify), el proveedor logístico de dropshipping (SUP Dropshipping), las
-          empresas de transporte encargadas de la entrega, y proveedores de Taobao o socios en
-          China que preparan el paquete. No vendemos ni cedemos tus datos a terceros con fines
-          publicitarios.
+          We use your data solely to: prepare and ship your order, calculate shipping,
+          communicate the shipping status, synchronize the order with our dropshipping providers,
+          answer inquiries, send you news if you accept the newsletter, and comply with
+          accounting or legal obligations.
+        </p>
+      </Section>
+
+      <Section heading="Who we share it with">
+        <p>
+          We share only what is essential with: the payment provider (Stripe), our store platform
+          (Shopify), the dropshipping logistics provider (SUP Dropshipping), the
+          transport companies in charge of delivery, and Taobao providers or partners in
+          China who prepare the package. We do not sell or lease your data to third parties for
+          advertising purposes.
         </p>
       </Section>
 
       <Section heading="Cookies">
         <p>
-          Usamos cookies técnicas necesarias para que el carrito y la sesión funcionen. Podés
-          bloquearlas desde tu navegador, aunque en ese caso algunas funciones de la tienda pueden
-          dejar de operar correctamente.
+          We use technical cookies necessary for the cart and session to function. You can
+          block them from your browser, although in that case some store functions may
+          stop operating correctly.
         </p>
       </Section>
 
-      <Section heading="Cuánto tiempo los guardamos">
+      <Section heading="How long we keep it">
         <p>
-          Conservamos los datos de una compra mientras dure la relación comercial y durante el plazo
-          que exija la normativa aplicable. Después se eliminan o anonimizan.
+          We keep the data of a purchase for as long as the commercial relationship lasts and during the period
+          required by applicable regulations. Afterwards, they are deleted or anonymized.
         </p>
       </Section>
 
-      <Section heading="Tus derechos">
+      <Section heading="Your rights">
         <p>
-          Podés pedirnos en cualquier momento acceder, corregir o eliminar tus datos personales, así
-          como oponerte a su uso para comunicaciones comerciales. Escribinos a{" "}
+          You can ask us at any time to access, correct, or delete your personal data, as well
+          as object to its use for commercial communications. Write to us at{" "}
           <a
             href="mailto:youtumundial@gmail.com"
             className="text-foreground underline underline-offset-4"
           >
             youtumundial@gmail.com
           </a>{" "}
-          y respondemos dentro de los plazos legales.
+          and we will respond within legal timeframes.
         </p>
       </Section>
 
-      <Section heading="Seguridad">
+      <Section heading="Security">
         <p>
-          El sitio opera bajo conexión cifrada (HTTPS) y el acceso a la información de pedidos está
-          restringido al personal que la necesita para gestionar tu compra.
+          The site operates under an encrypted connection (HTTPS) and access to order information is
+          restricted to personnel who need it to manage your purchase.
         </p>
       </Section>
     </StaticPage>

@@ -5,16 +5,16 @@ import { Link } from "@/lib/router-compat";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Términos y condiciones — Youtumundial" },
+      { title: "Terms and Conditions — Youtumundial" },
       {
         name: "description",
         content:
-          "Condiciones de compra, pagos, envíos, marcas y responsabilidad de Youtumundial.",
+          "Terms of purchase, payments, shipping, trademarks, and responsibility of Youtumundial.",
       },
-      { property: "og:title", content: "Términos y condiciones — Youtumundial" },
+      { property: "og:title", content: "Terms and Conditions — Youtumundial" },
       {
         property: "og:description",
-        content: "Condiciones de compra, pagos, envíos, marcas y responsabilidad.",
+        content: "Terms of purchase, payments, shipping, trademarks, and responsibility.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -26,110 +26,108 @@ export const Route = createFileRoute("/terms")({
 function TermsPage() {
   return (
     <StaticPage
-      title="Términos y condiciones"
-      intro="Al realizar una compra en Youtumundial aceptás las condiciones que se detallan a continuación. Esta página es mantenida por Youtumundial para responder preguntas frecuentes sobre nuestra tienda online."
-      updatedAt="29 de julio de 2026"
+      title="Terms and Conditions"
+      intro="By making a purchase at Youtumundial you accept the conditions detailed below. This page is maintained by Youtumundial to answer frequently asked questions about our online store."
+      updatedAt="July 29, 2026"
     >
-      <Section heading="1. La tienda">
+      <Section heading="1. The Store">
         <p>
-          Youtumundial es una tienda online independiente que comercializa ropa deportiva y moda
-          de mujer de múltiples marcas. Operamos a través de youtumundial.com y enviamos a
-          clientes de todo el mundo.
+          Youtumundial is an independent online store that sells athletic apparel and women's fashion
+          from multiple brands. We operate through youtumundial.com and ship to
+          customers worldwide.
         </p>
       </Section>
 
-      <Section heading="2. Naturaleza multi-marca y origen de los productos">
+      <Section heading="2. Multi-brand Nature and Product Origin">
         <p>
-          Nuestro catálogo incluye productos inspirados en estilos de China, Corea del Sur,
-          Estados Unidos y Europa. Todas las prendas son fabricadas en China e importadas a través
-          de proveedores de Taobao y socios logísticos. La disponibilidad de marcas es opcional y
-          rotativa; cada ficha de producto indica la marca (vendor), el tipo de producto y las
-          colecciones a las que pertenece.
+          Our catalog includes products inspired by styles from China, South Korea,
+          the United States, and Europe. All garments are manufactured in China and imported through
+          Taobao suppliers and logistics partners. Brand availability is optional and
+          rotational; each product page indicates the brand (vendor), the type of product, and the
+          collections to which it belongs.
         </p>
         <p>
-          Youtumundial no es el fabricante ni distribuidor oficial, licenciatario, agente o
-          afiliado de las marcas europeas, americanas, coreanas o chinas que aparecen en la tienda.
-          Los nombres, logotipos y marcas registradas pertenecen a sus respectivos dueños y se usan
-          únicamente para describir los productos que nos suministran. No nos responsabilizamos por
-          reclamos de terceros sobre propiedad intelectual más allá de nuestro control como
-          importador minorista. Si tenés una inquietud sobre un producto, contactanos y lo
-          revisaremos.
-        </p>
-      </Section>
-
-      <Section heading="3. Precios y moneda">
-        <p>
-          Todos los precios se muestran en dólares estadounidenses (USD) e incluyen el valor del
-          producto. El costo de envío se calcula según el país de destino y se muestra antes de
-          confirmar el pago. Los precios pueden cambiar sin previo aviso, pero nunca después de
-          confirmada una compra.
+          Youtumundial is not the manufacturer or official distributor, licensee, agent, or
+          affiliate of the European, American, Korean, or Chinese brands that appear in the store.
+          Names, logos, and registered trademarks belong to their respective owners and are used
+          only to describe the products supplied to us. We are not responsible for
+          third-party intellectual property claims beyond our control as a
+          retail importer. If you have a concern about a product, contact us and we
+          will review it.
         </p>
       </Section>
 
-      <Section heading="4. Pedidos y confirmación">
+      <Section heading="3. Pricing and Currency">
         <p>
-          Un pedido se considera confirmado cuando el pago fue aprobado. Nos reservamos el derecho
-          de cancelar y reembolsar un pedido si el producto quedó sin stock, si detectamos un error
-          evidente en el precio publicado o si hay sospecha de fraude.
+          All prices are shown in US Dollars (USD) and include the product value.
+          Shipping costs are calculated according to the destination country and shown before
+          confirming payment. Prices may change without notice, but never after a purchase is confirmed.
         </p>
       </Section>
 
-      <Section heading="5. Medios de pago">
+      <Section heading="4. Orders and Confirmation">
         <p>
-          Los pagos se procesan a través de Stripe. Aceptamos tarjetas de crédito y débito, Link,
-          Google Pay, Apple Pay y otros medios habilitados por Stripe según tu país y navegador. El
-          pago se procesa en un entorno seguro externo; nosotros no almacenamos los datos de tu
-          tarjeta.
+          An order is considered confirmed when payment is approved. We reserve the right
+          to cancel and refund an order if the product is out of stock, if we detect an
+          obvious error in the published price, or if there is suspicion of fraud.
         </p>
       </Section>
 
-      <Section heading="6. Envíos">
+      <Section heading="5. Payment Methods">
         <p>
-          Los costos y plazos de entrega se detallan en{" "}
+          Payments are processed through Stripe. We accept credit and debit cards, Link,
+          Google Pay, Apple Pay, and other methods enabled by Stripe according to your country and browser.
+          Payment is processed in a secure external environment; we do not store your
+          card details.
+        </p>
+      </Section>
+
+      <Section heading="6. Shipping">
+        <p>
+          Delivery costs and timeframes are detailed in{" "}
           <Link to="/shipping" className="text-foreground underline underline-offset-4">
-            Envíos y devoluciones
+            Shipping & Returns
           </Link>
-          . Los plazos son estimados y pueden verse afectados por aduanas, feriados o demoras del
-          transportista. Trabajamos con proveedores de dropshipping y logística internacional para
-          preparar y despachar los paquetes.
+          . Timeframes are estimates and may be affected by customs, holidays, or carrier delays.
+          We work with dropshipping and international logistics providers to
+          prepare and ship packages.
         </p>
       </Section>
 
-      <Section heading="7. Cambios y devoluciones">
+      <Section heading="7. Changes and Returns">
         <p>
-          Se rigen por lo indicado en la página de envíos y devoluciones, que forma parte de estos
-          términos.
+          These are governed by what is indicated on the shipping and returns page, which is part of these
+          terms.
         </p>
       </Section>
 
-      <Section heading="8. Uso del sitio">
+      <Section heading="8. Use of the Site">
         <p>
-          Está prohibido usar el sitio con fines fraudulentos, intentar vulnerar su seguridad o
-          reproducir sus contenidos, imágenes y textos sin autorización escrita.
+          It is prohibited to use the site for fraudulent purposes, to attempt to breach its security, or
+          to reproduce its content, images, and text without written authorization.
         </p>
       </Section>
 
-      <Section heading="9. Propiedad intelectual">
+      <Section heading="9. Intellectual Property">
         <p>
-          La marca Youtumundial, el logotipo, los textos propios y el diseño del sitio pertenecen a
-          Youtumundial. Las imágenes de producto, nombres de marca y referencias de terceros pueden
-          pertenecer a sus respectivos fabricantes o proveedores.
+          The Youtumundial brand, logo, original texts, and site design belong to
+          Youtumundial. Product images, brand names, and third-party references may
+          belong to their respective manufacturers or suppliers.
         </p>
       </Section>
 
-      <Section heading="10. Responsabilidad">
+      <Section heading="10. Responsibility">
         <p>
-          Nuestra responsabilidad máxima frente a cualquier reclamo se limita al importe abonado por
-          el pedido en cuestión. No garantizamos la disponibilidad continua del sitio ni nos
-          responsabilizamos por demoras originadas en aduanas, transportistas o proveedores
-          internacionales.
+          Our maximum responsibility for any claim is limited to the amount paid for
+          the order in question. We do not guarantee continuous availability of the site nor are we
+          responsible for delays originating in customs, carriers, or international suppliers.
         </p>
       </Section>
 
-      <Section heading="11. Modificaciones">
+      <Section heading="11. Modifications">
         <p>
-          Podemos actualizar estos términos en cualquier momento. La versión vigente es siempre la
-          publicada en esta página, con su fecha de actualización.
+          We may update these terms at any time. The current version is always the
+          one published on this page, with its update date.
         </p>
       </Section>
     </StaticPage>

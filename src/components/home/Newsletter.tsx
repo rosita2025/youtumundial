@@ -25,7 +25,7 @@ export function Newsletter() {
         toast.error(result.message);
       }
     } catch {
-      toast.error('No pudimos registrar tu correo. Inténtalo más tarde.');
+      toast.error('Could not register your email. Please try again later.');
     } finally {
       setLoading(false);
     }
