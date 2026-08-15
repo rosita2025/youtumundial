@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils/format';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Star, Truck, RotateCcw, Gem } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useReviewSummary } from '@/lib/reviews/use-reviews';
+import { StarRating } from '@/components/product/StarRating';
 
 interface StickyAddToCartProps {
   product: Product;
@@ -14,6 +16,7 @@ interface StickyAddToCartProps {
 
 export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: StickyAddToCartProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const reviewSummary = useReviewSummary(product.slug);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,30 +38,49 @@ export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: S
       )}
     >
       <div className="container-wide flex items-center justify-between gap-4">
-        <div className="hidden sm:flex items-center gap-4 overflow-hidden">
+        <div className="flex items-center gap-3 overflow-hidden">
           <img
             src={product.images[0]?.url}
             alt={product.title}
-            className="h-12 w-12 rounded-md object-cover border border-border shrink-0"
+            className="h-10 w-10 sm:h-12 sm:w-12 rounded-md object-cover border border-border shrink-0"
           />
           <div className="min-w-0">
-            <h3 className="text-sm font-medium truncate">{product.title}</h3>
-            <p className="text-xs text-muted-foreground truncate">
-              {selectedVariant.title !== 'Default Title' ? selectedVariant.title : ''}
-              {selectedVariant.title !== 'Default Title' ? ' · ' : ''}
-              {formatPrice(product.price)}
-            </p>
-            <div className="flex items-center gap-2 mt-0.5 opacity-60">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2 w-auto" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-3 w-auto" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-2 w-auto" />
+            <h3 className="text-xs sm:text-sm font-medium truncate">{product.title}</h3>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[10px] sm:text-xs font-bold whitespace-nowrap">
+                  {formatPrice(product.price)}
+                </p>
+                {reviewSummary.total > 0 && (
+                  <div className="flex items-center gap-1 border-l border-border pl-1.5">
+                    <StarRating rating={reviewSummary.average} size={10} />
+                    <span className="text-[10px] text-muted-foreground hidden xs:inline">
+                      ({reviewSummary.total})
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="hidden md:flex items-center gap-3 text-[10px] text-muted-foreground border-l border-border pl-3">
+                <span className="flex items-center gap-1"><Truck size={10} /> Fast Shipping</span>
+                <span className="flex items-center gap-1"><RotateCcw size={10} /> Easy Returns</span>
+                <span className="flex items-center gap-1"><Gem size={10} /> Premium Quality</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mt-1 opacity-60">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-1.5 sm:h-2 w-auto" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-2 sm:h-3 w-auto" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-1.5 sm:h-2 w-auto" />
             </div>
           </div>
         </div>
 
-        <div className="flex-1 sm:flex-initial flex items-center gap-3">
-          <div className="text-right sm:hidden">
-            <p className="text-sm font-bold">{formatPrice(product.price)}</p>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:block md:hidden text-[9px] text-muted-foreground space-y-0.5 mr-2">
+            <span className="flex items-center gap-1"><Truck size={8} /> Fast Shipping</span>
+            <span className="flex items-center gap-1"><RotateCcw size={8} /> Returns</span>
           </div>
           <Button 
             className="flex-1 sm:w-48 gap-2" 
