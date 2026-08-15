@@ -89,9 +89,19 @@ const Checkout = () => {
     getVisitorGeo().then((geo) => {
       if (geo.countryCode && shippingCountryFor(geo.countryCode).code === geo.countryCode) {
         setCountryCode(geo.countryCode);
+        
+        // Auto-fill phone prefix if empty
+        const prefix = getDialingPrefix(geo.countryCode);
+        setCustomer(prev => {
+          if (!prev.phone || prev.phone.trim() === '') {
+            return { ...prev, phone: prefix ? `${prefix} ` : '' };
+          }
+          return prev;
+        });
       }
     }).catch(() => {});
   }, [getVisitorGeo]);
+
 
   useEffect(() => {
     if (cart.items.length > 0) {
@@ -318,7 +328,22 @@ const Checkout = () => {
                   <select
                     id="country"
                     value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
+                    onChange={(e) => {
+                      const newCode = e.target.value;
+                      setCountryCode(newCode);
+                      
+                      // Update phone prefix if current phone is just a prefix or empty
+                      const oldPrefix = getDialingPrefix(countryCode);
+                      const newPrefix = getDialingPrefix(newCode);
+                      
+                      setCustomer(prev => {
+                        const currentPhone = prev.phone.trim();
+                        if (!currentPhone || currentPhone === oldPrefix || currentPhone === oldPrefix.trim()) {
+                          return { ...prev, phone: newPrefix ? `${newPrefix} ` : '' };
+                        }
+                        return prev;
+                      });
+                    }}
                     className="w-full h-12 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
                   >
                     {shippingCountries.map((c) => (
@@ -326,6 +351,7 @@ const Checkout = () => {
                     ))}
                   </select>
                 </div>
+
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
