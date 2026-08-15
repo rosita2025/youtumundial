@@ -179,8 +179,25 @@ export function composeAddress(value: CustomerForm): string {
 export function toE164(phone: string): string {
   const digits = String(phone ?? '').replace(/\D/g, '');
   if (!digits) return '';
+  // Avoid double + if it already has one or if we are formatting
   return `+${digits}`;
 }
+
+/** Mapping of ISO country codes to international dialing prefixes. */
+const DIALING_CODES: Record<string, string> = {
+  US: '+1', CA: '+1', GB: '+44', AU: '+61', NZ: '+64', IE: '+353',
+  PE: '+51', MX: '+52', AR: '+54', CL: '+56', CO: '+57', BR: '+55',
+  ES: '+34', FR: '+33', IT: '+39', DE: '+49', PT: '+351',
+  SG: '+65', MY: '+60', ID: '+62', PH: '+63', TH: '+66', VN: '+84',
+  ZA: '+27', NG: '+234', EG: '+20',
+};
+
+/** Returns the international dialing prefix for a given country code. */
+export function getDialingPrefix(countryCode: string): string {
+  const code = (countryCode || '').toUpperCase();
+  return DIALING_CODES[code] || '';
+}
+
 
 export function fullName(value: Pick<CustomerForm, 'firstName' | 'lastName'>): string {
   return `${value.firstName} ${value.lastName}`.trim();
