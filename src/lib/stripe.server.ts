@@ -232,6 +232,8 @@ export interface StripeOrderSnapshot {
   abandonedReference?: string;
   /** El borrador de carrito abandonado ya se cerró (idempotencia). */
   abandonedClosed?: boolean;
+  /** Pedido hecho con el cupón de prueba de total fijo. */
+  testOrder?: boolean;
 
 }
 
