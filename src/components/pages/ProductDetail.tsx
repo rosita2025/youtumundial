@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { fbEvent } from '@/lib/facebook-pixel';
 import { useParams, Link } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { ProductGallery } from '@/components/product/ProductGallery';
@@ -49,8 +50,30 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
     setQuantity(1);
   }, [slug]);
 
+  useEffect(() => {
+    if (product) {
+      fbEvent.track('ViewContent', {
+        content_name: product.title,
+        content_category: product.productType,
+        content_ids: [product.id],
+        content_type: 'product',
+        value: product.price,
+        currency: 'USD'
+      });
+    }
+  }, [product?.id]);
+
   const handleAddToCart = () => {
     if (!product || !selectedVariant) return;
+    
+    fbEvent.track('AddToCart', {
+      content_name: product.title,
+      content_ids: [product.id],
+      content_type: 'product',
+      value: product.price * quantity,
+      currency: 'USD'
+    });
+
     addToCart(product, selectedVariant, quantity);
     setQuantity(1);
   };
