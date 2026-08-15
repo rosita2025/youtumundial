@@ -175,7 +175,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
       <div className="flex flex-col items-center gap-2 pt-2 border-t border-gray-100 mt-4">
         <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Secure Global Payments</span>
         <div className="flex items-center justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all duration-300">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2 w-auto" />
+          <img src="https://static.okx.com/cdn/assets/imgs/221/5B7E5D5D9E7D8A1E.png" alt="Visa" className="h-2 w-auto" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 w-auto" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto" />
