@@ -359,7 +359,8 @@ const Checkout = () => {
                   <div>
                     <Input 
                       placeholder="First name" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.firstName ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.firstName} 
                       onChange={(e) => updateCustomer('firstName', e.target.value)} 
                       aria-invalid={Boolean(errors.firstName)}
@@ -369,7 +370,8 @@ const Checkout = () => {
                   <div>
                     <Input 
                       placeholder="Last name" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.lastName ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.lastName} 
                       onChange={(e) => updateCustomer('lastName', e.target.value)} 
                       aria-invalid={Boolean(errors.lastName)}
@@ -380,7 +382,8 @@ const Checkout = () => {
 
                 <Input 
                   placeholder="Address" 
-                  className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                  required
+                  className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.address1 ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                   value={customer.address1} 
                   onChange={(e) => updateCustomer('address1', e.target.value)} 
                   aria-invalid={Boolean(errors.address1)}
@@ -464,7 +467,9 @@ const Checkout = () => {
                 <div>
                   <Input 
                     placeholder="Phone" 
-                    className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                    type="tel"
+                    required
+                    className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.phone ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                     value={customer.phone} 
                     onChange={(e) => updateCustomer('phone', e.target.value)} 
                     aria-invalid={Boolean(errors.phone)}
