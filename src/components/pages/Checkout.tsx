@@ -37,6 +37,7 @@ const Checkout = () => {
   const saveAbandoned = useServerFn(saveAbandonedCheckout);
   const clearAbandoned = useServerFn(clearAbandonedCheckout);
   const getVisitorGeo = useServerFn(detectVisitorGeo);
+  const lookupPostal = useServerFn(lookupPostalCode);
   const abandonedRef = useRef<string | null>(null);
   const geoDetectedRef = useRef(false);
 
