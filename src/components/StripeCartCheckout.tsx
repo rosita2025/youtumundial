@@ -43,7 +43,7 @@ export function StripeCartCheckout({
   abandonedReference,
   returnUrl,
 }: StripeCartCheckoutProps) {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<CheckoutError | null>(null);
   const [ready, setReady] = useState(false);
 
   // Los datos se congelan en refs: el formulario de Stripe se monta una sola
@@ -69,12 +69,26 @@ export function StripeCartCheckout({
         const result = await createCartCheckout({
           data: { ...payload.current, environment: getStripeEnvironment() },
         });
-        if ('error' in result) throw new Error(result.error);
-        if (!result.clientSecret) throw new Error('Stripe no devolvió una sesión de pago');
+        if ('error' in result) {
+          throw new CheckoutFailure(result.error, result.errorKind ?? 'temporary');
+        }
+        if (!result.clientSecret) {
+          throw new CheckoutFailure(
+            'El pago no está disponible en este momento. Esperá unos segundos e intentá de nuevo.',
+            'temporary',
+          );
+        }
         return result.clientSecret;
-      })().catch((e: Error) => {
+      })().catch((e: unknown) => {
         sessionRef.current = null;
-        setError(e.message);
+        if (e instanceof CheckoutFailure) {
+          setError({ message: e.message, kind: e.kind });
+        } else {
+          setError({
+            message: 'No pudimos iniciar el pago. Revisá tu conexión e intentá de nuevo.',
+            kind: 'temporary',
+          });
+        }
         throw e;
       });
     }
@@ -88,20 +102,52 @@ export function StripeCartCheckout({
   const stripePromise = useMemo(() => getStripe(), []);
 
   if (error) {
+    const retry = () => {
+      setError(null);
+      setReady(false);
+      sessionRef.current = null;
+      fetchClientSecret().catch(() => {});
+    };
+
     return (
       <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-6 text-center space-y-4">
-        <p className="text-sm text-destructive font-medium">
-          No pudimos cargar la pasarela de pago: {error}
-        </p>
-        <button 
-          onClick={() => { setError(null); setReady(false); sessionRef.current = null; fetchClientSecret(); }}
-          className="text-xs text-blue-600 underline hover:text-blue-800 font-medium"
-        >
-          Intentar de nuevo
-        </button>
+        <p className="text-sm text-destructive font-medium">{error.message}</p>
+
+        {error.kind === 'data' && (
+          <button
+            onClick={() => {
+              setError(null);
+              setReady(false);
+              sessionRef.current = null;
+              document
+                .querySelector('input[name="address1"], input[autocomplete="email"]')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            className="text-xs text-blue-600 underline hover:text-blue-800 font-medium"
+          >
+            Revisar mis datos
+          </button>
+        )}
+
+        {(error.kind === 'temporary' || error.kind === 'card') && (
+          <button
+            onClick={retry}
+            className="text-xs text-blue-600 underline hover:text-blue-800 font-medium"
+          >
+            Intentar de nuevo
+          </button>
+        )}
+
+        {error.kind === 'config' && (
+          <p className="text-xs text-muted-foreground">
+            Escribinos por WhatsApp y completamos tu pedido manualmente.
+          </p>
+        )}
       </div>
     );
   }
+
+
 
   return (
     <div id="checkout" className="min-h-[320px]">
