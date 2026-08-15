@@ -4,6 +4,22 @@ import { Loader2 } from 'lucide-react';
 import { getStripe, getStripeEnvironment } from '@/lib/stripe';
 import { createCartCheckout } from '@/utils/payments.functions';
 
+type CheckoutErrorKind = 'card' | 'data' | 'temporary' | 'config';
+
+interface CheckoutError {
+  message: string;
+  kind: CheckoutErrorKind;
+}
+
+class CheckoutFailure extends Error {
+  kind: CheckoutErrorKind;
+  constructor(message: string, kind: CheckoutErrorKind) {
+    super(message);
+    this.kind = kind;
+  }
+}
+
+
 interface StripeCartCheckoutProps {
   /** Solo variante y cantidad: el precio real lo calcula el servidor. */
   items: { variantId: string; quantity: number }[];
