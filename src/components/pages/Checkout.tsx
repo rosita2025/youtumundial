@@ -13,33 +13,22 @@ import { validateCoupon } from '@/lib/checkout/coupon.functions';
 import { getShippingQuote, type ShippingQuoteResult } from '@/lib/checkout/shipping.functions';
 import { saveAbandonedCheckout, clearAbandonedCheckout } from '@/lib/checkout/abandoned.functions';
 import { composeAddress, emptyCustomer, fullName, toE164, validateCustomer, type CustomerErrors, type CustomerForm } from '@/lib/checkout/customer';
-import { CreditCard, ShieldCheck, Truck, Tag, X, RotateCcw, Heart, Gem } from 'lucide-react';
+import { CreditCard, ShieldCheck, Truck, Tag, X, RotateCcw, Heart, Gem, ChevronRight, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
 import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
-import { createManualOrder } from '@/lib/checkout/manual-order.functions';
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 import { ExpressPayButtons } from '@/components/checkout/ExpressPayButtons';
 import { detectVisitorGeo } from '@/lib/checkout/geo.functions';
 
-const methods: { id: PaymentMethod; title: string; description: string; icon: typeof CreditCard }[] = [
-  {
-    id: 'card',
-    title: 'Tarjeta de crédito o débito',
-    description: 'Visa, Mastercard y Amex. Pago seguro.',
-    icon: CreditCard,
-  },
-];
-
 const Checkout = () => {
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
-  const [method, setMethod] = useState<PaymentMethod>('card');
+  const [method] = useState<PaymentMethod>('card');
   const [showStripe, setShowStripe] = useState(false);
   const [paying, setPaying] = useState(false);
   const payingRef = useRef(false);
-  const freeReferenceRef = useRef<string | null>(null);
   const createSupOrder = useServerFn(createDirectSupOrder);
   const checkCoupon = useServerFn(validateCoupon);
   const fetchShipping = useServerFn(getShippingQuote);
@@ -56,6 +45,7 @@ const Checkout = () => {
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [shippingQuote, setShippingQuote] = useState<ShippingQuoteResult | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
+  const [showOrderSummary, setShowOrderSummary] = useState(false);
 
   const customerData: CustomerForm = { ...customer, countryCode };
   const addressLine = composeAddress(customerData);
@@ -77,10 +67,10 @@ const Checkout = () => {
     if (geoDetectedRef.current) return;
     geoDetectedRef.current = true;
     getVisitorGeo().then((geo) => {
-        if (geo.countryCode && shippingCountryFor(geo.countryCode).code === geo.countryCode) {
-          setCountryCode(geo.countryCode);
-        }
-      }).catch(() => {});
+      if (geo.countryCode && shippingCountryFor(geo.countryCode).code === geo.countryCode) {
+        setCountryCode(geo.countryCode);
+      }
+    }).catch(() => {});
   }, [getVisitorGeo]);
 
   useEffect(() => {
@@ -156,69 +146,306 @@ const Checkout = () => {
     setShowStripe(false);
   };
 
-  const handlePay = async (override?: PaymentMethod) => {
-    const chosen = override ?? method;
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) { toast.error('Escribí un código de cupón.'); return; }
+    try {
+      const result = await checkCoupon({ data: { code: couponInput, subtotal: cart.subtotal } });
+      if (!result.ok || !result.coupon) { toast.error(result.message ?? 'Ese cupón no existe.'); return; }
+      setCoupon(result.coupon);
+      setShowStripe(false);
+      toast.success(`Cupón aplicado: ${result.coupon.label}`);
+    } catch { toast.error('No pudimos validar el cupón.'); }
+  };
+
+  const removeCoupon = () => { setCoupon(null); setCouponInput(''); setShowStripe(false); };
+
+  const handlePay = async () => {
     if (payingRef.current) return;
     if (!validation.ok) {
       setErrors(validation.errors);
       toast.error('Completá tus datos de envío.');
       return;
     }
-
-    if (chosen === 'card') {
-      setShowStripe(true);
-      return;
-    }
+    setShowStripe(true);
   };
+
+  const cartLines = cart.items.map((item) => ({ variantId: String(item.variant.id), quantity: item.quantity }));
 
   return (
     <CheckoutShell>
       <PaymentTestModeBanner />
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-8">
-            <section>
-              <h2 className="font-medium text-lg mb-4">Express Checkout</h2>
+      
+      {/* Mobile Order Summary Toggle */}
+      <div className="lg:hidden border-b border-gray-200 bg-white">
+        <button 
+          onClick={() => setShowOrderSummary(!showOrderSummary)}
+          className="w-full px-4 py-4 flex items-center justify-between text-sm text-blue-600 font-medium"
+        >
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4" />
+            <span>{showOrderSummary ? 'Ocultar resumen' : 'Mostrar resumen del pedido'}</span>
+          </div>
+          <span>{formatPrice(totals.total)}</span>
+        </button>
+        {showOrderSummary && (
+          <div className="px-4 py-4 bg-[#FAFAFA] border-t border-gray-200 space-y-4">
+            {cart.items.map((item) => (
+              <div key={item.id} className="flex gap-4">
+                <div className="relative h-16 w-16 bg-white border border-gray-200 rounded-md overflow-hidden shrink-0">
+                  <img src={item.product.images[0]?.url} alt={item.product.title} className="h-full w-full object-cover" />
+                  <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border border-white font-bold">{item.quantity}</span>
+                </div>
+                <div className="flex-1 text-sm">
+                  <p className="font-medium text-gray-900">{item.product.title}</p>
+                  <p className="text-gray-500 text-xs">{item.variant.title}</p>
+                </div>
+                <div className="text-sm font-medium">{formatPrice(item.variant.price * item.quantity)}</div>
+              </div>
+            ))}
+            <div className="pt-4 border-t border-gray-200 space-y-2 text-sm">
+              <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>{formatPrice(totals.subtotal)}</span></div>
+              <div className="flex justify-between text-gray-600"><span>Envío</span><span>{totals.shipping === 0 ? 'Gratis' : formatPrice(totals.shipping)}</span></div>
+              <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200"><span>Total</span><span>{formatPrice(totals.total)}</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="grid lg:grid-cols-2">
+        {/* Left Column: Form */}
+        <div className="bg-white lg:min-h-screen px-4 py-8 lg:px-12 lg:py-16 lg:border-r lg:border-gray-200">
+          <div className="max-w-xl ml-auto">
+            {/* Express Checkout */}
+            <section className="mb-10">
+              <h2 className="text-center text-sm font-medium text-gray-500 mb-4 uppercase tracking-wider">Express Checkout</h2>
               <ExpressPayButtons
                 amount={totals.total}
                 countryCode={countryCode}
                 disabled={paying}
-                onPay={() => { setMethod('card'); void handlePay('card'); }}
+                onPay={() => { setShowStripe(true); }}
               />
-              <div className="flex items-center gap-4 my-6"><span className="h-px flex-1 bg-border" /><span className="text-xs text-muted-foreground uppercase">o</span><span className="h-px flex-1 bg-border" /></div>
+              <div className="relative my-8 text-center">
+                <hr className="border-gray-200" />
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-xs font-medium text-gray-400 uppercase">o</span>
+              </div>
             </section>
 
-            <section>
-              <h2 className="font-medium text-lg mb-4">Contacto y entrega</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Input placeholder="Nombre" value={customer.firstName} onChange={(e) => updateCustomer('firstName', e.target.value)} />
-                <Input placeholder="Apellido" value={customer.lastName} onChange={(e) => updateCustomer('lastName', e.target.value)} />
-                <Input placeholder="Correo" className="sm:col-span-2" value={customer.email} onChange={(e) => updateCustomer('email', e.target.value)} />
-                <Input placeholder="Teléfono" className="sm:col-span-2" value={customer.phone} onChange={(e) => updateCustomer('phone', e.target.value)} />
-                <Input placeholder="Dirección" className="sm:col-span-2" value={customer.address1} onChange={(e) => updateCustomer('address1', e.target.value)} />
-                <Input placeholder="Ciudad" value={customer.city} onChange={(e) => updateCustomer('city', e.target.value)} />
-                <Input placeholder="Código postal" value={customer.postalCode} onChange={(e) => updateCustomer('postalCode', e.target.value)} />
+            {/* Contact Info */}
+            <section className="space-y-6">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-medium text-gray-900">Contacto</h2>
+                  <Link to="/auth" className="text-xs text-blue-600 hover:underline">¿Ya tienes cuenta? Inicia sesión</Link>
+                </div>
+                <Input 
+                  placeholder="Correo electrónico" 
+                  className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                  value={customer.email} 
+                  onChange={(e) => updateCustomer('email', e.target.value)} 
+                  aria-invalid={Boolean(errors.email)}
+                />
+                {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+              </div>
+
+              {/* Shipping Address */}
+              <div className="space-y-4">
+                <h2 className="text-lg font-medium text-gray-900">Entrega</h2>
+                
+                <div className="mb-4">
+                  <Label htmlFor="country" className="sr-only">País</Label>
+                  <select
+                    id="country"
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="w-full h-12 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    {shippingCountries.map((c) => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Input 
+                      placeholder="Nombre" 
+                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      value={customer.firstName} 
+                      onChange={(e) => updateCustomer('firstName', e.target.value)} 
+                      aria-invalid={Boolean(errors.firstName)}
+                    />
+                    {errors.firstName && <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>}
+                  </div>
+                  <div>
+                    <Input 
+                      placeholder="Apellido" 
+                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      value={customer.lastName} 
+                      onChange={(e) => updateCustomer('lastName', e.target.value)} 
+                      aria-invalid={Boolean(errors.lastName)}
+                    />
+                    {errors.lastName && <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>}
+                  </div>
+                </div>
+
+                <Input 
+                  placeholder="Dirección" 
+                  className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                  value={customer.address1} 
+                  onChange={(e) => updateCustomer('address1', e.target.value)} 
+                  aria-invalid={Boolean(errors.address1)}
+                />
+                {errors.address1 && <p className="text-xs text-red-500 mt-1">{errors.address1}</p>}
+
+                <Input 
+                  placeholder="Apartamento, local, etc. (opcional)" 
+                  className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                  value={customer.address2 ?? ''} 
+                  onChange={(e) => updateCustomer('address2', e.target.value)} 
+                />
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-1">
+                    <Input 
+                      placeholder="Código postal" 
+                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      value={customer.postalCode} 
+                      onChange={(e) => updateCustomer('postalCode', e.target.value)} 
+                      aria-invalid={Boolean(errors.postalCode)}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Input 
+                      placeholder="Ciudad" 
+                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      value={customer.city} 
+                      onChange={(e) => updateCustomer('city', e.target.value)} 
+                      aria-invalid={Boolean(errors.city)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Input 
+                    placeholder="Teléfono" 
+                    className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                    value={customer.phone} 
+                    onChange={(e) => updateCustomer('phone', e.target.value)} 
+                    aria-invalid={Boolean(errors.phone)}
+                  />
+                  {errors.phone ? <p className="text-xs text-red-500 mt-1">{errors.phone}</p> : <p className="text-[11px] text-gray-500 mt-1">Para recibir avisos sobre la entrega.</p>}
+                </div>
+              </div>
+
+              {/* Payment Section */}
+              <div className="pt-8 space-y-4">
+                <h2 className="text-lg font-medium text-gray-900">Pago</h2>
+                <p className="text-xs text-gray-500">Todas las transacciones son seguras y están cifradas.</p>
+                
+                <div className="border border-blue-500 rounded-lg overflow-hidden">
+                  <div className="bg-blue-50 px-4 py-4 flex items-center justify-between border-b border-gray-200">
+                    <span className="font-medium text-sm text-gray-900">Tarjeta de crédito</span>
+                    <div className="flex gap-1">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4 w-auto grayscale" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4 w-auto grayscale" />
+                    </div>
+                  </div>
+                  <div className="p-4 bg-white">
+                    {showStripe ? (
+                      <StripeCartCheckout
+                        items={cartLines}
+                        countryCode={countryCode}
+                        couponCode={coupon?.code}
+                        customerEmail={customer.email}
+                        customerName={customerName}
+                        customerPhone={customerPhone}
+                        abandonedReference={abandonedRef.current ?? undefined}
+                        returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
+                      />
+                    ) : (
+                      <Button 
+                        onClick={handlePay} 
+                        className="w-full h-14 bg-[#111111] hover:bg-black text-white font-bold text-base"
+                        disabled={paying}
+                      >
+                        Completar datos para pagar
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
           </div>
+        </div>
 
-          <aside className="lg:col-span-1">
-            <div className="bg-card rounded-lg border border-border p-6 sticky top-24">
-              <h2 className="font-medium text-lg mb-4">Tu pedido</h2>
-              {/* Order items here */}
-              <div className="border-t pt-4 space-y-4">
-                  <div className="flex justify-between font-bold text-lg"><span>Total</span><span>{formatPrice(totals.total)}</span></div>
+        {/* Right Column: Order Summary */}
+        <div className="hidden lg:block bg-[#FAFAFA] min-h-screen px-4 py-8 lg:px-12 lg:py-16">
+          <div className="max-w-md">
+            <div className="space-y-6">
+              {cart.items.map((item) => (
+                <div key={item.id} className="flex gap-4 items-center">
+                  <div className="relative h-16 w-16 bg-white border border-gray-200 rounded-md overflow-hidden shrink-0">
+                    <img src={item.product.images[0]?.url} alt={item.product.title} className="h-full w-full object-cover" />
+                    <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border border-white font-bold">{item.quantity}</span>
+                  </div>
+                  <div className="flex-1 text-sm">
+                    <p className="font-medium text-gray-900">{item.product.title}</p>
+                    <p className="text-gray-500 text-xs">{item.variant.title}</p>
+                  </div>
+                  <div className="text-sm font-medium text-gray-900">{formatPrice(item.variant.price * item.quantity)}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Cupón de descuento" 
+                  className="h-11 border-gray-300" 
+                  value={couponInput} 
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())} 
+                />
+                <Button onClick={applyCoupon} variant="secondary" className="h-11 px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium">Aplicar</Button>
               </div>
-              <Button className="w-full mt-6" size="lg" disabled={missingCustomer || paying || (method === 'card' && showStripe)} onClick={() => void handlePay()}>
-                {paying ? 'Procesando…' : 'Pagar ahora'}
-              </Button>
-              <div className="mt-8 space-y-4">
-                <div className="flex items-center gap-3 text-xs"><Truck size={16} className="text-primary" /> <span>Free SG delivery</span></div>
-                <div className="flex items-center gap-3 text-xs"><RotateCcw size={16} className="text-primary" /> <span>Easy Returns (7 days)</span></div>
-                <div className="flex items-center gap-3 text-xs"><Heart size={16} className="text-primary" /> <span>Money Back Guarantee</span></div>
+              {coupon && (
+                <div className="mt-2 flex items-center justify-between bg-blue-50 px-3 py-2 rounded text-xs text-blue-700">
+                  <span className="flex items-center gap-1.5"><Tag size={12} /> {coupon.code} ({coupon.label})</span>
+                  <button onClick={removeCoupon} className="text-blue-500 hover:text-blue-700"><X size={14} /></button>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 space-y-3 text-sm">
+              <div className="flex justify-between text-gray-600"><span>Subtotal</span><span className="font-medium text-gray-900">{formatPrice(totals.subtotal)}</span></div>
+              {totals.discount > 0 && <div className="flex justify-between text-green-600"><span>Descuento</span><span>-{formatPrice(totals.discount)}</span></div>}
+              <div className="flex justify-between text-gray-600"><span>Envío</span><span className="font-medium text-gray-900">{totals.shipping === 0 ? 'Gratis' : formatPrice(totals.shipping)}</span></div>
+              <div className="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-gray-200"><span>Total</span><div className="text-right">
+                <span className="text-xs font-normal text-gray-500 mr-2 uppercase tracking-tight">USD</span>
+                {formatPrice(totals.total)}
+              </div></div>
+              {countryCode === 'PE' && <p className="text-[11px] text-gray-400 text-right italic">Aproximadamente S/ {totals.totalPen.toFixed(2)}</p>}
+            </div>
+
+            {/* Trust Markers */}
+            <div className="mt-12 pt-8 border-t border-gray-200 grid grid-cols-2 gap-y-6 gap-x-4">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><Truck size={20} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Free SG delivery</span>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><RotateCcw size={20} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">7-Day Returns</span>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><ShieldCheck size={20} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Secure Payment</span>
+              </div>
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><Gem size={20} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Premium Quality</span>
               </div>
             </div>
-          </aside>
+          </div>
         </div>
       </div>
     </CheckoutShell>
