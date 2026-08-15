@@ -535,9 +535,16 @@ const Checkout = () => {
                       <Button 
                         onClick={handlePay} 
                         className="w-full h-14 bg-[#111111] hover:bg-black text-white font-bold text-base transition-colors"
-                        disabled={paying}
+                        disabled={paying || loadingShipping}
                       >
-                        Complete details to pay
+                        {paying ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Preparando pago seguro...
+                          </span>
+                        ) : (
+                          'Confirmar y Pagar'
+                        )}
                       </Button>
                     )}
                   </div>
