@@ -80,19 +80,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Ropa de Youtumundial — Tienda de ropa online" },
+      { title: "Youtumundial — Premium Apparel Store" },
       {
         name: "description",
         content:
-          "Tienda online de Ropa de Youtumundial: hoodies, camisetas, joggers y accesorios con envío a Perú, EE.UU., Canadá y Reino Unido.",
+          "Youtumundial Online Store: High-quality hoodies, t-shirts, joggers, and accessories with worldwide shipping to US, Canada, UK, and Singapore.",
       },
       { name: "author", content: "Ropa de Youtumundial" },
       {
         name: "google-site-verification",
         content: "uLI1HwNfdRBtkcYbCoReWrntfwB6Hy7yw-02m-KfE7E",
       },
-      { property: "og:site_name", content: "Ropa de Youtumundial" },
-      { property: "og:locale", content: "es_ES" },
+      { property: "og:site_name", content: "Youtumundial" },
+      { property: "og:locale", content: "en_US" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
