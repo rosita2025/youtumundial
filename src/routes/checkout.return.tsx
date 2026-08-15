@@ -83,12 +83,32 @@ function CheckoutReturn() {
       fbEvent.track('Purchase', {
         content_ids: result?.supOrderId ? [result.supOrderId] : [],
         content_type: 'product',
-        value: (result as any)?.paidAmount ?? 0,
-        currency: 'USD',
+        value: summary?.total ?? (result as any)?.paidAmount ?? 0,
+        currency: summary?.currency ?? 'USD',
         order_id: orderNumber
       });
     }
-  }, [orderNumber, result]);
+  }, [orderNumber, result, summary]);
+
+  // Resumen del pedido tal como se cobró en Stripe.
+  useEffect(() => {
+    if (!sessionId) return;
+    let active = true;
+    setSummaryLoading(true);
+    getOrderSummary({ data: { sessionId, environment: getStripeEnvironment() } })
+      .then((res) => {
+        if (active) setSummary(res);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setSummaryLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [sessionId]);
+
+
 
   const resync = () => {
     if (!sessionId || resyncing) return;
