@@ -112,10 +112,10 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 </div>
               )}
               {reviewSummary.total > 0 && (
-                <a href="#resenas" className="mt-2 inline-flex items-center gap-2 text-sm">
+                <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm">
                   <StarRating rating={reviewSummary.average} size={15} />
                   <span className="text-muted-foreground underline-offset-4 hover:underline">
-                    {reviewSummary.average.toFixed(1)} · {reviewSummary.total} reseñas
+                    {reviewSummary.average.toFixed(1)} · {reviewSummary.total} reviews
                   </span>
                 </a>
               )}
