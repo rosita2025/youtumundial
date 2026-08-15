@@ -128,8 +128,8 @@ const Checkout = () => {
     return (
       <CheckoutShell>
         <div className="container mx-auto px-4 py-24 text-center max-w-lg">
-          <h1 className="font-display text-3xl mb-4 text-foreground">Tu carrito está vacío</h1>
-          <Button size="lg" asChild className="mb-12"><Link to="/products">Ver productos</Link></Button>
+          <h1 className="font-display text-3xl mb-4 text-foreground">Your cart is empty</h1>
+          <Button size="lg" asChild className="mb-12"><Link to="/products">View products</Link></Button>
         </div>
       </CheckoutShell>
     );
@@ -147,14 +147,14 @@ const Checkout = () => {
   };
 
   const applyCoupon = async () => {
-    if (!couponInput.trim()) { toast.error('Escribí un código de cupón.'); return; }
+    if (!couponInput.trim()) { toast.error('Enter a discount code.'); return; }
     try {
       const result = await checkCoupon({ data: { code: couponInput, subtotal: cart.subtotal } });
-      if (!result.ok || !result.coupon) { toast.error(result.message ?? 'Ese cupón no existe.'); return; }
+      if (!result.ok || !result.coupon) { toast.error(result.message ?? 'This coupon does not exist.'); return; }
       setCoupon(result.coupon);
       setShowStripe(false);
-      toast.success(`Cupón aplicado: ${result.coupon.label}`);
-    } catch { toast.error('No pudimos validar el cupón.'); }
+      toast.success(`Coupon applied: ${result.coupon.label}`);
+    } catch { toast.error('Could not validate coupon.'); }
   };
 
   const removeCoupon = () => { setCoupon(null); setCouponInput(''); setShowStripe(false); };
@@ -163,7 +163,7 @@ const Checkout = () => {
     if (payingRef.current) return;
     if (!validation.ok) {
       setErrors(validation.errors);
-      toast.error('Completá tus datos de envío.');
+      toast.error('Please complete your shipping information.');
       return;
     }
     setShowStripe(true);
