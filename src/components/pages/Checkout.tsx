@@ -223,7 +223,7 @@ const Checkout = () => {
       setErrors(validation.errors);
       toast.error('Por favor, completa tus datos de envío.', {
         description: 'Correo, nombre, dirección, ciudad y teléfono son obligatorios.',
-        duration: 5000,
+        duration: 3500,
       });
       
       // Auto-scroll to first error
