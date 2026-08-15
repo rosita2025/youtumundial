@@ -13,16 +13,16 @@ export const Route = createFileRoute('/seguimiento')({
   ssr: false,
   head: () => ({
     meta: [
-      { title: 'Seguimiento de pedido | Youtumundial' },
+      { title: 'Order Tracking | Youtumundial' },
       {
         name: 'description',
         content:
-          'Consultá el estado de tu compra en Youtumundial y el número de seguimiento de tu envío internacional.',
+          'Check the status of your Youtumundial purchase and your international shipment tracking number.',
       },
-      { property: 'og:title', content: 'Seguimiento de pedido | Youtumundial' },
+      { property: 'og:title', content: 'Order Tracking | Youtumundial' },
       {
         property: 'og:description',
-        content: 'Ingresá tu número de pedido y mirá en qué etapa está tu envío.',
+        content: 'Enter your order number and see which stage your shipment is in.',
       },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary' },
