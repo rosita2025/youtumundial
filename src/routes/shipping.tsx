@@ -49,54 +49,52 @@ function ShippingPage() {
                     {c.flag} {c.name}
                   </td>
                   <td className="p-3">US$ {c.shipping}</td>
-                  <td className="p-3">{c.eta} hábiles</td>
+                  <td className="p-3">{c.eta}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p>
-          Envío gratis en compras superiores a US$ {FREE_SHIPPING_THRESHOLD}. Los plazos empiezan a
-          correr desde la confirmación del pago, no desde la compra.
+          Free shipping on international orders over US$ {FREE_SHIPPING_THRESHOLD}. Delivery times 
+          start from payment confirmation.
         </p>
       </Section>
 
-      <Section heading="Seguimiento del pedido">
+      <Section heading="Order Tracking">
         <p>
-          Cuando el paquete sale del almacén te enviamos por email y WhatsApp el número de
-          seguimiento. Puede tardar entre 2 y 5 días en mostrar movimientos: es normal.
+          Once your package leaves our warehouse, we'll send you a tracking number via email 
+          and WhatsApp. It may take 2-5 days to show initial movements.
         </p>
       </Section>
 
-      <Section heading="Impuestos y aduanas">
+      <Section heading="Taxes & Customs">
         <p>
-          Para envíos internacionales, algunos países pueden aplicar aranceles o impuestos de
-          importación al momento de la entrega. Esos cargos los define la aduana de destino y
-          corren por cuenta del comprador.
+          For international shipments, some countries may apply import duties or taxes. These 
+          charges are determined by the destination customs and are the responsibility of the buyer.
         </p>
       </Section>
 
-      <Section heading="Cambios y devoluciones">
+      <Section heading="Returns & Money Back Guarantee">
+        <p className="font-medium text-foreground">Love it or Your Money Back!</p>
         <p>
-          Tenés 14 días desde la recepción para solicitar un cambio de talla o la devolución de una
-          prenda sin uso, con sus etiquetas originales y en su empaque.
+          You have 7 days from receipt to request a full refund or exchange. Items must be 
+          unworn, with original tags and packaging.
         </p>
         <p>
-          Si el producto llegó fallado, dañado o no corresponde a lo pedido, nos hacemos cargo del
-          costo de la devolución y reponemos o reembolsamos el 100%. Mandanos fotos dentro de las
-          72 horas de recibido.
+          If a product arrived faulty or incorrect, we cover all return costs and offer a 100% 
+          replacement or refund. Please send photos within 72 hours of receipt.
         </p>
         <p>
-          En cambios por preferencia (talla o color), el costo del envío de retorno corre por cuenta
-          del comprador. No aceptamos devoluciones de ropa interior ni de artículos en liquidación
-          final.
+          For exchanges based on preference (size/color), return shipping costs are the 
+          responsibility of the buyer. We do not accept returns on underwear or final sale items.
         </p>
       </Section>
 
-      <Section heading="Reembolsos">
+      <Section heading="Refunds">
         <p>
-          Una vez aprobada la devolución, el reembolso se procesa al mismo medio de pago usado en la
-          compra y puede tardar entre 5 y 10 días hábiles en verse reflejado.
+          Once a return is approved, the refund is processed to the original payment method 
+          within 5-10 business days.
         </p>
       </Section>
     </StaticPage>
