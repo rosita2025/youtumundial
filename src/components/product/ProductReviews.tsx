@@ -5,7 +5,7 @@ import { BadgeCheck } from "lucide-react";
 import { ReviewForm } from "@/components/product/ReviewForm";
 import { useState, useEffect } from "react";
 
-const dateFormatter = new Intl.DateTimeFormat("es-ES", {
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   month: "long",
   year: "numeric",
@@ -31,9 +31,9 @@ export function ProductReviews({ slug }: { slug: string }) {
   if (!total) {
     return (
       <section className="mt-20 border-t border-border pt-12" id="resenas">
-        <h2 className="heading-section mb-4">Reseñas de clientes</h2>
+        <h2 className="heading-section mb-4">Customer Reviews</h2>
         <p className="mb-6 text-sm text-muted-foreground">
-          Todavía no hay reseñas de este producto. Si ya lo compraste, sé la primera persona en opinar.
+          No reviews for this product yet. If you've already purchased it, be the first to share your thoughts.
         </p>
         <ReviewForm slug={slug} />
       </section>
@@ -42,14 +42,14 @@ export function ProductReviews({ slug }: { slug: string }) {
 
   return (
     <section className="mt-20 border-t border-border pt-12" id="resenas">
-      <h2 className="heading-section mb-8">Reseñas de clientes</h2>
+      <h2 className="heading-section mb-8">Customer Reviews</h2>
 
       <div className="grid gap-10 md:grid-cols-[260px_1fr]">
         <div>
           <div className="text-4xl font-medium">{average.toFixed(1)}</div>
           <StarRating rating={average} size={18} className="mt-2" />
           <p className="mt-2 text-sm text-muted-foreground">
-            Basado en {total} {total === 1 ? "reseña" : "reseñas"}
+            Based on {total} {total === 1 ? "review" : "reviews"}
           </p>
 
           <div className="mt-5 space-y-1.5">
@@ -78,7 +78,7 @@ export function ProductReviews({ slug }: { slug: string }) {
                 </span>
                 {review.verified && (
                   <span className="inline-flex items-center gap-1 text-xs text-primary">
-                    <BadgeCheck size={14} /> Compra verificada
+                    <BadgeCheck size={14} /> Verified Purchase
                   </span>
                 )}
               </div>
@@ -89,7 +89,7 @@ export function ProductReviews({ slug }: { slug: string }) {
                   <ReviewDate date={review.date} />
                 </span>
                 {review.size && (
-                  <span className="text-xs text-muted-foreground">Talla: {review.size}</span>
+                  <span className="text-xs text-muted-foreground">Size: {review.size}</span>
                 )}
               </div>
 
@@ -102,7 +102,7 @@ export function ProductReviews({ slug }: { slug: string }) {
                     <a key={photo} href={photo} target="_blank" rel="noreferrer">
                       <img
                         src={photo}
-                        alt={`Foto de la reseña de ${review.author}`}
+                        alt={`Review photo by ${review.author}`}
                         loading="lazy"
                         className="h-20 w-20 rounded-md border border-border object-cover"
                       />
