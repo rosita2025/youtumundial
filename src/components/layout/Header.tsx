@@ -7,11 +7,12 @@ import { cn } from '@/lib/utils';
 import { Logo } from './Logo';
 
 const navLinks = [
-  { href: '/products', label: 'Shop' },
-  { href: '/collections/mens', label: 'Men' },
+  { href: '/', label: 'Home' },
+  { href: '/products', label: 'Products' },
   { href: '/collections/womens', label: 'Women' },
   { href: '/collections/new-arrivals', label: 'New Arrivals' },
   { href: '/collections/sale', label: 'Sale' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 export function Header() {
