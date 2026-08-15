@@ -74,10 +74,13 @@ export function AnnouncementBar() {
   const currentMessage = MESSAGES[currentMessageIndex];
 
   return (
-    <div className={cn(
-      "w-full bg-[#00D66F] text-black py-2.5 px-4 text-center text-xs md:text-sm font-bold sticky top-0 z-[60] shadow-md transition-all duration-300",
-      isTransitioning ? "opacity-90" : "opacity-100"
-    )}>
+    <div 
+      data-testid="announcement-bar"
+      className={cn(
+        "w-full bg-[#00D66F] text-black py-2.5 px-4 text-center text-xs md:text-sm font-bold sticky top-0 z-[60] shadow-md transition-all duration-300",
+        isTransitioning ? "opacity-90" : "opacity-100"
+      )}
+    >
       <div className="container-wide flex items-center justify-between relative h-5">
         <button
           onClick={handlePrev}
