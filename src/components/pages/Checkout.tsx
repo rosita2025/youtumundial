@@ -311,7 +311,9 @@ const Checkout = () => {
                 </div>
                 <Input 
                   placeholder="Email" 
-                  className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                  type="email"
+                  required
+                  className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.email ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                   value={customer.email} 
                   onChange={(e) => updateCustomer('email', e.target.value)} 
                   aria-invalid={Boolean(errors.email)}
