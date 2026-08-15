@@ -186,7 +186,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             <div className="pt-6 border-t border-border space-y-4">
               <div className="flex items-center gap-3 text-sm">
                 <Truck size={18} className="text-muted-foreground" />
-                <span>Free shipping on orders over $100</span>
+                <span>Free shipping on orders over $45</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <RotateCcw size={18} className="text-muted-foreground" />
