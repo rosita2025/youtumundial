@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getStripe, isStripeConfigured } from '@/lib/stripe';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
+
+/** Método exprés en curso, usado para el estado de carga por botón. */
+type ExpressMethod = 'link' | 'googlePay' | 'applePay';
+
 
 interface ExpressPayButtonsProps {
   /** Importe total en la moneda del checkout (USD). */
@@ -51,6 +55,12 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
     googlePay: false,
     applePay: false,
   });
+  const [pending, setPending] = useState<ExpressMethod | null>(null);
+
+
+
+
+
 
   useEffect(() => {
     let active = true;
@@ -109,7 +119,21 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
   }
 
   const walletAvailable = support.googlePay || support.applePay;
+  const busy = Boolean(disabled) || pending !== null;
 
+  function startPayment(method: ExpressMethod) {
+    setPending(method);
+    onPay();
+  }
+
+  const statusText =
+    pending === 'link'
+      ? 'Opening secure Link payment...'
+      : pending === 'googlePay'
+        ? 'Processing your Google Pay payment...'
+        : pending === 'applePay'
+          ? 'Processing your Apple Pay payment...'
+          : null;
 
   return (
     <div className="space-y-4">
@@ -119,14 +143,24 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
           {support.link && (
             <button
               type="button"
-              disabled={disabled}
-              onClick={onPay}
+              disabled={busy}
+              onClick={() => startPayment('link')}
               aria-label="Pay with Link"
+              aria-busy={pending === 'link'}
               style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
               className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Link_logo_2022.svg" alt="" className="h-4 w-auto" />
-              Link
+              {pending === 'link' ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Link_logo_2022.svg" alt="" className="h-4 w-auto" />
+                  Link
+                </>
+              )}
             </button>
           )}
 
@@ -153,28 +187,44 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
             {support.googlePay && (
               <button
                 type="button"
-                disabled={disabled}
-                onClick={onPay}
+                disabled={busy}
+                onClick={() => startPayment('googlePay')}
                 aria-label="Pay with Google Pay"
+                aria-busy={pending === 'googlePay'}
                 style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
-                className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60 w-full"
+                className="rounded-md py-3 text-sm inline-flex items-center justify-center gap-2 hover:brightness-110 transition disabled:opacity-60 w-full"
               >
-                <GooglePayMark />
+                {pending === 'googlePay' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    <span className="font-medium">Processing...</span>
+                  </>
+                ) : (
+                  <GooglePayMark />
+                )}
               </button>
             )}
             
             {support.applePay && (
               <button
                 type="button"
-                disabled={disabled}
-                onClick={onPay}
+                disabled={busy}
+                onClick={() => startPayment('applePay')}
                 aria-label="Pay with Apple Pay"
+                aria-busy={pending === 'applePay'}
                 style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
-                className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60 w-full"
+                className="rounded-md py-3 text-sm inline-flex items-center justify-center gap-2 hover:brightness-110 transition disabled:opacity-60 w-full"
               >
-                <div className="flex items-center gap-1.5">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto invert" />
-                </div>
+                {pending === 'applePay' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    <span className="font-medium">Processing...</span>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto invert" />
+                  </div>
+                )}
               </button>
             )}
           </div>
@@ -188,6 +238,17 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
           </div>
         )}
       </div>
+
+      {/* Live status for express payments */}
+      <p aria-live="polite" role="status" className="min-h-[1rem] text-center text-xs text-muted-foreground">
+        {statusText && (
+          <span className="inline-flex items-center gap-1.5">
+            <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+            {statusText}
+          </span>
+        )}
+      </p>
+
       
       {/* Visual Trust Badges */}
       <div className="flex flex-col items-center gap-2 pt-2 border-t border-gray-100 mt-4">
