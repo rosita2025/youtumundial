@@ -3,12 +3,27 @@ import { useReviewSummary } from "@/lib/reviews/use-reviews";
 import { StarRating } from "@/components/product/StarRating";
 import { BadgeCheck } from "lucide-react";
 import { ReviewForm } from "@/components/product/ReviewForm";
+import { useState, useEffect } from "react";
 
 const dateFormatter = new Intl.DateTimeFormat("es-ES", {
   day: "numeric",
   month: "long",
   year: "numeric",
 });
+
+function ReviewDate({ date }: { date: string }) {
+  const [formatted, setFormatted] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFormatted(dateFormatter.format(new Date(date)));
+  }, [date]);
+
+  if (!formatted) {
+    return <span className="invisible">Date</span>;
+  }
+
+  return <>{formatted}</>;
+}
 
 export function ProductReviews({ slug }: { slug: string }) {
   const { reviews, total, average, distribution } = useReviewSummary(slug);
@@ -71,7 +86,7 @@ export function ProductReviews({ slug }: { slug: string }) {
               <div className="mt-2 flex items-center gap-3">
                 <StarRating rating={review.rating} size={14} />
                 <span className="text-xs text-muted-foreground">
-                  {dateFormatter.format(new Date(review.date))}
+                  <ReviewDate date={review.date} />
                 </span>
                 {review.size && (
                   <span className="text-xs text-muted-foreground">Talla: {review.size}</span>
