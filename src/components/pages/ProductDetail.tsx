@@ -14,7 +14,8 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
-import { Minus, Plus, Truck, RotateCcw, Shield } from 'lucide-react';
+import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart } from 'lucide-react';
+import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 
 interface ProductDetailProps {
   catalog?: Product[];
@@ -212,6 +213,14 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             <ProductGrid products={relatedProducts} />
           </section>
         )}
+
+        {/* Sticky Add to Cart (Visible solo en scroll) */}
+        <StickyAddToCart 
+          product={product} 
+          selectedVariant={selectedVariant}
+          quantity={quantity}
+          onAdd={handleAddToCart}
+        />
       </div>
     </Layout>
   );

@@ -148,6 +148,36 @@ const reviewPool: Review[] = [
     size: "XL",
     verified: true,
   },
+  {
+    author: "Kevin H.",
+    country: "US",
+    rating: 5,
+    date: "2026-08-10",
+    title: "Fast shipping to CA",
+    body: "The quality is top-notch. I was skeptical but the material is heavy and the print is high resolution. Definitely worth it.",
+    size: "L",
+    verified: true,
+  },
+  {
+    author: "Marta G.",
+    country: "ES",
+    rating: 5,
+    date: "2026-08-05",
+    title: "Muy satisfecha con la compra",
+    body: "Llegó a Madrid en poco más de una semana. La talla corresponde perfectamente con la guía. La tela es muy suave al tacto.",
+    size: "M",
+    verified: true,
+  },
+  {
+    author: "John D.",
+    country: "GB",
+    rating: 5,
+    date: "2026-07-28",
+    title: "Great customer service",
+    body: "Had a question about shipping and they replied within minutes. The product arrived safely and looks even better than the pictures.",
+    size: "XL",
+    verified: true,
+  }
 ];
 
 /** Hash estable a partir del slug para asignar siempre las mismas reseñas. */
