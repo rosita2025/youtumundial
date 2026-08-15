@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from '@/lib/router-compat';
 import { Product } from '@/lib/data/types';
 import { formatPrice, calculateDiscount } from '@/lib/utils/format';
@@ -8,7 +9,7 @@ interface ProductCardProps {
   className?: string;
 }
 
-export function ProductCard({ product, className }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, className }: ProductCardProps) {
   const discount = product.compareAtPrice
     ? calculateDiscount(product.price, product.compareAtPrice)
     : 0;
@@ -87,4 +88,4 @@ export function ProductCard({ product, className }: ProductCardProps) {
       </div>
     </Link>
   );
-}
+});
