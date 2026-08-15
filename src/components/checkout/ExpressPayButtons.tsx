@@ -62,7 +62,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
       }
       try {
         const stripe = await getStripe();
-        if (!stripe) throw new Error('Stripe no disponible');
+        if (!stripe) throw new Error('Stripe not available');
 
         const paymentRequest = stripe.paymentRequest({
           country: countryCode === 'PE' ? 'US' : countryCode,
