@@ -24,6 +24,7 @@ export function AnnouncementBar() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
+    // Immediate check on mount
     const dismissed = localStorage.getItem('announcement-dismissed');
     if (!dismissed) {
       setIsVisible(true);
@@ -45,6 +46,7 @@ export function AnnouncementBar() {
   }, [isVisible, currentMessageIndex]);
 
   const handleNext = () => {
+    if (isTransitioning) return;
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentMessageIndex((prev) => (prev + 1) % MESSAGES.length);
@@ -53,6 +55,7 @@ export function AnnouncementBar() {
   };
 
   const handlePrev = () => {
+    if (isTransitioning) return;
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentMessageIndex((prev) => (prev - 1 + MESSAGES.length) % MESSAGES.length);
@@ -73,6 +76,7 @@ export function AnnouncementBar() {
   return (
     <div className={cn(
       "w-full bg-[#00D66F] text-black py-2.5 px-4 text-center text-xs md:text-sm font-bold sticky top-0 z-[60] shadow-md transition-all duration-300",
+      isTransitioning ? "opacity-90" : "opacity-100"
     )}>
       <div className="container-wide flex items-center justify-between relative h-5">
         <button
@@ -86,7 +90,7 @@ export function AnnouncementBar() {
         <div 
           className={cn(
             "flex-1 flex items-center justify-center transition-all duration-300 transform",
-            isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+            isTransitioning ? "opacity-0 translate-y-1 scale-95" : "opacity-100 translate-y-0 scale-100"
           )}
           aria-live="polite"
         >
@@ -119,5 +123,6 @@ export function AnnouncementBar() {
     </div>
   );
 }
+
 
 
