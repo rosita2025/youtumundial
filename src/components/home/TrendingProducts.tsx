@@ -32,11 +32,11 @@ export function TrendingProducts({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+      <div className="flex overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 scrollbar-hide snap-x">
         {products.slice(0, 4).map((product, index) => (
           <div
             key={product.id}
-            className="animate-fade-up"
+            className="animate-fade-up min-w-[280px] sm:min-w-0 snap-start"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             <ProductCard product={product} />

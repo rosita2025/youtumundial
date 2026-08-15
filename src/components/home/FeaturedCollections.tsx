@@ -19,12 +19,12 @@ export function FeaturedCollections({ collections }: FeaturedCollectionsProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="flex overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 scrollbar-hide snap-x">
         {featured.map((collection, index) => (
           <Link
             key={collection.id}
             to={`/collections/${collection.slug}`}
-            className="group relative aspect-[3/4] rounded-xl overflow-hidden animate-fade-up"
+            className="group relative aspect-[3/4] rounded-xl overflow-hidden animate-fade-up min-w-[240px] sm:min-w-0 snap-start"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             {/* Image */}

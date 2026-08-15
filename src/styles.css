@@ -297,3 +297,11 @@
 @utility stagger-4 {
   animation-delay: 0.4s;
 }
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
