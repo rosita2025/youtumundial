@@ -154,7 +154,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
           >
             {walletLabel === 'apple' ? (
               <div className="flex items-center gap-1.5">
-                <img src="https://cdn.worldvectorlogo.com/logos/apple-pay-1.svg" alt="Apple Pay" className="h-5 w-auto invert" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto invert" />
               </div>
             ) : (
               <GooglePayMark />
