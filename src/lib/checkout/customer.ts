@@ -84,6 +84,24 @@ const baseCustomerSchema = z.object({
 export const customerSchema = baseCustomerSchema.superRefine((value, ctx) => {
   const country = (value.countryCode || '').toUpperCase();
 
+  // 1. Dirección obligatoria: calle y ciudad deben tener contenido real.
+  if (!value.address1?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['address1'],
+      message: 'La dirección es obligatoria.',
+    });
+  }
+
+  if (!value.city?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['city'],
+      message: 'La ciudad es obligatoria.',
+    });
+  }
+
+  // 2. Estado/Provincia: obligatorio en ciertos países.
   if (PROVINCE_REQUIRED.has(country) && !value.province?.trim()) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -92,11 +110,19 @@ export const customerSchema = baseCustomerSchema.superRefine((value, ctx) => {
     });
   }
 
+  // 3. Código postal: validación por formato según país.
   const rule = POSTAL_RULES[country];
   if (rule && !rule.regex.test(value.postalCode)) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['postalCode'], message: rule.message });
+  } else if (!value.postalCode?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['postalCode'],
+      message: 'El código postal es obligatorio.',
+    });
   }
 });
+
 
 export type CustomerForm = z.infer<typeof baseCustomerSchema>;
 
