@@ -401,20 +401,24 @@ const Checkout = () => {
                   <div className="col-span-1">
                     <Input 
                       placeholder="Postal code" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.postalCode ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.postalCode} 
                       onChange={(e) => updateCustomer('postalCode', e.target.value)} 
                       aria-invalid={Boolean(errors.postalCode)}
                     />
+                    {errors.postalCode && <p className="text-[10px] text-red-500 mt-1">{errors.postalCode}</p>}
                   </div>
                   <div className="col-span-2">
                     <Input 
                       placeholder="City" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.city ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.city} 
                       onChange={(e) => updateCustomer('city', e.target.value)} 
                       aria-invalid={Boolean(errors.city)}
                     />
+                    {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                   </div>
                 </div>
 
