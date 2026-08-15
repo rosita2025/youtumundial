@@ -49,6 +49,8 @@ const Checkout = () => {
   const [shippingQuote, setShippingQuote] = useState<ShippingQuoteResult | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
+  const [citySuggestions, setCitySuggestions] = useState<PostalPlace[]>([]);
+  const [lookingUpPostal, setLookingUpPostal] = useState(false);
   const lastScrollY = useRef(0);
 
   // Auto-hide order summary on scroll (Shopify behavior)
