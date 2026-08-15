@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { fbEvent } from '@/lib/facebook-pixel';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { fulfillSupOrder, type FulfillmentResult } from '@/lib/suppliers/fulfillment.functions';
@@ -65,6 +66,20 @@ function CheckoutReturn() {
   const [result, setResult] = useState<FulfillmentResult | null>(null);
   const [resyncing, setResyncing] = useState(false);
   const [autoTries, setAutoTries] = useState(0);
+  const trackedRef = useRef(false);
+
+  useEffect(() => {
+    if (orderNumber && !trackedRef.current) {
+      trackedRef.current = true;
+      fbEvent.track('Purchase', {
+        content_ids: result?.supOrderId ? [result.supOrderId] : [],
+        content_type: 'product',
+        value: result?.paidAmount ?? 0,
+        currency: 'USD',
+        order_id: orderNumber
+      });
+    }
+  }, [orderNumber, result]);
 
   const resync = () => {
     if (!sessionId || resyncing) return;
