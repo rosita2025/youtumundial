@@ -125,7 +125,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
               style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
               className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <img src="https://cdn.worldvectorlogo.com/logos/link-brand.svg" alt="" className="h-4 w-auto" onError={(e) => (e.currentTarget.style.display = 'none')} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Link_logo_2022.svg" alt="" className="h-4 w-auto" onError={(e) => (e.currentTarget.style.display = 'none')} />
               Link
             </button>
           )}
