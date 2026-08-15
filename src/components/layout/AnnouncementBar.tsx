@@ -24,14 +24,14 @@ export function AnnouncementBar() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    // Immediate check on mount
+    // Initial check for dismissed state
     const dismissed = localStorage.getItem('announcement-dismissed');
-    if (!dismissed) {
-      setIsVisible(true);
-      document.documentElement.style.setProperty('--announcement-bar-height', '40px');
-    } else {
+    if (dismissed === 'true') {
       setIsVisible(false);
       document.documentElement.style.setProperty('--announcement-bar-height', '0px');
+    } else {
+      setIsVisible(true);
+      document.documentElement.style.setProperty('--announcement-bar-height', '40px');
     }
   }, []);
 
@@ -69,7 +69,7 @@ export function AnnouncementBar() {
     document.documentElement.style.setProperty('--announcement-bar-height', '0px');
   };
 
-  if (isVisible === null || !isVisible) return null;
+  if (isVisible === null || isVisible === false) return null;
 
   const currentMessage = MESSAGES[currentMessageIndex];
 
@@ -123,6 +123,7 @@ export function AnnouncementBar() {
     </div>
   );
 }
+
 
 
 
