@@ -10,6 +10,8 @@ export interface Coupon {
   percentOff?: number;
   /** Descuento fijo en USD sobre el subtotal. */
   amountOff?: number;
+  /** Fija el total final del pedido en este importe exacto en USD (para pruebas). */
+  fixedTotal?: number;
   /** Pone el envío en $0. */
   freeShipping?: boolean;
   /** Texto que ve el cliente al aplicarlo. */
@@ -46,6 +48,17 @@ export const coupons: Coupon[] = [
     label: 'Envío gratis a cualquier país',
     active: true,
   },
+  {
+    // Cupón de prueba: deja el pedido en exactamente $1.00 con envío gratis
+    // para verificar el cobro real en Stripe. Desactivalo (active: false)
+    // cuando termines la prueba.
+    code: 'PRUEBA1DOLAR',
+    fixedTotal: 1,
+    freeShipping: true,
+    label: 'Pedido de prueba: total $1.00 con envío gratis',
+    active: true,
+  },
+
   {
     // DESACTIVADO por seguridad: un cupón del 100% público permite que
     // cualquiera que conozca el código pida mercadería física gratis
