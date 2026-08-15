@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getStripe, isStripeConfigured } from '@/lib/stripe';
+import { CreditCard } from 'lucide-react';
 
 interface ExpressPayButtonsProps {
   /** Importe total en la moneda del checkout (USD). */
@@ -156,6 +157,14 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
             No disponible en este navegador. Usá Link o pagá con tarjeta abajo.
           </div>
         )}
+      </div>
+      
+      {/* Indicadores visuales de tarjetas soportadas */}
+      <div className="flex items-center justify-center gap-3 pt-2 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4 w-auto" />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 w-auto" />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
+        <CreditCard className="h-4 w-4 text-muted-foreground" />
       </div>
     </div>
   );
