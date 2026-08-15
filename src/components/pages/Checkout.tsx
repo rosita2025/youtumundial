@@ -30,7 +30,7 @@ import {
   type CustomerForm,
 } from '@/lib/checkout/customer';
 
-import { CreditCard, ShieldCheck, Truck, Tag, X } from 'lucide-react';
+import { CreditCard, ShieldCheck, Truck, Tag, X, RotateCcw, Heart, Gem } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
 import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
@@ -224,12 +224,32 @@ const Checkout = () => {
   if (cart.items.length === 0) {
     return (
       <CheckoutShell>
-        <div className="container mx-auto px-4 py-24 text-center">
-          <h1 className="font-display text-3xl mb-4">Tu carrito está vacío</h1>
-          <p className="text-muted-foreground mb-8">Agregá prendas antes de pasar por caja.</p>
-          <Button size="lg" asChild>
+        <div className="container mx-auto px-4 py-24 text-center max-w-lg">
+          <h1 className="font-display text-3xl mb-4 text-foreground">Tu carrito está vacío</h1>
+          <p className="text-muted-foreground mb-8">Agregá prendas antes de pasar por caja para disfrutar de nuestros beneficios.</p>
+          
+          <Button size="lg" asChild className="mb-12">
             <Link to="/products">Ver productos</Link>
           </Button>
+
+          <div className="grid grid-cols-2 gap-6 pt-12 border-t border-border">
+            <div className="flex flex-col items-center text-center space-y-2">
+              <Truck size={24} className="text-primary" />
+              <span className="text-xs font-medium">Free Singapore delivery</span>
+            </div>
+            <div className="flex flex-col items-center text-center space-y-2">
+              <RotateCcw size={24} className="text-primary" />
+              <span className="text-xs font-medium">Easy Returns</span>
+            </div>
+            <div className="flex flex-col items-center text-center space-y-2">
+              <Heart size={24} className="text-primary" />
+              <span className="text-xs font-medium">Money Back</span>
+            </div>
+            <div className="flex flex-col items-center text-center space-y-2">
+              <Gem size={24} className="text-primary" />
+              <span className="text-xs font-medium">Premium Quality</span>
+            </div>
+          </div>
         </div>
       </CheckoutShell>
     );
@@ -742,16 +762,41 @@ const Checkout = () => {
                       ? 'Confirmar pedido gratis'
                       : 'Pagar ahora'}
               </Button>
-
-
-              <ul className="mt-4 space-y-2 text-xs text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Pago procesado en pasarela segura
-                </li>
-                <li className="flex items-center gap-2">
-                  <Truck className="h-3.5 w-3.5" /> Envío internacional {country.eta}
-                </li>
-              </ul>
+  
+              <div className="mt-8 pt-6 border-t border-border space-y-4">
+                <div className="flex items-center gap-3 text-xs">
+                  <Truck size={16} className="text-primary shrink-0" />
+                  <div>
+                    <span className="font-medium block">Free Singapore delivery</span>
+                    <span className="text-muted-foreground">No minimum spend required</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <RotateCcw size={16} className="text-primary shrink-0" />
+                  <div>
+                    <span className="font-medium block">Easy Returns</span>
+                    <span className="text-muted-foreground">7 days for a full refund</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <Heart size={16} className="text-primary shrink-0" />
+                  <div>
+                    <span className="font-medium block">Money Back Guarantee</span>
+                    <span className="text-muted-foreground">Love it or Your Money Back!</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <Gem size={16} className="text-primary shrink-0" />
+                  <div>
+                    <span className="font-medium block">Premium Quality</span>
+                    <span className="text-muted-foreground">Built-In Comfort</span>
+                  </div>
+                </div>
+              </div>
+  
+              <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-muted-foreground uppercase tracking-wider">
+                <ShieldCheck className="h-3 w-3" /> Pago procesado de forma segura
+              </div>
 
               <button
                 type="button"
