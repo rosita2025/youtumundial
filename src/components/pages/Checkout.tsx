@@ -454,10 +454,15 @@ const Checkout = () => {
               <div className="flex justify-between text-gray-600"><span>Shipping</span><span className="font-medium text-gray-900">
                 {loadingShipping ? <Loader2 className="h-3 w-3 animate-spin inline" /> : totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}
               </span></div>
-              <div className="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-gray-200"><span>Total</span><div className="text-right">
-                <span className="text-xs font-normal text-gray-500 mr-2 uppercase tracking-tight">USD</span>
-                {formatPrice(totals.total)}
-              </div></div>
+              <div className="flex justify-between text-gray-600"><span>Estimated taxes</span><span className="font-medium text-gray-900">{formatPrice(totals.tax)}</span></div>
+              
+              <div className="flex justify-between items-baseline pt-4 border-t border-gray-200">
+                <span className="text-base font-bold text-gray-900">Total</span>
+                <div className="text-right flex items-baseline gap-2">
+                  <span className="text-xs font-normal text-gray-500 uppercase tracking-tight">USD</span>
+                  <span className="text-2xl font-bold text-gray-900">{formatPrice(totals.total)}</span>
+                </div>
+              </div>
               {countryCode === 'PE' && <p className="text-[11px] text-gray-400 text-right italic">Approximately S/ {totals.totalPen.toFixed(2)}</p>}
             </div>
 
