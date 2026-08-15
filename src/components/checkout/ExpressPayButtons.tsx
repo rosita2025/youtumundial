@@ -57,11 +57,8 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
   });
   const [pending, setPending] = useState<ExpressMethod | null>(null);
 
-  // Si el checkout deja de estar bloqueado (por ejemplo, el pago falló y se
-  // cerró el formulario de Stripe), limpiamos el estado de carga.
-  useEffect(() => {
-    if (disabled === false) return;
-  }, [disabled]);
+
+
 
 
 
