@@ -60,9 +60,14 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
         if (active) setSupport({ checked: true, link: false, googlePay: false, applePay: false });
         return;
       }
+      // Con Stripe configurado siempre ofrecemos Link y Google Pay: el pago se
+      // resuelve en la página de Stripe, que los presenta de forma nativa.
+      if (active) {
+        setSupport({ checked: true, link: true, googlePay: true, applePay: false });
+      }
       try {
         const stripe = await getStripe();
-        if (!stripe) throw new Error('Stripe not available');
+        if (!stripe) return;
 
         const paymentRequest = stripe.paymentRequest({
           country: countryCode === 'PE' ? 'US' : countryCode,
@@ -74,16 +79,10 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
         });
         const result = await paymentRequest.canMakePayment();
         if (!active) return;
-        setSupport({
-          checked: true,
-          // Link se ofrece siempre que Stripe esté configurado (se resuelve en
-          // la página de pago alojada por Stripe).
-          link: true,
-          googlePay: Boolean(result?.googlePay),
-          applePay: Boolean(result?.applePay),
-        });
+        // Apple Pay solo se muestra cuando el dispositivo lo soporta.
+        setSupport((prev) => ({ ...prev, applePay: Boolean(result?.applePay) }));
       } catch {
-        if (active) setSupport({ checked: true, link: true, googlePay: false, applePay: false });
+        // Sin detección de carteras mantenemos Link + Google Pay.
       }
     }
 
@@ -109,8 +108,8 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
     );
   }
 
-  const walletLabel = support.applePay && !support.googlePay ? 'apple' : 'google';
   const walletAvailable = support.googlePay || support.applePay;
+
 
   return (
     <div className="space-y-4">
