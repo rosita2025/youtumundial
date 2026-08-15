@@ -19,19 +19,18 @@ const MESSAGES = [
 ];
 
 export function AnnouncementBar() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
     const dismissed = localStorage.getItem('announcement-dismissed');
-    if (!dismissed) {
+    if (dismissed === 'true') {
+      setIsVisible(false);
+      document.documentElement.style.setProperty('--announcement-bar-height', '0px');
+    } else {
       setIsVisible(true);
       document.documentElement.style.setProperty('--announcement-bar-height', '40px');
-    } else {
-      document.documentElement.style.setProperty('--announcement-bar-height', '0px');
     }
   }, []);
 
@@ -46,6 +45,7 @@ export function AnnouncementBar() {
   }, [isVisible, currentMessageIndex]);
 
   const handleNext = () => {
+    if (isTransitioning) return;
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentMessageIndex((prev) => (prev + 1) % MESSAGES.length);
@@ -54,6 +54,7 @@ export function AnnouncementBar() {
   };
 
   const handlePrev = () => {
+    if (isTransitioning) return;
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentMessageIndex((prev) => (prev - 1 + MESSAGES.length) % MESSAGES.length);
@@ -67,15 +68,18 @@ export function AnnouncementBar() {
     document.documentElement.style.setProperty('--announcement-bar-height', '0px');
   };
 
-  if (!isMounted || !isVisible) return null;
+  if (!isVisible) return null;
 
   const currentMessage = MESSAGES[currentMessageIndex];
 
   return (
-    <div className={cn(
-      "w-full bg-[#00D66F] text-black py-2.5 px-4 text-center text-xs md:text-sm font-bold sticky top-0 z-[60] shadow-md transition-all duration-300",
-    )}>
-      <div className="container-wide flex items-center justify-between relative h-5">
+    <div 
+      className={cn(
+        "w-full bg-[#00D66F] text-black py-2.5 px-4 text-center text-xs md:text-sm font-bold sticky top-0 z-[60] shadow-md transition-all duration-300",
+        isTransitioning ? "opacity-90" : "opacity-100"
+      )}
+    >
+      <div className="max-w-[1400px] mx-auto w-full flex items-center justify-between relative h-5">
         <button
           onClick={handlePrev}
           className="p-1 hover:opacity-70 transition-opacity hidden md:block"
@@ -87,7 +91,7 @@ export function AnnouncementBar() {
         <div 
           className={cn(
             "flex-1 flex items-center justify-center transition-all duration-300 transform",
-            isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+            isTransitioning ? "opacity-0 translate-y-1 scale-95" : "opacity-100 translate-y-0 scale-100"
           )}
           aria-live="polite"
         >
@@ -120,5 +124,12 @@ export function AnnouncementBar() {
     </div>
   );
 }
+
+
+
+
+
+
+
 
 
