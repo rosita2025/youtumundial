@@ -428,12 +428,30 @@ const Checkout = () => {
               {countryCode === 'PE' && <p className="text-[11px] text-gray-400 text-right italic">Approximately S/ {totals.totalPen.toFixed(2)}</p>}
             </div>
 
+            {/* Payment Trust Badges */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Guaranteed Safe Checkout</span>
+                <div className="flex flex-wrap items-center justify-center gap-4 opacity-80 grayscale hover:grayscale-0 transition-all duration-300">
+                  <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-3 w-auto" />
+                  <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-5 w-auto" />
+                  <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-4 w-auto" />
+                  <img src="https://cdn.worldvectorlogo.com/logos/apple-pay-1.svg" alt="Apple Pay" className="h-5 w-auto" />
+                  <img src="https://cdn.worldvectorlogo.com/logos/google-pay-2.svg" alt="Google Pay" className="h-4 w-auto" />
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <ShieldCheck size={14} />
+                    <span className="text-[9px] font-bold uppercase tracking-tighter">Secure SSL</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Trust Markers */}
-            <div className="mt-12 pt-8 border-t border-gray-200 grid grid-cols-2 gap-y-8 gap-x-4">
+            <div className="mt-12 grid grid-cols-2 gap-y-8 gap-x-4">
               <div className="flex flex-col items-center text-center space-y-2 group">
                 <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><Truck size={22} className="text-gray-700" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Free SG delivery</span>
-                <span className="text-[9px] text-gray-400 -mt-1">No min. spend</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Global delivery</span>
+                <span className="text-[9px] text-gray-400 -mt-1">Free to Singapore</span>
               </div>
               <div className="flex flex-col items-center text-center space-y-2 group">
                 <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><RotateCcw size={22} className="text-gray-700" /></div>
@@ -442,8 +460,8 @@ const Checkout = () => {
               </div>
               <div className="flex flex-col items-center text-center space-y-2 group">
                 <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><ShieldCheck size={22} className="text-gray-700" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Secure Payment</span>
-                <span className="text-[9px] text-gray-400 -mt-1">Encrypted</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Money Back</span>
+                <span className="text-[9px] text-gray-400 -mt-1">100% Guaranteed</span>
               </div>
               <div className="flex flex-col items-center text-center space-y-2 group">
                 <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><Gem size={22} className="text-gray-700" /></div>
