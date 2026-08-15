@@ -193,11 +193,30 @@ const Cart = () => {
                       <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Código Postal</label>
                       <Input 
                         placeholder="Ej. 10001" 
+                        name="postalCode"
+                        autoComplete="postal-code"
+                        list="cart-city-options"
                         value={zipCode} 
                         onChange={(e) => setZipCode(e.target.value)}
                         className="h-9 text-xs"
                       />
+                      <datalist id="cart-city-options">
+                        {zipPlaces.map((place) => (
+                          <option key={`${place.city}-${place.state}`} value={zipCode}>
+                            {place.state ? `${place.city}, ${place.state}` : place.city}
+                          </option>
+                        ))}
+                      </datalist>
+                      {lookingUpZip && (
+                        <p className="text-[10px] text-muted-foreground" aria-live="polite">Verificando código postal...</p>
+                      )}
+                      {!lookingUpZip && zipPlaces.length > 0 && (
+                        <p className="text-[10px] text-primary font-medium" aria-live="polite">
+                          {zipPlaces[0].state ? `${zipPlaces[0].city}, ${zipPlaces[0].state}` : zipPlaces[0].city}
+                        </p>
+                      )}
                     </div>
+
 
                     <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
                       <div className="flex justify-between items-center text-xs mb-1">
