@@ -22,6 +22,7 @@ import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 import { ExpressPayButtons } from '@/components/checkout/ExpressPayButtons';
 import { detectVisitorGeo } from '@/lib/checkout/geo.functions';
+import { lookupPostalCode, type PostalPlace } from '@/lib/checkout/address.functions';
 
 const Checkout = () => {
   const { cart, clearCart } = useCart();
