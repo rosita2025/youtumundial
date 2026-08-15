@@ -217,15 +217,31 @@ const Checkout = () => {
 
   const handlePay = async () => {
     if (payingRef.current) return;
+    
+    const validation = validateCustomer(customerData);
     if (!validation.ok) {
       setErrors(validation.errors);
-      toast.error('Please complete your shipping information.', {
-        description: 'Email, name, address, phone and postal code are required for delivery.',
+      toast.error('Por favor, completa tus datos de envío.', {
+        description: 'Correo, nombre, dirección, ciudad y teléfono son obligatorios.',
         duration: 5000,
       });
+      
+      // Auto-scroll to first error
+      const firstError = Object.keys(validation.errors)[0];
+      const element = document.getElementsByName(firstError)[0] || document.querySelector(`[placeholder*="${firstError}"]`);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    setShowStripe(true);
+
+    setPaying(true);
+    payingRef.current = true;
+    
+    // Simular un pequeño delay para feedback visual
+    setTimeout(() => {
+      setShowStripe(true);
+      setPaying(false);
+      payingRef.current = false;
+    }, 800);
   };
 
   const cartLines = cart.items.map((item) => ({ variantId: String(item.variant.id), quantity: item.quantity }));
@@ -519,9 +535,16 @@ const Checkout = () => {
                       <Button 
                         onClick={handlePay} 
                         className="w-full h-14 bg-[#111111] hover:bg-black text-white font-bold text-base transition-colors"
-                        disabled={paying}
+                        disabled={paying || loadingShipping}
                       >
-                        Complete details to pay
+                        {paying ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Preparando pago seguro...
+                          </span>
+                        ) : (
+                          'Confirmar y Pagar'
+                        )}
                       </Button>
                     )}
                   </div>

@@ -73,8 +73,16 @@ export function StripeCartCheckout({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
-        No pudimos abrir el pago: {error}
+      <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-6 text-center space-y-4">
+        <p className="text-sm text-destructive font-medium">
+          No pudimos cargar la pasarela de pago: {error}
+        </p>
+        <button 
+          onClick={() => { setError(null); setReady(false); sessionRef.current = null; fetchClientSecret(); }}
+          className="text-xs text-blue-600 underline hover:text-blue-800 font-medium"
+        >
+          Intentar de nuevo
+        </button>
       </div>
     );
   }
