@@ -66,14 +66,14 @@ export interface ShippingMarket {
 }
 
 export const shippingMarkets: Record<ShippingMarketKey, ShippingMarket> = {
-  US: { key: 'US', name: 'United States', service: 'Express', shipping: 5.0, eta: '5-9 days' },
-  CA: { key: 'CA', name: 'Canada', service: 'Economy', shipping: 5.0, eta: '10-18 days' },
+  US: { key: 'US', name: 'United States', service: 'Express', shipping: 5.0, eta: '10-15 days' },
+  CA: { key: 'CA', name: 'Canada', service: 'Economy', shipping: 5.0, eta: '10-15 days' },
   INTL: {
     key: 'INTL',
     name: 'International',
     service: 'Standard',
-    shipping: 6.0, // Default to Europe rate as base fallback
-    eta: '8-15 days',
+    shipping: 6.0,
+    eta: '10-15 days',
   },
 };
 
@@ -138,7 +138,7 @@ export const shippingCountries: ShippingCountry[] = worldCountries.map((c) => {
     name: c.name,
     flag: c.flag,
     shipping: isSingapore ? 0 : getRegionalShippingRate(c.code),
-    eta: isSingapore ? '3-5 days' : market.eta,
+    eta: isSingapore ? '3-5 days' : '10-15 days',
     market: market.key,
   };
 });
@@ -155,7 +155,7 @@ export function shippingCountryFor(code: string): ShippingCountry {
       name: key || 'Singapore',
       flag: '🇸🇬',
       shipping: isSingapore ? 0 : getRegionalShippingRate(key),
-      eta: isSingapore ? '3-5 days' : shippingMarkets.INTL.eta,
+      eta: isSingapore ? '3-5 days' : '10-15 days',
       market: 'INTL',
     }
   );
