@@ -408,11 +408,11 @@ const Checkout = () => {
                   <div className="bg-blue-50 px-4 py-4 flex items-center justify-between border-b border-gray-200">
                     <span className="font-medium text-sm text-gray-900">Credit Card</span>
                     <div className="flex gap-1.5 items-center">
-                      <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-2.5 w-auto" />
-                      <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-4 w-auto" />
-                      <img src="https://cdn.worldvectorlogo.com/logos/american-express-1.svg" alt="Amex" className="h-3 w-auto" />
-                      <img src="https://cdn.worldvectorlogo.com/logos/discover-2.svg" alt="Discover" className="h-2.5 w-auto" />
-                      <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-3 w-auto" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/d/d6/Visa_2021.svg" alt="Visa" className="h-3 w-auto" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4 w-auto" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg" alt="Amex" className="h-3 w-auto" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Discover_Card_logo.svg" alt="Discover" className="h-2.5 w-auto" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-3 w-auto" />
                     </div>
                   </div>
                   <div className="p-4 bg-white">
