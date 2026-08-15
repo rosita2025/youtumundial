@@ -38,6 +38,8 @@ export interface PricedOrder {
   shipping: number;
   total: number;
   coupon: Coupon | null;
+  /** Total fijo de un cupón de prueba: Stripe cobra este importe único. */
+  fixedTotal?: number;
 }
 
 const MAX_QTY_PER_LINE = 20;
