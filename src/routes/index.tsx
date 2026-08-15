@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { fetchCatalog } from "@/lib/data/catalog.functions";
 import Index from "@/components/pages/Index";
 
-const TITLE = "Ropa de Youtumundial — Hoodies, camisetas y joggers";
+const TITLE = "Youtumundial — Premium Hoodies, T-shirts & Joggers";
 const DESCRIPTION =
-  "Comprá ropa cómoda y de calidad en Youtumundial: hoodies, camisetas, joggers y accesorios con envío a Perú, EE.UU., Canadá y Reino Unido.";
+  "Shop premium comfort and quality at Youtumundial: Discover our collection of hoodies, t-shirts, joggers, and accessories with worldwide shipping.";
 const IMAGE =
   "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/852589bc-75d0-4a1d-b3da-5f16ecd5dd55/id-preview-40081b99--03dc2b4b-2805-4ec5-823c-7419dedbca7e.lovable.app-1785000378091.png";
 
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "Ropa de Youtumundial",
+          name: "Youtumundial",
           url: "https://youtumundial.com",
           potentialAction: {
             "@type": "SearchAction",
