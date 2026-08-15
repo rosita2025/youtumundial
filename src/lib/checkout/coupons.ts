@@ -112,6 +112,11 @@ export function findCoupon(
 /** Descuento en USD que aplica el cupón sobre el subtotal. */
 export function couponDiscount(coupon: Coupon | null, subtotal: number): number {
   if (!coupon) return 0;
+  // Cupón de total fijo: el descuento es todo lo que sobra por encima del total fijo.
+  if (typeof coupon.fixedTotal === 'number') {
+    const discount = Math.max(0, subtotal - coupon.fixedTotal);
+    return Math.round(discount * 100) / 100;
+  }
   let discount = 0;
   if (coupon.percentOff) discount += (subtotal * coupon.percentOff) / 100;
   if (coupon.amountOff) discount += coupon.amountOff;
