@@ -21,10 +21,10 @@ export interface GeoLocation {
  */
 export const detectVisitorGeo = createServerFn({ method: 'GET' }).handler(
   async ({ request }): Promise<GeoLocation> => {
-    // 1. Detección por headers (Edge runtime)
-    // Cloudflare e infraestructuras similares inyectan este header.
-    const cfCountry = request.headers.get('cf-ipcountry');
-    const ip = request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for');
+    const req = request as unknown as Request;
+    const cfCountry = req.headers.get('cf-ipcountry');
+    const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for');
+
 
     if (cfCountry && cfCountry !== 'XX') {
       return {
