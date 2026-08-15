@@ -8,13 +8,18 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
 import { shippingCountries, shippingCountryFor, FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
 import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Calculator } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useServerFn } from '@tanstack/react-start';
+import { lookupPostalCode, type PostalPlace } from '@/lib/checkout/address.functions';
 
 const Cart = () => {
   const { cart, updateQuantity, removeItem } = useCart();
   const [selectedCountry, setSelectedCountry] = useState('US');
   const [zipCode, setZipCode] = useState('');
   const [showEstimation, setShowEstimation] = useState(false);
+  const [zipPlaces, setZipPlaces] = useState<PostalPlace[]>([]);
+  const [lookingUpZip, setLookingUpZip] = useState(false);
+  const lookupPostal = useServerFn(lookupPostalCode);
 
   const countryInfo = shippingCountryFor(selectedCountry);
   const isFreeShipping = cart.subtotal >= FREE_SHIPPING_THRESHOLD;
@@ -22,6 +27,24 @@ const Cart = () => {
   const estimatedShipping = isFreeShipping ? 0 : countryInfo.shipping;
   const estimatedTax = cart.subtotal * 0.08; // 8% tax estimate
   const total = cart.subtotal + estimatedTax + estimatedShipping;
+
+  useEffect(() => {
+    const code = zipCode.trim();
+    if (code.length < 3) {
+      setZipPlaces([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setLookingUpZip(true);
+      lookupPostal({ data: { countryCode: selectedCountry, postalCode: code.slice(0, 12) } })
+        .then((result) => { if (!cancelled) setZipPlaces(result.places); })
+        .catch(() => { if (!cancelled) setZipPlaces([]); })
+        .finally(() => { if (!cancelled) setLookingUpZip(false); });
+    }, 450);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [zipCode, selectedCountry, lookupPostal]);
+
 
   if (cart.items.length === 0) {
     return (
