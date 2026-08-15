@@ -31,7 +31,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-[41px] md:top-[44px] z-50 bg-background md:bg-background/95 md:backdrop-blur-sm border-b border-border">
+    <header className="sticky top-[var(--announcement-bar-height,0px)] z-50 bg-background md:bg-background/95 md:backdrop-blur-sm border-b border-border transition-[top] duration-300">
       <nav className="container-wide">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Mobile menu button */}
@@ -124,7 +124,7 @@ export function Header() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          'md:hidden fixed inset-x-0 top-[calc(4rem+48px+41px)] bottom-0 bg-background shadow-lg z-[60] transition-transform duration-300',
+          'md:hidden fixed inset-x-0 top-[calc(4rem+48px+var(--announcement-bar-height,0px))] bottom-0 bg-background shadow-lg z-[60] transition-transform duration-300',
           mobileMenuOpen
             ? 'translate-x-0'
             : '-translate-x-full pointer-events-none'
