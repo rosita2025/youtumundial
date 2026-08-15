@@ -66,7 +66,7 @@ export function AnnouncementBar() {
     document.documentElement.style.setProperty('--announcement-bar-height', '0px');
   };
 
-  if (!isMounted || !isVisible) return null;
+  if (isVisible === null || !isVisible) return null;
 
   const currentMessage = MESSAGES[currentMessageIndex];
 
