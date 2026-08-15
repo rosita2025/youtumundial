@@ -13,34 +13,36 @@ export interface GeoLocation {
  */
 export const detectVisitorGeo = createServerFn({ method: 'GET' }).handler(
   async (ctx): Promise<GeoLocation> => {
-    // TanStack Start provee el objeto Request en el contexto del handler
-    const request = (ctx as any).request as Request;
-    
-    // 1. Detección por headers (Edge runtime)
-    const cfCountry = request?.headers.get('cf-ipcountry');
-    const ip = request?.headers.get('x-real-ip') || request?.headers.get('x-forwarded-for');
-
-    if (cfCountry && cfCountry !== 'XX') {
-      return {
-        countryCode: cfCountry.toUpperCase(),
-        ip: ip ? ip.split(',')[0].trim() : null,
-      };
-    }
-
-    // 2. Respaldo: API externa
     try {
+      // TanStack Start provee el objeto Request en el contexto del handler
+      const request = (ctx as any)?.request as Request | undefined;
+
+      // 1. Detección por headers (Edge runtime)
+      const cfCountry = request?.headers?.get('cf-ipcountry') ?? null;
+      const ip =
+        request?.headers?.get('x-real-ip') ?? request?.headers?.get('x-forwarded-for') ?? null;
+
+      if (cfCountry && cfCountry !== 'XX') {
+        return {
+          countryCode: cfCountry.toUpperCase(),
+          ip: ip ? ip.split(',')[0].trim() : null,
+        };
+      }
+
+      // 2. Respaldo: API externa
       const response = await fetch('https://ipapi.co/json/');
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as { country_code?: string; ip?: string };
         return {
           countryCode: data.country_code?.toUpperCase() || null,
-          ip: data.ip || null
+          ip: data.ip || null,
         };
       }
     } catch {
-      // Silencioso
+      // Silencioso: el checkout continúa sin prefijo detectado.
     }
 
     return { countryCode: null, ip: null };
   }
 );
+
