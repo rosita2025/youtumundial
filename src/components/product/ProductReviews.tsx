@@ -72,7 +72,7 @@ export function ProductReviews({ slug }: { slug: string }) {
               <div className="mt-2 flex items-center gap-3">
                 <StarRating rating={review.rating} size={14} />
                 <span className="text-xs text-muted-foreground">
-                  {dateFormatter.format(new Date(review.date))}
+                  <ReviewDate date={review.date} />
                 </span>
                 {review.size && (
                   <span className="text-xs text-muted-foreground">Talla: {review.size}</span>
