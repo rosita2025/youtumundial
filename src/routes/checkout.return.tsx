@@ -9,6 +9,18 @@ import { getStripeEnvironment } from '@/lib/stripe';
 import { clearAbandonedCheckout } from '@/lib/checkout/abandoned.functions';
 import { Loader2, PackageCheck, RefreshCw, Truck } from 'lucide-react';
 
+const money = (value: number, currency: string) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}
+
 
 
 
