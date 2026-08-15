@@ -219,7 +219,10 @@ const Checkout = () => {
     if (payingRef.current) return;
     if (!validation.ok) {
       setErrors(validation.errors);
-      toast.error('Please complete your shipping information.');
+      toast.error('Please complete your shipping information.', {
+        description: 'Email, name, address, phone and postal code are required for delivery.',
+        duration: 5000,
+      });
       return;
     }
     setShowStripe(true);
