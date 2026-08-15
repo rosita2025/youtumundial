@@ -31,7 +31,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background md:bg-background/95 md:backdrop-blur-sm border-b border-border">
+    <header className="sticky top-[41px] md:top-[44px] z-50 bg-background md:bg-background/95 md:backdrop-blur-sm border-b border-border">
       <nav className="container-wide">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Mobile menu button */}

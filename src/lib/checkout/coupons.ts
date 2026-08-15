@@ -22,6 +22,12 @@ export interface Coupon {
 
 export const coupons: Coupon[] = [
   {
+    code: 'WELCOME5',
+    percentOff: 5,
+    label: '5% off for your first order',
+    active: true,
+  },
+  {
     code: 'BIENVENIDA10',
     percentOff: 10,
     label: '10% de descuento de bienvenida',
