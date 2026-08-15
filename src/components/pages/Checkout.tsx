@@ -470,7 +470,7 @@ const Checkout = () => {
                     />
                     {errors.postalCode && <p className="text-[10px] text-red-500 mt-1">{errors.postalCode}</p>}
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <Input 
                       placeholder="City" 
                       required
@@ -491,7 +491,27 @@ const Checkout = () => {
                     </datalist>
                     {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                   </div>
+                  <div className="col-span-1">
+                    <Input
+                      placeholder={provinceRequired ? (countryCode === 'CA' ? 'Province' : 'State') : 'State / Province (optional)'}
+                      required={provinceRequired}
+                      name="province"
+                      autoComplete="address-level1"
+                      list="checkout-province-options"
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.province ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                      value={customer.province ?? ''}
+                      onChange={(e) => updateCustomer('province', e.target.value)}
+                      aria-invalid={Boolean(errors.province)}
+                    />
+                    <datalist id="checkout-province-options">
+                      {Array.from(new Set(citySuggestions.map((p) => p.state).filter(Boolean))).map((state) => (
+                        <option key={state} value={state as string} />
+                      ))}
+                    </datalist>
+                    {errors.province && <p className="text-[10px] text-red-500 mt-1">{errors.province}</p>}
+                  </div>
                 </div>
+
 
                 {lookingUpPostal && (
                   <p className="flex items-center gap-2 text-xs text-gray-500" aria-live="polite">
