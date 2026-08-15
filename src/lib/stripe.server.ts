@@ -73,7 +73,14 @@ export function getStripeErrorMessage(error: unknown): string {
     }
   }
 
-  return 'Stripe request failed';
+  if (error instanceof Stripe.errors.StripeError) {
+    if (error.code === 'account_invalid' || error.type === 'invalid_request_error') {
+      console.error('[Stripe Config Error]', error.message);
+      return 'Disculpas: la pasarela de pago no está activa para esta cuenta. Por favor contactanos.';
+    }
+  }
+
+  return 'No se pudo iniciar el pago. Revisa los datos o intenta con otro método.';
 }
 
 export interface CheckoutLineInput {
