@@ -66,14 +66,14 @@ export interface ShippingMarket {
 }
 
 export const shippingMarkets: Record<ShippingMarketKey, ShippingMarket> = {
-  US: { key: 'US', name: 'United States', service: 'Express', shipping: 14.9, eta: '5-9 días' },
-  CA: { key: 'CA', name: 'Canada', service: 'Economy', shipping: 9.9, eta: '10-18 días' },
+  US: { key: 'US', name: 'United States', service: 'Express', shipping: 14.9, eta: '5-9 days' },
+  CA: { key: 'CA', name: 'Canada', service: 'Economy', shipping: 9.9, eta: '10-18 days' },
   INTL: {
     key: 'INTL',
-    name: 'Internacional',
+    name: 'International',
     service: 'Standard',
     shipping: 11.9,
-    eta: '8-15 días',
+    eta: '8-15 days',
   },
 };
 
@@ -85,41 +85,43 @@ export function marketForCountry(countryCode: string): ShippingMarket {
 }
 
 /**
- * Todos los países del mundo son destinos válidos. La tarifa y el plazo salen
- * del mercado al que pertenece cada país (EE.UU., Canadá o Internacional), y
- * el precio definitivo siempre se recalcula en el servidor contra Shopify.
+ * All countries are valid destinations. The rate and ETA come from the market
+ * each country belongs to. Final price is recalculated on the server.
+ * Singapore is a special case: Free delivery, no minimum spend.
  */
 export const shippingCountries: ShippingCountry[] = worldCountries.map((c) => {
   const market = marketForCountry(c.code);
+  const isSingapore = c.code === 'SG';
   return {
     code: c.code,
     name: c.name,
     flag: c.flag,
-    shipping: market.shipping,
-    eta: market.eta,
+    shipping: isSingapore ? 0 : market.shipping,
+    eta: isSingapore ? '3-5 days' : market.eta,
     market: market.key,
   };
 });
 
 const shippingByCode = new Map(shippingCountries.map((c) => [c.code, c]));
 
-/** País de destino por código ISO; si no existe, cae al mercado internacional. */
+/** Country destination by ISO code; fallbacks to International market. */
 export function shippingCountryFor(code: string): ShippingCountry {
   const key = String(code ?? '').toUpperCase().slice(0, 2);
+  const isSingapore = key === 'SG';
   return (
     shippingByCode.get(key) ?? {
-      code: key || 'PE',
-      name: key || 'Internacional',
-      flag: '🌍',
-      shipping: shippingMarkets.INTL.shipping,
-      eta: shippingMarkets.INTL.eta,
+      code: key || 'SG',
+      name: key || 'Singapore',
+      flag: '🇸🇬',
+      shipping: isSingapore ? 0 : shippingMarkets.INTL.shipping,
+      eta: isSingapore ? '3-5 days' : shippingMarkets.INTL.eta,
       market: 'INTL',
     }
   );
 }
 
 /** Destinos destacados (los que se muestran en la página de envíos). */
-export const featuredCountryCodes = ['PE', 'US', 'CA', 'GB', 'ES', 'MX', 'AR', 'CL'] as const;
+export const featuredCountryCodes = ['SG', 'US', 'CA', 'GB', 'ES', 'MX', 'AR', 'CL'] as const;
 
 export const featuredShippingCountries: ShippingCountry[] = featuredCountryCodes.map((code) =>
   shippingCountryFor(code),

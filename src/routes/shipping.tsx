@@ -5,16 +5,16 @@ import { featuredShippingCountries, FREE_SHIPPING_THRESHOLD } from "@/lib/checko
 export const Route = createFileRoute("/shipping")({
   head: () => ({
     meta: [
-      { title: "Envíos y devoluciones — Ropa de Youtumundial" },
+      { title: "Shipping & Returns — Youtumundial" },
       {
         name: "description",
         content:
-          "Costos, plazos de entrega y política de cambios y devoluciones de Youtumundial para Perú, EE.UU., Canadá y Reino Unido.",
+          "Costs, delivery times, and returns policy for Youtumundial. Free Singapore delivery with no minimum spend.",
       },
-      { property: "og:title", content: "Envíos y devoluciones — Ropa de Youtumundial" },
+      { property: "og:title", content: "Shipping & Returns — Youtumundial" },
       {
         property: "og:description",
-        content: "Costos, plazos de entrega y política de cambios y devoluciones.",
+        content: "Worldwide shipping costs, delivery times, and 7-day return policy.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -26,17 +26,20 @@ export const Route = createFileRoute("/shipping")({
 function ShippingPage() {
   return (
     <StaticPage
-      title="Envíos y devoluciones"
-      intro="Todo lo que necesitás saber antes y después de comprar."
+      title="Shipping & Returns"
+      intro="Everything you need to know about getting your order and our guarantee."
     >
-      <Section heading="Costos y plazos">
+      <Section heading="Costs & Delivery Times">
+        <p className="mb-4 text-primary font-medium">
+          🇸🇬 Singapore Special: Free delivery on all orders, no minimum spend.
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border border-border rounded-lg">
             <thead className="bg-secondary/50 text-foreground">
               <tr>
-                <th className="p-3 font-medium">Destino</th>
-                <th className="p-3 font-medium">Costo</th>
-                <th className="p-3 font-medium">Plazo estimado</th>
+                <th className="p-3 font-medium">Destination</th>
+                <th className="p-3 font-medium">Cost</th>
+                <th className="p-3 font-medium">Estimated Time</th>
               </tr>
             </thead>
             <tbody>

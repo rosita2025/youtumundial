@@ -14,7 +14,7 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
-import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart } from 'lucide-react';
+import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 
 interface ProductDetailProps {
@@ -182,19 +182,35 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               {selectedVariant?.available ? 'Add to Cart' : 'Out of Stock'}
             </Button>
 
-            {/* Features */}
+            {/* Features & Trust Markers */}
             <div className="pt-6 border-t border-border space-y-4">
               <div className="flex items-center gap-3 text-sm">
-                <Truck size={18} className="text-muted-foreground" />
-                <span>Free shipping on orders over $45</span>
+                <Truck size={18} className="text-primary" />
+                <div>
+                  <span className="font-medium block">Free Singapore delivery</span>
+                  <span className="text-muted-foreground text-xs">No minimum spend required</span>
+                </div>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <RotateCcw size={18} className="text-muted-foreground" />
-                <span>Free 30-day returns</span>
+                <RotateCcw size={18} className="text-primary" />
+                <div>
+                  <span className="font-medium block">Easy Returns</span>
+                  <span className="text-muted-foreground text-xs">Returns within 7 days receive a full refund</span>
+                </div>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <Shield size={18} className="text-muted-foreground" />
-                <span>2-year warranty included</span>
+                <Heart size={18} className="text-primary" />
+                <div>
+                  <span className="font-medium block">Keep what fits well</span>
+                  <span className="text-muted-foreground text-xs">Love it or Your Money Back!</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Gem size={18} className="text-primary" />
+                <div>
+                  <span className="font-medium block">Premium Quality</span>
+                  <span className="text-muted-foreground text-xs">Built-In Comfort in every stitch</span>
+                </div>
               </div>
             </div>
           </div>
