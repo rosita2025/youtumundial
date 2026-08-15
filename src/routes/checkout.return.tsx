@@ -199,6 +199,75 @@ function CheckoutReturn() {
           </div>
         )}
 
+        {sessionId && (summaryLoading || (summary?.ok && summary.lines.length > 0)) && (
+          <div className="rounded-lg border border-border p-5 text-left mb-8">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+              Order summary
+            </h2>
+
+            {summaryLoading && !summary ? (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading your order details...
+              </p>
+            ) : summary ? (
+              <>
+                <ul className="space-y-3 text-sm">
+                  {summary.lines.map((line, index) => (
+                    <li key={`${line.description}-${index}`} className="flex justify-between gap-4">
+                      <span className="text-foreground">
+                        {line.description}
+                        {line.quantity > 1 && (
+                          <span className="text-muted-foreground"> × {line.quantity}</span>
+                        )}
+                      </span>
+                      <span className="font-medium whitespace-nowrap">
+                        {money(line.amount, summary.currency)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-4 border-t border-border pt-4 space-y-2 text-sm">
+                  <Row label="Subtotal" value={money(summary.subtotal, summary.currency)} />
+                  {summary.discount > 0 && (
+                    <Row
+                      label="Discount"
+                      value={`- ${money(summary.discount, summary.currency)}`}
+                    />
+                  )}
+                  <Row
+                    label="Shipping"
+                    value={
+                      summary.shipping > 0 ? money(summary.shipping, summary.currency) : 'Free'
+                    }
+                  />
+                  {summary.tax > 0 && (
+                    <Row label="Taxes" value={money(summary.tax, summary.currency)} />
+                  )}
+                  <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
+                    <span>Total paid</span>
+                    <span>{money(summary.total, summary.currency)}</span>
+                  </div>
+                </div>
+
+                {(summary.email || summary.address) && (
+                  <div className="mt-4 border-t border-border pt-4 space-y-1 text-xs text-muted-foreground">
+                    {summary.email && <p>Confirmation sent to {summary.email}</p>}
+                    {summary.address && (
+                      <p>
+                        Shipping to {summary.name ? `${summary.name}, ` : ''}
+                        {summary.address}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : null}
+          </div>
+        )}
+
+
 
         {sessionId && state === 'loading' && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
