@@ -23,8 +23,8 @@ export function ReviewForm({ slug }: { slug: string }) {
   function submit() {
     const name = author.trim().slice(0, MAX_NAME);
     const text = body.trim().slice(0, MAX_BODY);
-    if (!name) return toast.error("Escribí tu nombre.");
-    if (text.length < 10) return toast.error("Contanos un poco más sobre el producto (mínimo 10 caracteres).");
+    if (!name) return toast.error("Please enter your name.");
+    if (text.length < 10) return toast.error("Please tell us a bit more about the product (minimum 10 characters).");
 
     const review: Review = {
       author: name,
@@ -45,29 +45,29 @@ export function ReviewForm({ slug }: { slug: string }) {
     setSize("");
     setRating(5);
     setOpen(false);
-    toast.success("¡Gracias por tu reseña!", {
-      description: "Ya aparece en la ficha del producto.",
+    toast.success("Thank you for your review!", {
+      description: "It now appears on the product page.",
     });
   }
 
   if (!open) {
     return (
       <Button variant="outline" onClick={() => setOpen(true)}>
-        Escribir una reseña
+        Write a review
       </Button>
     );
   }
 
   return (
     <div className="rounded-xl border border-border p-5">
-      <h3 className="font-medium">Contanos tu experiencia</h3>
+      <h3 className="font-medium">Share your experience</h3>
 
       <div className="mt-4 flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
-            aria-label={`${star} estrellas`}
+            aria-label={`${star} stars`}
             onClick={() => setRating(star)}
             onMouseEnter={() => setHover(star)}
             onMouseLeave={() => setHover(0)}
@@ -88,13 +88,13 @@ export function ReviewForm({ slug }: { slug: string }) {
           value={author}
           maxLength={MAX_NAME}
           onChange={(e) => setAuthor(e.target.value)}
-          placeholder="Tu nombre"
+          placeholder="Your name"
         />
         <Input
           value={size}
           maxLength={10}
           onChange={(e) => setSize(e.target.value)}
-          placeholder="Talla (opcional)"
+          placeholder="Size (optional)"
         />
       </div>
 
@@ -103,14 +103,14 @@ export function ReviewForm({ slug }: { slug: string }) {
         maxLength={MAX_BODY}
         rows={4}
         onChange={(e) => setBody(e.target.value)}
-        placeholder="¿Cómo te quedó? ¿Qué tal la tela, el talle y el envío?"
+        placeholder="How did it fit? What about the fabric, style, and shipping?"
         className="mt-3"
       />
 
       <div className="mt-4 flex items-center gap-3">
-        <Button onClick={submit}>Publicar reseña</Button>
+        <Button onClick={submit}>Post review</Button>
         <Button variant="ghost" onClick={() => setOpen(false)}>
-          Cancelar
+          Cancel
         </Button>
       </div>
     </div>
