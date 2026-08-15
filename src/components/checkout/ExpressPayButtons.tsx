@@ -112,58 +112,75 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
   const walletAvailable = support.googlePay || support.applePay;
 
   return (
-    <div className="space-y-2">
-      <div className="grid sm:grid-cols-2 gap-3">
-        {support.link && (
+    <div className="space-y-4">
+      <div className="grid gap-3">
+        {/* Row 1: Link & PayPal */}
+        <div className="grid grid-cols-2 gap-3">
+          {support.link && (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={onPay}
+              aria-label="Pay with Link"
+              style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
+              className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <img src="https://cdn.worldvectorlogo.com/logos/link-brand.svg" alt="" className="h-4 w-auto" onError={(e) => (e.currentTarget.style.display = 'none')} />
+              Link
+            </button>
+          )}
+
           <button
             type="button"
             disabled={disabled}
             onClick={onPay}
-            aria-label="Pay with Link"
-            // Colores oficiales de la marca Link (no son tokens del tema).
-            style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
-            className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60"
+            aria-label="Pay with PayPal"
+            style={{ backgroundColor: '#FFC439', color: '#003087' }}
+            className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60 flex items-center justify-center"
           >
-            Link
+            <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-4 w-auto" />
           </button>
-        )}
+        </div>
 
+        {/* Row 2: Apple/Google Pay */}
         {walletAvailable ? (
           <button
             type="button"
             disabled={disabled}
             onClick={onPay}
             aria-label={walletLabel === 'apple' ? 'Pay with Apple Pay' : 'Pay with Google Pay'}
-            // Botón negro exigido por las guías de marca de Google/Apple Pay.
             style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
-            className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60"
+            className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60 w-full"
           >
             {walletLabel === 'apple' ? (
-              <span className="font-medium"> Pay</span>
+              <div className="flex items-center gap-1.5">
+                <img src="https://cdn.worldvectorlogo.com/logos/apple-pay-1.svg" alt="Apple Pay" className="h-5 w-auto invert" />
+              </div>
             ) : (
               <GooglePayMark />
             )}
           </button>
         ) : (
-          // Fallback visible: el botón sigue presente pero explica por qué no
-          // se puede usar la cartera en este navegador o dispositivo.
           <div
             role="note"
-            aria-live="polite"
-            className="rounded-md border border-dashed border-border bg-muted/40 px-3 py-3 text-center text-xs leading-snug text-muted-foreground"
+            className="rounded-md border border-dashed border-border bg-muted/20 px-3 py-2.5 text-center text-[10px] leading-snug text-muted-foreground"
           >
-            <span className="block font-medium text-foreground">Google Pay / Apple Pay</span>
-            Not available in this browser. Use Link or pay with a card below.
+            <span className="font-medium text-foreground block mb-0.5">Google Pay / Apple Pay</span>
+            Available on supported browsers & devices.
           </div>
         )}
       </div>
       
-      {/* Indicadores visuales de tarjetas soportadas */}
-      <div className="flex items-center justify-center gap-3 pt-2 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
-        <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-2.5 w-auto" />
-        <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-4 w-auto" />
-        <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-3 w-auto" />
-        <CreditCard className="h-4 w-4 text-muted-foreground" />
+      {/* Visual Trust Badges */}
+      <div className="flex flex-col items-center gap-2 pt-2 border-t border-gray-100 mt-4">
+        <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Secure Global Payments</span>
+        <div className="flex items-center justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all duration-300">
+          <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-3 w-auto" />
+          <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-5 w-auto" />
+          <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-4 w-auto" />
+          <img src="https://cdn.worldvectorlogo.com/logos/apple-pay-1.svg" alt="Apple Pay" className="h-5 w-auto" />
+          <img src="https://cdn.worldvectorlogo.com/logos/google-pay-2.svg" alt="Google Pay" className="h-4 w-auto" />
+        </div>
       </div>
     </div>
   );
