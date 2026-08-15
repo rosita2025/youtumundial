@@ -2,9 +2,13 @@ import { Link } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
-import { Minus, Plus, X, ShoppingBag, ArrowRight } from 'lucide-react';
+import { shippingCountries, shippingCountryFor, FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
+import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Calculator } from 'lucide-react';
+import { useState } from 'react';
 
 const Cart = () => {
   const { cart, updateQuantity, removeItem } = useCart();
