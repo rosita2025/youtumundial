@@ -87,7 +87,7 @@ export function getRegionalShippingRate(countryCode: string): number {
   const englishSpeaking = ['US', 'CA', 'GB', 'AU', 'NZ', 'IE'];
   if (englishSpeaking.includes(code)) return 5.0;
 
-  // Latin America ($8.00)
+  // Latin America ($8.00) - INCLUDES PERU explicitly
   const latam = [
     'AR', 'BO', 'BR', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV', 
     'GT', 'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'UY', 'VE'
