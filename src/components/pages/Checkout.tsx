@@ -387,6 +387,52 @@ const Checkout = () => {
                   </div>
                 </div>
 
+                {/* Shipping Estimator & Timeframe Display */}
+                <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50/50 p-4">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-blue-900 mb-3">
+                    <Truck className="h-4 w-4" />
+                    Delivery Estimate
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start text-xs">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-700">Preparation Time</span>
+                        <span className="text-gray-500 italic">Handling and packing</span>
+                      </div>
+                      <span className="font-bold text-blue-700">3-4 business days</span>
+                    </div>
+
+                    <div className="flex justify-between items-start text-xs pt-2 border-t border-blue-100">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-700">Shipping Time</span>
+                        <span className="text-gray-500 italic">Transit to your address</span>
+                      </div>
+                      <span className="font-bold text-blue-700">{country.eta}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-xs pt-2 border-t border-blue-100">
+                      <span className="font-medium text-gray-700">Shipping Cost</span>
+                      <span className="font-bold text-gray-900">
+                        {loadingShipping ? (
+                          <span className="flex items-center gap-1 text-gray-400">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Calculating...
+                          </span>
+                        ) : totals.shipping === 0 ? (
+                          <span className="text-green-600">Free</span>
+                        ) : (
+                          formatPrice(totals.shipping)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <p className="mt-3 text-[10px] text-blue-600/80 leading-tight">
+                    * Times are estimates and may vary slightly depending on your specific location and local courier service.
+                  </p>
+                </div>
+
                 <div>
                   <Input 
                     placeholder="Phone" 
@@ -395,7 +441,7 @@ const Checkout = () => {
                     onChange={(e) => updateCustomer('phone', e.target.value)} 
                     aria-invalid={Boolean(errors.phone)}
                   />
-                  {errors.phone ? <p className="text-xs text-red-500 mt-1">{errors.phone}</p> : <p className="text-[11px] text-gray-500 mt-1">In case we need to contact you about your order.</p>}
+                  {errors.phone ? <p className="text-xs text-red-500 mt-1">{errors.phone}</p> : <p className="text-[11px] text-gray-500 mt-1">Required for delivery coordination and shipping notifications.</p>}
                 </div>
               </div>
 
