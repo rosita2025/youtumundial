@@ -11,6 +11,20 @@ const dateFormatter = new Intl.DateTimeFormat("es-ES", {
   year: "numeric",
 });
 
+function ReviewDate({ date }: { date: string }) {
+  const [formatted, setFormatted] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFormatted(dateFormatter.format(new Date(date)));
+  }, [date]);
+
+  if (!formatted) {
+    return <span className="invisible">Date</span>;
+  }
+
+  return <>{formatted}</>;
+}
+
 export function ProductReviews({ slug }: { slug: string }) {
   const { reviews, total, average, distribution } = useReviewSummary(slug);
 
