@@ -139,8 +139,18 @@ export function getFriendlyStripeError(error: unknown): FriendlyStripeError {
     return { message: GENERIC_MESSAGE, kind: 'temporary' };
   }
 
+  // Errores propios del checkout (stock, cupón, carrito) ya vienen con un
+  // texto pensado para el cliente; los mantenemos tal cual.
+  if (error instanceof Error && error.message) {
+    if (/is not configured/i.test(error.message)) {
+      return { message: CONFIG_MESSAGE, kind: 'config' };
+    }
+    return { message: error.message, kind: 'data' };
+  }
+
   return { message: GENERIC_MESSAGE, kind: 'temporary' };
 }
+
 
 /** Compatibilidad: devuelve sólo el texto para el cliente. */
 export function getStripeErrorMessage(error: unknown): string {
