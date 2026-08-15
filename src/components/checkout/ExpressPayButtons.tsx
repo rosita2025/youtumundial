@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getStripe, isStripeConfigured } from '@/lib/stripe';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
+
+/** Método exprés en curso, usado para el estado de carga por botón. */
+type ExpressMethod = 'link' | 'googlePay' | 'applePay';
+
 
 interface ExpressPayButtonsProps {
   /** Importe total en la moneda del checkout (USD). */
