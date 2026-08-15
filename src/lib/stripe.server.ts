@@ -191,6 +191,7 @@ export async function createCartSession(data: CartCheckoutInput) {
       ...(data.abandonedReference && {
         abandoned_ref: data.abandonedReference.slice(0, 60),
       }),
+      ...(priced.fixedTotal ? { test_order: '1' } : {}),
     },
     ...(data.customerEmail && { customer_email: data.customerEmail }),
   } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
@@ -289,6 +290,7 @@ export async function readOrderSnapshot(
     confirmationSent: metadata.confirmation_sent === '1',
     abandonedReference: metadata.abandoned_ref || undefined,
     abandonedClosed: metadata.abandoned_closed === '1',
+    testOrder: metadata.test_order === '1',
 
   };
 }
