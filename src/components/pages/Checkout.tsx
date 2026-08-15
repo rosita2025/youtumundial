@@ -130,6 +130,20 @@ const Checkout = () => {
         <div className="container mx-auto px-4 py-24 text-center max-w-lg">
           <h1 className="font-display text-3xl mb-4 text-foreground">Your cart is empty</h1>
           <Button size="lg" asChild className="mb-12"><Link to="/products">View products</Link></Button>
+
+          {/* Payment Trust Badges for empty cart to build trust */}
+          <div className="mt-8 pt-8 border-t border-gray-100">
+            <div className="flex flex-col items-center gap-3">
+              <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Secure Global Payments</span>
+              <div className="flex flex-wrap items-center justify-center gap-6 opacity-60 grayscale">
+                <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-3 w-auto" />
+                <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-5 w-auto" />
+                <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-4 w-auto" />
+                <img src="https://cdn.worldvectorlogo.com/logos/apple-pay-1.svg" alt="Apple Pay" className="h-5 w-auto" />
+                <img src="https://cdn.worldvectorlogo.com/logos/google-pay-2.svg" alt="Google Pay" className="h-4 w-auto" />
+              </div>
+            </div>
+          </div>
         </div>
       </CheckoutShell>
     );
