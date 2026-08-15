@@ -70,6 +70,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
           total: { label: 'Youtumundial', amount: Math.max(50, Math.round(amount * 100)) },
           requestPayerName: true,
           requestPayerEmail: true,
+          requestPayerPhone: true,
         });
         const result = await paymentRequest.canMakePayment();
         if (!active) return;
@@ -149,22 +150,35 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
 
         {/* Row 2: Apple/Google Pay */}
         {walletAvailable ? (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={onPay}
-            aria-label={walletLabel === 'apple' ? 'Pay with Apple Pay' : 'Pay with Google Pay'}
-            style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
-            className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60 w-full"
-          >
-            {walletLabel === 'apple' ? (
-              <div className="flex items-center gap-1.5">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto invert" />
-              </div>
-            ) : (
-              <GooglePayMark />
+          <div className="flex flex-col gap-3">
+            {support.googlePay && (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={onPay}
+                aria-label="Pay with Google Pay"
+                style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
+                className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60 w-full"
+              >
+                <GooglePayMark />
+              </button>
             )}
-          </button>
+            
+            {support.applePay && (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={onPay}
+                aria-label="Pay with Apple Pay"
+                style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
+                className="rounded-md py-3 text-sm inline-flex items-center justify-center hover:brightness-110 transition disabled:opacity-60 w-full"
+              >
+                <div className="flex items-center gap-1.5">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto invert" />
+                </div>
+              </button>
+            )}
+          </div>
         ) : (
           <div
             role="note"
