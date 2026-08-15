@@ -38,6 +38,8 @@ export interface PricedOrder {
   shipping: number;
   total: number;
   coupon: Coupon | null;
+  /** Total fijo de un cupón de prueba: Stripe cobra este importe único. */
+  fixedTotal?: number;
 }
 
 const MAX_QTY_PER_LINE = 20;
@@ -133,6 +135,22 @@ export async function priceOrder(params: {
   const discount = couponDiscount(coupon, subtotal);
   const discounted = Math.max(0, subtotal - discount);
   const country = shippingCountryFor(params.countryCode);
+
+  // Cupón de prueba con total fijo (ej. $1.00): envío gratis y cobro único en
+  // Stripe. Las líneas reales se conservan para el despacho (SUP/Shopify).
+  if (typeof coupon?.fixedTotal === 'number') {
+    const total = Math.max(0.5, Math.round(coupon.fixedTotal * 100) / 100);
+    return {
+      lines,
+      subtotal,
+      discount: Math.round((subtotal - total) * 100) / 100,
+      shipping: 0,
+      total,
+      coupon,
+      fixedTotal: total,
+    };
+  }
+
   // Tarifa real sincronizada desde los perfiles de envío de Shopify
   // (EE.UU., Canadá, Perú, Reino Unido) con fallback a la tarifa fija.
   const { resolveShippingCost } = await import('./shipping.server');

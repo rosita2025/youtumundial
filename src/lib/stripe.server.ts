@@ -142,16 +142,28 @@ export async function createCartSession(data: CartCheckoutInput) {
   });
   const shippingInCents = Math.round(priced.shipping * 100);
 
-  const line_items = priced.lines.map((item) => ({
-    price_data: {
-      currency: 'usd',
-      product_data: { name: item.name },
-      unit_amount: item.amountInCents,
-    },
-    quantity: item.quantity,
-  }));
+  // Cupón de prueba con total fijo: se cobra una sola línea con ese importe.
+  const line_items = priced.fixedTotal
+    ? [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: { name: 'Pedido de prueba — Youtumundial' },
+            unit_amount: Math.round(priced.fixedTotal * 100),
+          },
+          quantity: 1,
+        },
+      ]
+    : priced.lines.map((item) => ({
+        price_data: {
+          currency: 'usd',
+          product_data: { name: item.name },
+          unit_amount: item.amountInCents,
+        },
+        quantity: item.quantity,
+      }));
 
-  if (shippingInCents > 0) {
+  if (!priced.fixedTotal && shippingInCents > 0) {
     line_items.push({
       price_data: {
         currency: 'usd',
@@ -179,6 +191,7 @@ export async function createCartSession(data: CartCheckoutInput) {
       ...(data.abandonedReference && {
         abandoned_ref: data.abandonedReference.slice(0, 60),
       }),
+      ...(priced.fixedTotal ? { test_order: '1' } : {}),
     },
     ...(data.customerEmail && { customer_email: data.customerEmail }),
   } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
@@ -220,6 +233,8 @@ export interface StripeOrderSnapshot {
   abandonedReference?: string;
   /** El borrador de carrito abandonado ya se cerró (idempotencia). */
   abandonedClosed?: boolean;
+  /** Pedido hecho con el cupón de prueba de total fijo. */
+  testOrder?: boolean;
 
 }
 
@@ -275,6 +290,7 @@ export async function readOrderSnapshot(
     confirmationSent: metadata.confirmation_sent === '1',
     abandonedReference: metadata.abandoned_ref || undefined,
     abandonedClosed: metadata.abandoned_closed === '1',
+    testOrder: metadata.test_order === '1',
 
   };
 }
