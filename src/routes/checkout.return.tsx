@@ -67,9 +67,12 @@ function CheckoutReturn() {
 
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
   const [result, setResult] = useState<FulfillmentResult | null>(null);
+  const [summary, setSummary] = useState<OrderSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const [resyncing, setResyncing] = useState(false);
   const [autoTries, setAutoTries] = useState(0);
   const trackedRef = useRef(false);
+
 
   const orderNumber =
     isFreeOrder || isManualOrder ? freeOrderNumber : result?.shopifyOrderNumber;
