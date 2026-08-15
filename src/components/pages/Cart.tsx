@@ -12,9 +12,15 @@ import { useState } from 'react';
 
 const Cart = () => {
   const { cart, updateQuantity, removeItem } = useCart();
+  const [selectedCountry, setSelectedCountry] = useState('US');
+  const [zipCode, setZipCode] = useState('');
+  const [showEstimation, setShowEstimation] = useState(false);
 
+  const countryInfo = shippingCountryFor(selectedCountry);
+  const isFreeShipping = cart.subtotal >= FREE_SHIPPING_THRESHOLD;
+  
+  const estimatedShipping = isFreeShipping ? 0 : countryInfo.shipping;
   const estimatedTax = cart.subtotal * 0.08; // 8% tax estimate
-  const estimatedShipping = cart.subtotal >= 100 ? 0 : 9.99;
   const total = cart.subtotal + estimatedTax + estimatedShipping;
 
   if (cart.items.length === 0) {
