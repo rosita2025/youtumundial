@@ -408,7 +408,7 @@ const Checkout = () => {
                   <div className="bg-blue-50 px-4 py-4 flex items-center justify-between border-b border-gray-200">
                     <span className="font-medium text-sm text-gray-900">Credit Card</span>
                     <div className="flex gap-2 items-center">
-                      <img src="https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" alt="Visa" className="h-2 w-auto" />
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2 w-auto" />
                       <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4 w-auto" />
                       <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg" alt="Amex" className="h-3 w-auto" />
                       <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Discover_Card_logo.svg" alt="Discover" className="h-2.5 w-auto" />
