@@ -2,15 +2,25 @@ import { Link } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
-import { Minus, Plus, X, ShoppingBag, ArrowRight } from 'lucide-react';
+import { shippingCountries, shippingCountryFor, FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
+import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Calculator } from 'lucide-react';
+import { useState } from 'react';
 
 const Cart = () => {
   const { cart, updateQuantity, removeItem } = useCart();
+  const [selectedCountry, setSelectedCountry] = useState('US');
+  const [zipCode, setZipCode] = useState('');
+  const [showEstimation, setShowEstimation] = useState(false);
 
+  const countryInfo = shippingCountryFor(selectedCountry);
+  const isFreeShipping = cart.subtotal >= FREE_SHIPPING_THRESHOLD;
+  
+  const estimatedShipping = isFreeShipping ? 0 : countryInfo.shipping;
   const estimatedTax = cart.subtotal * 0.08; // 8% tax estimate
-  const estimatedShipping = cart.subtotal >= 100 ? 0 : 9.99;
   const total = cart.subtotal + estimatedTax + estimatedShipping;
 
   if (cart.items.length === 0) {
@@ -148,9 +158,71 @@ const Cart = () => {
                 </div>
               </div>
 
-              {cart.subtotal < 100 && (
-                <p className="text-sm text-muted-foreground mt-4">
-                  Add {formatPrice(100 - cart.subtotal)} more for free shipping!
+              {/* Shipping Estimator */}
+              <div className="mt-8 pt-6 border-t border-border">
+                <button 
+                  onClick={() => setShowEstimation(!showEstimation)}
+                  className="flex items-center justify-between w-full text-sm font-medium text-foreground hover:text-primary transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Truck size={16} />
+                    <span>Estimar envío y entrega</span>
+                  </div>
+                  <Calculator size={14} className={showEstimation ? 'rotate-180 transition-transform' : 'transition-transform'} />
+                </button>
+
+                {showEstimation && (
+                  <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">País / Región</label>
+                      <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                        <SelectTrigger className="h-9 text-xs">
+                          <SelectValue placeholder="Selecciona un país" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {shippingCountries.map((c) => (
+                            <SelectItem key={c.code} value={c.code} className="text-xs">
+                              {c.flag} {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Código Postal</label>
+                      <Input 
+                        placeholder="Ej. 10001" 
+                        value={zipCode} 
+                        onChange={(e) => setZipCode(e.target.value)}
+                        className="h-9 text-xs"
+                      />
+                    </div>
+
+                    <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+                      <div className="flex justify-between items-center text-xs mb-1">
+                        <span className="text-muted-foreground">Costo de envío:</span>
+                        <span className="font-bold text-primary">
+                          {estimatedShipping === 0 ? 'GRATIS' : formatPrice(estimatedShipping)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-muted-foreground">Tiempo entrega:</span>
+                        <span className="font-medium">{countryInfo.eta}</span>
+                      </div>
+                      {isFreeShipping && (
+                        <p className="text-[10px] text-green-600 font-medium mt-2 flex items-center gap-1">
+                          ✨ ¡Envío gratis aplicado!
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {!isFreeShipping && (
+                <p className="text-[10px] text-muted-foreground mt-4 text-center">
+                  Agrega {formatPrice(FREE_SHIPPING_THRESHOLD - cart.subtotal)} más para <strong>envío gratis</strong>
                 </p>
               )}
 
