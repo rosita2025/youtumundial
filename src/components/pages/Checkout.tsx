@@ -47,6 +47,24 @@ const Checkout = () => {
   const [shippingQuote, setShippingQuote] = useState<ShippingQuoteResult | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
+  const lastScrollY = useRef(0);
+
+  // Auto-hide order summary on scroll (Shopify behavior)
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // If we are scrolling down and the summary is open, hide it
+      if (showOrderSummary && currentScrollY > 100 && currentScrollY > lastScrollY.current) {
+        setShowOrderSummary(false);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [showOrderSummary]);
 
   const customerData: CustomerForm = { ...customer, countryCode };
   const addressLine = composeAddress(customerData);
