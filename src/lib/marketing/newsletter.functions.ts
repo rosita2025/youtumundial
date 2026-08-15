@@ -36,10 +36,10 @@ export const subscribeNewsletter = createServerFn({ method: 'POST' })
       });
 
       if (!result.ok) {
-        return { ok: false, message: 'No pudimos registrar tu correo. Inténtalo más tarde.' };
+        return { ok: false, message: 'Could not register your email. Please try again later.' };
       }
-      return { ok: true, message: '¡Gracias por suscribirte! Revisa tu correo.' };
+      return { ok: true, message: 'Thank you for subscribing! Please check your email.' };
     } catch {
-      return { ok: false, message: 'No pudimos registrar tu correo. Inténtalo más tarde.' };
+      return { ok: false, message: 'Could not register your email. Please try again later.' };
     }
   });
