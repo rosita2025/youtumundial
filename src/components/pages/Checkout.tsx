@@ -13,7 +13,7 @@ import { type Coupon } from '@/lib/checkout/coupons';
 import { validateCoupon } from '@/lib/checkout/coupon.functions';
 import { getShippingQuote, type ShippingQuoteResult } from '@/lib/checkout/shipping.functions';
 import { saveAbandonedCheckout, clearAbandonedCheckout } from '@/lib/checkout/abandoned.functions';
-import { composeAddress, emptyCustomer, fullName, toE164, validateCustomer, type CustomerErrors, type CustomerForm } from '@/lib/checkout/customer';
+import { composeAddress, emptyCustomer, fullName, toE164, validateCustomer, getDialingPrefix, type CustomerErrors, type CustomerForm } from '@/lib/checkout/customer';
 import { CreditCard, ShieldCheck, Truck, Tag, X, RotateCcw, Heart, Gem, ChevronRight, ShoppingCart, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
