@@ -1,10 +1,28 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+const MESSAGES = [
+  {
+    text: "Enjoy 5% off for your first order. Use code ",
+    highlight: "WELCOME5",
+    type: "promo"
+  },
+  {
+    text: "Free shipping on orders over $45 worldwide",
+    type: "shipping"
+  },
+  {
+    text: "New arrivals synced automatically from our store",
+    type: "new"
+  }
+];
 
 export function AnnouncementBar() {
   const [isVisible, setIsVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -17,6 +35,32 @@ export function AnnouncementBar() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const interval = setInterval(() => {
+      handleNext();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isVisible, currentMessageIndex]);
+
+  const handleNext = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentMessageIndex((prev) => (prev + 1) % MESSAGES.length);
+      setIsTransitioning(false);
+    }, 300);
+  };
+
+  const handlePrev = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentMessageIndex((prev) => (prev - 1 + MESSAGES.length) % MESSAGES.length);
+      setIsTransitioning(false);
+    }, 300);
+  };
+
   const handleDismiss = () => {
     setIsVisible(false);
     localStorage.setItem('announcement-dismissed', 'true');
@@ -25,29 +69,56 @@ export function AnnouncementBar() {
 
   if (!isMounted || !isVisible) return null;
 
+  const currentMessage = MESSAGES[currentMessageIndex];
+
   return (
     <div className={cn(
       "w-full bg-[#00D66F] text-black py-2.5 px-4 text-center text-xs md:text-sm font-bold sticky top-0 z-[60] shadow-md transition-all duration-300",
     )}>
-      <div className="container-wide flex items-center justify-center relative">
-        <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap pr-8">
+      <div className="container-wide flex items-center justify-between relative h-5">
+        <button
+          onClick={handlePrev}
+          className="p-1 hover:opacity-70 transition-opacity hidden md:block"
+          aria-label="Previous message"
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        <div 
+          className={cn(
+            "flex-1 flex items-center justify-center transition-all duration-300 transform",
+            isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+          )}
+          aria-live="polite"
+        >
           <span>
-            Enjoy 5% off for your first order. Use code <span className="underline decoration-2">WELCOME5</span>
-          </span>
-          <span className="hidden md:inline opacity-30">|</span>
-          <span>
-            Free shipping on orders over $45 worldwide
+            {currentMessage.text}
+            {currentMessage.highlight && (
+              <span className="underline decoration-2 ml-1">{currentMessage.highlight}</span>
+            )}
           </span>
         </div>
-        <button
-          onClick={handleDismiss}
-          className="absolute right-0 p-1 hover:opacity-70 transition-opacity"
-          aria-label="Dismiss announcement"
-        >
-          <X size={16} />
-        </button>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleNext}
+            className="p-1 hover:opacity-70 transition-opacity hidden md:block"
+            aria-label="Next message"
+          >
+            <ChevronRight size={16} />
+          </button>
+          
+          <button
+            onClick={handleDismiss}
+            className="p-1 hover:opacity-70 transition-opacity"
+            aria-label="Dismiss announcement"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
 }
+
 
