@@ -136,21 +136,18 @@ export async function priceOrder(params: {
   const discounted = Math.max(0, subtotal - discount);
   const country = shippingCountryFor(params.countryCode);
 
-  // Cupón de prueba con total fijo (ej. $1.00): envío gratis y una sola línea
-  // para Stripe con el importe exacto.
+  // Cupón de prueba con total fijo (ej. $1.00): envío gratis y cobro único en
+  // Stripe. Las líneas reales se conservan para el despacho (SUP/Shopify).
   if (typeof coupon?.fixedTotal === 'number') {
-    const total = Math.round(coupon.fixedTotal * 100) / 100;
-    const first = lines[0];
-    const testLines: PricedLine[] = first
-      ? [{ ...first, amountInCents: Math.max(50, Math.round(total * 100)), quantity: 1 }]
-      : [];
+    const total = Math.max(0.5, Math.round(coupon.fixedTotal * 100) / 100);
     return {
-      lines: testLines,
+      lines,
       subtotal,
       discount: Math.round((subtotal - total) * 100) / 100,
       shipping: 0,
       total,
       coupon,
+      fixedTotal: total,
     };
   }
 
