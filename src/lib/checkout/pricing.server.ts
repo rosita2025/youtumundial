@@ -133,6 +133,26 @@ export async function priceOrder(params: {
   const discount = couponDiscount(coupon, subtotal);
   const discounted = Math.max(0, subtotal - discount);
   const country = shippingCountryFor(params.countryCode);
+
+  // Cupón de prueba con total fijo (ej. $1.00): envío gratis y una sola línea
+  // para Stripe con el importe exacto.
+  if (typeof coupon?.fixedTotal === 'number') {
+    const total = Math.round(coupon.fixedTotal * 100) / 100;
+    const testLines = lines.map((line, index) => ({
+      ...line,
+      amountInCents: index === 0 ? Math.max(50, Math.round(total * 100)) : 0,
+      description: index === 0 ? 'Pedido de prueba' : line.description,
+    }));
+    return {
+      lines: testLines.filter((line) => line.amountInCents > 0),
+      subtotal,
+      discount: Math.round((subtotal - total) * 100) / 100,
+      shipping: 0,
+      total,
+      coupon,
+    };
+  }
+
   // Tarifa real sincronizada desde los perfiles de envío de Shopify
   // (EE.UU., Canadá, Perú, Reino Unido) con fallback a la tarifa fija.
   const { resolveShippingCost } = await import('./shipping.server');
