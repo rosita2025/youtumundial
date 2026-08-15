@@ -122,6 +122,28 @@ export const customerSchema = baseCustomerSchema.superRefine((value, ctx) => {
       message: 'Postal code is required.',
     });
   }
+
+  // 4. Teléfono obligatorio: debe incluir número real además del prefijo del país.
+  const phoneDigits = (value.phone ?? '').replace(/\D/g, '');
+  if (!phoneDigits) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['phone'],
+      message: 'Phone number is required.',
+    });
+  } else {
+    const prefixDigits = getDialingPrefix(country).replace(/\D/g, '');
+    const local = prefixDigits && phoneDigits.startsWith(prefixDigits)
+      ? phoneDigits.slice(prefixDigits.length)
+      : phoneDigits;
+    if (local.length < 6) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['phone'],
+        message: 'Enter your full phone number after the country code.',
+      });
+    }
+  }
 });
 
 
