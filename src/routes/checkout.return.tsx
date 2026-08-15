@@ -68,13 +68,16 @@ function CheckoutReturn() {
   const [autoTries, setAutoTries] = useState(0);
   const trackedRef = useRef(false);
 
+  const orderNumber =
+    isFreeOrder || isManualOrder ? freeOrderNumber : result?.shopifyOrderNumber;
+
   useEffect(() => {
     if (orderNumber && !trackedRef.current) {
       trackedRef.current = true;
       fbEvent.track('Purchase', {
         content_ids: result?.supOrderId ? [result.supOrderId] : [],
         content_type: 'product',
-        value: result?.paidAmount ?? 0,
+        value: (result as any)?.paidAmount ?? 0,
         currency: 'USD',
         order_id: orderNumber
       });
@@ -127,8 +130,6 @@ function CheckoutReturn() {
     return () => clearTimeout(timer);
   }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
 
-  const orderNumber =
-    isFreeOrder || isManualOrder ? freeOrderNumber : result?.shopifyOrderNumber;
   const confirmed = Boolean(sessionId) || isFreeOrder || isManualOrder;
 
 
