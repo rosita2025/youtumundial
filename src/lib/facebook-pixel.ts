@@ -29,7 +29,7 @@ export const fbEvent = {
       t.src = v;
       s = b.getElementsByTagName(e)[0];
       s.parentNode.insertBefore(t, s);
-    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js', null, null, null);
 
     (window as any).fbq('init', PIXEL_ID);
     (window as any).fbq('track', 'PageView');
@@ -52,15 +52,16 @@ export const fbEvent = {
     // 2. Conversions API (Server-side)
     try {
       await trackFacebookEvent({
-        eventName,
-        eventSourceUrl: window.location.href,
-        userData: {
-          client_user_agent: navigator.userAgent,
-          // In a real app, we'd add IP and hashed PII here if available
-        },
-        customData: {
-          currency: 'USD',
-          ...customData
+        data: {
+          eventName,
+          eventSourceUrl: window.location.href,
+          userData: {
+            client_user_agent: navigator.userAgent,
+          },
+          customData: {
+            currency: 'USD',
+            ...customData
+          }
         }
       });
     } catch (err) {
