@@ -138,13 +138,12 @@ export async function priceOrder(params: {
   // para Stripe con el importe exacto.
   if (typeof coupon?.fixedTotal === 'number') {
     const total = Math.round(coupon.fixedTotal * 100) / 100;
-    const testLines = lines.map((line, index) => ({
-      ...line,
-      amountInCents: index === 0 ? Math.max(50, Math.round(total * 100)) : 0,
-      description: index === 0 ? 'Pedido de prueba' : line.description,
-    }));
+    const first = lines[0];
+    const testLines: PricedLine[] = first
+      ? [{ ...first, amountInCents: Math.max(50, Math.round(total * 100)), quantity: 1 }]
+      : [];
     return {
-      lines: testLines.filter((line) => line.amountInCents > 0),
+      lines: testLines,
       subtotal,
       discount: Math.round((subtotal - total) * 100) / 100,
       shipping: 0,
