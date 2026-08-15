@@ -13,7 +13,7 @@ import { validateCoupon } from '@/lib/checkout/coupon.functions';
 import { getShippingQuote, type ShippingQuoteResult } from '@/lib/checkout/shipping.functions';
 import { saveAbandonedCheckout, clearAbandonedCheckout } from '@/lib/checkout/abandoned.functions';
 import { composeAddress, emptyCustomer, fullName, toE164, validateCustomer, type CustomerErrors, type CustomerForm } from '@/lib/checkout/customer';
-import { CreditCard, ShieldCheck, Truck, Tag, X, RotateCcw, Heart, Gem, ChevronRight, ShoppingCart } from 'lucide-react';
+import { CreditCard, ShieldCheck, Truck, Tag, X, RotateCcw, Heart, Gem, ChevronRight, ShoppingCart, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useServerFn } from '@tanstack/react-start';
 import { createDirectSupOrder } from '@/lib/suppliers/direct-order.functions';
@@ -183,7 +183,7 @@ const Checkout = () => {
         >
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" />
-            <span>{showOrderSummary ? 'Ocultar resumen' : 'Mostrar resumen del pedido'}</span>
+            <span>{showOrderSummary ? 'Hide summary' : 'Show order summary'}</span>
           </div>
           <span>{formatPrice(totals.total)}</span>
         </button>
@@ -204,14 +204,14 @@ const Checkout = () => {
             ))}
             <div className="pt-4 border-t border-gray-200 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>{formatPrice(totals.subtotal)}</span></div>
-              <div className="flex justify-between text-gray-600"><span>Envío</span><span>{totals.shipping === 0 ? 'Gratis' : formatPrice(totals.shipping)}</span></div>
+              <div className="flex justify-between text-gray-600"><span>Shipping</span><span>{loadingShipping ? 'Calculating...' : totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}</span></div>
               <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200"><span>Total</span><span>{formatPrice(totals.total)}</span></div>
             </div>
           </div>
         )}
       </div>
 
-      <div className="grid lg:grid-cols-2">
+      <div className="grid lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px]">
         {/* Left Column: Form */}
         <div className="bg-white lg:min-h-screen px-4 py-8 lg:px-12 lg:py-16 lg:border-r lg:border-gray-200">
           <div className="max-w-xl ml-auto">
@@ -226,7 +226,7 @@ const Checkout = () => {
               />
               <div className="relative my-8 text-center">
                 <hr className="border-gray-200" />
-                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-xs font-medium text-gray-400 uppercase">o</span>
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-xs font-medium text-gray-400 uppercase">OR</span>
               </div>
             </section>
 
@@ -234,11 +234,11 @@ const Checkout = () => {
             <section className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-medium text-gray-900">Contacto</h2>
-                  <Link to="/auth" className="text-xs text-blue-600 hover:underline">¿Ya tienes cuenta? Inicia sesión</Link>
+                  <h2 className="text-lg font-medium text-gray-900">Contact</h2>
+                  <Link to="/auth" className="text-xs text-blue-600 hover:underline">Already have an account? Log in</Link>
                 </div>
                 <Input 
-                  placeholder="Correo electrónico" 
+                  placeholder="Email" 
                   className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                   value={customer.email} 
                   onChange={(e) => updateCustomer('email', e.target.value)} 
@@ -249,10 +249,10 @@ const Checkout = () => {
 
               {/* Shipping Address */}
               <div className="space-y-4">
-                <h2 className="text-lg font-medium text-gray-900">Entrega</h2>
+                <h2 className="text-lg font-medium text-gray-900">Delivery</h2>
                 
                 <div className="mb-4">
-                  <Label htmlFor="country" className="sr-only">País</Label>
+                  <Label htmlFor="country" className="sr-only">Country/Region</Label>
                   <select
                     id="country"
                     value={countryCode}
@@ -268,7 +268,7 @@ const Checkout = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Input 
-                      placeholder="Nombre" 
+                      placeholder="First name" 
                       className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                       value={customer.firstName} 
                       onChange={(e) => updateCustomer('firstName', e.target.value)} 
@@ -278,7 +278,7 @@ const Checkout = () => {
                   </div>
                   <div>
                     <Input 
-                      placeholder="Apellido" 
+                      placeholder="Last name" 
                       className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                       value={customer.lastName} 
                       onChange={(e) => updateCustomer('lastName', e.target.value)} 
@@ -289,7 +289,7 @@ const Checkout = () => {
                 </div>
 
                 <Input 
-                  placeholder="Dirección" 
+                  placeholder="Address" 
                   className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                   value={customer.address1} 
                   onChange={(e) => updateCustomer('address1', e.target.value)} 
@@ -298,7 +298,7 @@ const Checkout = () => {
                 {errors.address1 && <p className="text-xs text-red-500 mt-1">{errors.address1}</p>}
 
                 <Input 
-                  placeholder="Apartamento, local, etc. (opcional)" 
+                  placeholder="Apartment, suite, etc. (optional)" 
                   className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                   value={customer.address2 ?? ''} 
                   onChange={(e) => updateCustomer('address2', e.target.value)} 
@@ -307,7 +307,7 @@ const Checkout = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="col-span-1">
                     <Input 
-                      placeholder="Código postal" 
+                      placeholder="Postal code" 
                       className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                       value={customer.postalCode} 
                       onChange={(e) => updateCustomer('postalCode', e.target.value)} 
@@ -316,7 +316,7 @@ const Checkout = () => {
                   </div>
                   <div className="col-span-2">
                     <Input 
-                      placeholder="Ciudad" 
+                      placeholder="City" 
                       className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                       value={customer.city} 
                       onChange={(e) => updateCustomer('city', e.target.value)} 
@@ -327,24 +327,24 @@ const Checkout = () => {
 
                 <div>
                   <Input 
-                    placeholder="Teléfono" 
+                    placeholder="Phone" 
                     className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
                     value={customer.phone} 
                     onChange={(e) => updateCustomer('phone', e.target.value)} 
                     aria-invalid={Boolean(errors.phone)}
                   />
-                  {errors.phone ? <p className="text-xs text-red-500 mt-1">{errors.phone}</p> : <p className="text-[11px] text-gray-500 mt-1">Para recibir avisos sobre la entrega.</p>}
+                  {errors.phone ? <p className="text-xs text-red-500 mt-1">{errors.phone}</p> : <p className="text-[11px] text-gray-500 mt-1">In case we need to contact you about your order.</p>}
                 </div>
               </div>
 
               {/* Payment Section */}
               <div className="pt-8 space-y-4">
-                <h2 className="text-lg font-medium text-gray-900">Pago</h2>
-                <p className="text-xs text-gray-500">Todas las transacciones son seguras y están cifradas.</p>
+                <h2 className="text-lg font-medium text-gray-900">Payment</h2>
+                <p className="text-xs text-gray-500">All transactions are secure and encrypted.</p>
                 
                 <div className="border border-blue-500 rounded-lg overflow-hidden">
                   <div className="bg-blue-50 px-4 py-4 flex items-center justify-between border-b border-gray-200">
-                    <span className="font-medium text-sm text-gray-900">Tarjeta de crédito</span>
+                    <span className="font-medium text-sm text-gray-900">Credit Card</span>
                     <div className="flex gap-1">
                       <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4 w-auto grayscale" />
                       <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4 w-auto grayscale" />
@@ -365,10 +365,10 @@ const Checkout = () => {
                     ) : (
                       <Button 
                         onClick={handlePay} 
-                        className="w-full h-14 bg-[#111111] hover:bg-black text-white font-bold text-base"
+                        className="w-full h-14 bg-[#111111] hover:bg-black text-white font-bold text-base transition-colors"
                         disabled={paying}
                       >
-                        Completar datos para pagar
+                        Complete details to pay
                       </Button>
                     )}
                   </div>
@@ -400,12 +400,12 @@ const Checkout = () => {
             <div className="mt-8 pt-8 border-t border-gray-200">
               <div className="flex gap-2">
                 <Input 
-                  placeholder="Cupón de descuento" 
-                  className="h-11 border-gray-300" 
+                  placeholder="Discount code" 
+                  className="h-11 border-gray-300 bg-white" 
                   value={couponInput} 
                   onChange={(e) => setCouponInput(e.target.value.toUpperCase())} 
                 />
-                <Button onClick={applyCoupon} variant="secondary" className="h-11 px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium">Aplicar</Button>
+                <Button onClick={applyCoupon} variant="secondary" className="h-11 px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors">Apply</Button>
               </div>
               {coupon && (
                 <div className="mt-2 flex items-center justify-between bg-blue-50 px-3 py-2 rounded text-xs text-blue-700">
@@ -417,32 +417,38 @@ const Checkout = () => {
 
             <div className="mt-8 space-y-3 text-sm">
               <div className="flex justify-between text-gray-600"><span>Subtotal</span><span className="font-medium text-gray-900">{formatPrice(totals.subtotal)}</span></div>
-              {totals.discount > 0 && <div className="flex justify-between text-green-600"><span>Descuento</span><span>-{formatPrice(totals.discount)}</span></div>}
-              <div className="flex justify-between text-gray-600"><span>Envío</span><span className="font-medium text-gray-900">{totals.shipping === 0 ? 'Gratis' : formatPrice(totals.shipping)}</span></div>
+              {totals.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(totals.discount)}</span></div>}
+              <div className="flex justify-between text-gray-600"><span>Shipping</span><span className="font-medium text-gray-900">
+                {loadingShipping ? <Loader2 className="h-3 w-3 animate-spin inline" /> : totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}
+              </span></div>
               <div className="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-gray-200"><span>Total</span><div className="text-right">
                 <span className="text-xs font-normal text-gray-500 mr-2 uppercase tracking-tight">USD</span>
                 {formatPrice(totals.total)}
               </div></div>
-              {countryCode === 'PE' && <p className="text-[11px] text-gray-400 text-right italic">Aproximadamente S/ {totals.totalPen.toFixed(2)}</p>}
+              {countryCode === 'PE' && <p className="text-[11px] text-gray-400 text-right italic">Approximately S/ {totals.totalPen.toFixed(2)}</p>}
             </div>
 
             {/* Trust Markers */}
-            <div className="mt-12 pt-8 border-t border-gray-200 grid grid-cols-2 gap-y-6 gap-x-4">
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><Truck size={20} className="text-gray-700" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Free SG delivery</span>
+            <div className="mt-12 pt-8 border-t border-gray-200 grid grid-cols-2 gap-y-8 gap-x-4">
+              <div className="flex flex-col items-center text-center space-y-2 group">
+                <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><Truck size={22} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Free SG delivery</span>
+                <span className="text-[9px] text-gray-400 -mt-1">No min. spend</span>
               </div>
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><RotateCcw size={20} className="text-gray-700" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">7-Day Returns</span>
+              <div className="flex flex-col items-center text-center space-y-2 group">
+                <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><RotateCcw size={22} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">7-Day Returns</span>
+                <span className="text-[9px] text-gray-400 -mt-1">Full refund</span>
               </div>
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><ShieldCheck size={20} className="text-gray-700" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Secure Payment</span>
+              <div className="flex flex-col items-center text-center space-y-2 group">
+                <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><ShieldCheck size={22} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Secure Payment</span>
+                <span className="text-[9px] text-gray-400 -mt-1">Encrypted</span>
               </div>
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-gray-200"><Gem size={20} className="text-gray-700" /></div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Premium Quality</span>
+              <div className="flex flex-col items-center text-center space-y-2 group">
+                <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:scale-105"><Gem size={22} className="text-gray-700" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Premium Quality</span>
+                <span className="text-[9px] text-gray-400 -mt-1">Built-in comfort</span>
               </div>
             </div>
           </div>
