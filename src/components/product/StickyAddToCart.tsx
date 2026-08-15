@@ -70,9 +70,9 @@ export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: S
             </div>
 
             <div className="flex items-center gap-2 mt-1 opacity-60">
-              <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-1.5 sm:h-2 w-auto" />
-              <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-2 sm:h-3 w-auto" />
-              <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-1.5 sm:h-2 w-auto" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-1.5 sm:h-2 w-auto" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-2 sm:h-3 w-auto" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-1.5 sm:h-2 w-auto" />
             </div>
           </div>
         </div>

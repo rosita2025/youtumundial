@@ -168,7 +168,7 @@ const Checkout = () => {
             <div className="flex flex-col items-center gap-3">
               <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Secure Global Payments</span>
               <div className="flex flex-wrap items-center justify-center gap-6 opacity-60 grayscale">
-                <img src="https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" alt="Visa" className="h-2 w-auto" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2 w-auto" />
                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 w-auto" />
                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
                 <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto" />
@@ -505,7 +505,7 @@ const Checkout = () => {
               <div className="flex flex-col items-center gap-3">
                 <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Guaranteed Safe Checkout</span>
                 <div className="flex flex-wrap items-center justify-center gap-4 opacity-80 grayscale hover:grayscale-0 transition-all duration-300">
-                  <img src="https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" alt="Visa" className="h-2 w-auto" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2 w-auto" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 w-auto" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
                   <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto" />

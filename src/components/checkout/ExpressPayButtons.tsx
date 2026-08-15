@@ -125,7 +125,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
               style={{ backgroundColor: '#00D66F', color: '#011E0F' }}
               className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Link_logo_2022.svg" alt="" className="h-4 w-auto" onError={(e) => (e.currentTarget.style.display = 'none')} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Link_logo_2022.svg" alt="" className="h-4 w-auto" />
               Link
             </button>
           )}
@@ -138,7 +138,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
             style={{ backgroundColor: '#FFC439', color: '#003087' }}
             className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60 flex items-center justify-center"
           >
-            <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-4 w-auto" />
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
           </button>
         </div>
 
@@ -175,7 +175,7 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
       <div className="flex flex-col items-center gap-2 pt-2 border-t border-gray-100 mt-4">
         <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Secure Global Payments</span>
         <div className="flex items-center justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all duration-300">
-          <img src="https://logos-world.net/wp-content/uploads/2020/04/Visa-Logo.png" alt="Visa" className="h-2 w-auto" />
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2 w-auto" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-5 w-auto" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg" alt="Apple Pay" className="h-5 w-auto" />
