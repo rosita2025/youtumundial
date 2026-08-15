@@ -19,18 +19,17 @@ const MESSAGES = [
 ];
 
 export function AnnouncementBar() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState<boolean | null>(null);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
     const dismissed = localStorage.getItem('announcement-dismissed');
     if (!dismissed) {
       setIsVisible(true);
       document.documentElement.style.setProperty('--announcement-bar-height', '40px');
     } else {
+      setIsVisible(false);
       document.documentElement.style.setProperty('--announcement-bar-height', '0px');
     }
   }, []);
