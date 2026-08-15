@@ -39,6 +39,8 @@ import { createManualOrder } from '@/lib/checkout/manual-order.functions';
 import { StripeCartCheckout } from '@/components/StripeCartCheckout';
 import { PaymentTestModeBanner } from '@/components/PaymentTestModeBanner';
 import { ExpressPayButtons } from '@/components/checkout/ExpressPayButtons';
+import { detectVisitorGeo } from '@/lib/checkout/geo.functions';
+
 
 
 const methods: { id: PaymentMethod; title: string; description: string; icon: typeof CreditCard }[] = [
@@ -67,7 +69,10 @@ const Checkout = () => {
   const fetchShipping = useServerFn(getShippingQuote);
   const saveAbandoned = useServerFn(saveAbandonedCheckout);
   const clearAbandoned = useServerFn(clearAbandonedCheckout);
+  const getVisitorGeo = useServerFn(detectVisitorGeo);
   const abandonedRef = useRef<string | null>(null);
+  const geoDetectedRef = useRef(false);
+
 
 
   const [countryCode, setCountryCode] = useState('PE');
@@ -105,6 +110,23 @@ const Checkout = () => {
   const shippingKey = cart.items
     .map((i) => `${i.variant.id}x${i.quantity}`)
     .join(',');
+
+  // Detección automática de país por IP.
+  useEffect(() => {
+    if (geoDetectedRef.current) return;
+    geoDetectedRef.current = true;
+
+    getVisitorGeo()
+      .then((geo) => {
+        if (geo.countryCode && shippingCountryFor(geo.countryCode).code === geo.countryCode) {
+          setCountryCode(geo.countryCode);
+        }
+      })
+      .catch(() => {
+        // Fallback silencioso al valor por defecto (PE).
+      });
+  }, [getVisitorGeo]);
+
 
   useEffect(() => {
     if (!shippingKey) return;
