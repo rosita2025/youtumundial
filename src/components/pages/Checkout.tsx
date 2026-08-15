@@ -219,7 +219,10 @@ const Checkout = () => {
     if (payingRef.current) return;
     if (!validation.ok) {
       setErrors(validation.errors);
-      toast.error('Please complete your shipping information.');
+      toast.error('Please complete your shipping information.', {
+        description: 'Email, name, address, phone and postal code are required for delivery.',
+        duration: 5000,
+      });
       return;
     }
     setShowStripe(true);
@@ -311,7 +314,9 @@ const Checkout = () => {
                 </div>
                 <Input 
                   placeholder="Email" 
-                  className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                  type="email"
+                  required
+                  className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.email ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                   value={customer.email} 
                   onChange={(e) => updateCustomer('email', e.target.value)} 
                   aria-invalid={Boolean(errors.email)}
@@ -357,7 +362,8 @@ const Checkout = () => {
                   <div>
                     <Input 
                       placeholder="First name" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.firstName ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.firstName} 
                       onChange={(e) => updateCustomer('firstName', e.target.value)} 
                       aria-invalid={Boolean(errors.firstName)}
@@ -367,7 +373,8 @@ const Checkout = () => {
                   <div>
                     <Input 
                       placeholder="Last name" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.lastName ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.lastName} 
                       onChange={(e) => updateCustomer('lastName', e.target.value)} 
                       aria-invalid={Boolean(errors.lastName)}
@@ -378,7 +385,8 @@ const Checkout = () => {
 
                 <Input 
                   placeholder="Address" 
-                  className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                  required
+                  className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.address1 ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                   value={customer.address1} 
                   onChange={(e) => updateCustomer('address1', e.target.value)} 
                   aria-invalid={Boolean(errors.address1)}
@@ -396,20 +404,24 @@ const Checkout = () => {
                   <div className="col-span-1">
                     <Input 
                       placeholder="Postal code" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.postalCode ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.postalCode} 
                       onChange={(e) => updateCustomer('postalCode', e.target.value)} 
                       aria-invalid={Boolean(errors.postalCode)}
                     />
+                    {errors.postalCode && <p className="text-[10px] text-red-500 mt-1">{errors.postalCode}</p>}
                   </div>
                   <div className="col-span-2">
                     <Input 
                       placeholder="City" 
-                      className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                      required
+                      className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.city ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                       value={customer.city} 
                       onChange={(e) => updateCustomer('city', e.target.value)} 
                       aria-invalid={Boolean(errors.city)}
                     />
+                    {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                   </div>
                 </div>
 
@@ -462,7 +474,9 @@ const Checkout = () => {
                 <div>
                   <Input 
                     placeholder="Phone" 
-                    className="h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500" 
+                    type="tel"
+                    required
+                    className={`h-12 border-gray-300 focus:ring-blue-500 focus:border-blue-500 ${errors.phone ? 'border-red-500 ring-1 ring-red-500' : ''}`} 
                     value={customer.phone} 
                     onChange={(e) => updateCustomer('phone', e.target.value)} 
                     aria-invalid={Boolean(errors.phone)}

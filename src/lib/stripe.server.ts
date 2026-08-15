@@ -182,7 +182,8 @@ export async function createCartSession(data: CartCheckoutInput) {
 const SHIPPING_COUNTRIES =
   [
     'PE', 'US', 'CA', 'GB', 'MX', 'CL', 'CO', 'AR', 'EC', 'BO', 'BR', 'ES',
-    'FR', 'DE', 'IT', 'PT', 'NL', 'AU', 'NZ', 'JP',
+    'FR', 'DE', 'IT', 'PT', 'NL', 'AU', 'NZ', 'JP', 'IE', 'SG', 'MY', 'ID',
+    'PH', 'TH', 'VN', 'ZA', 'NG', 'EG',
   ];
 
 export interface StripeOrderSnapshot {
