@@ -235,7 +235,7 @@ const Checkout = () => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-medium text-gray-900">Contact</h2>
-                  <Link to="/auth" className="text-xs text-blue-600 hover:underline">Already have an account? Log in</Link>
+                  <span className="text-xs text-muted-foreground italic">Already have an account? Log in (Coming soon)</span>
                 </div>
                 <Input 
                   placeholder="Email" 
