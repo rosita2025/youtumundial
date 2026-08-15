@@ -60,6 +60,7 @@ const Checkout = () => {
     shipping: liveShipping,
     total: Math.max(0, totalWithShipping),
     totalPen: Math.round(Math.max(0, totalWithShipping) * checkoutConfig.usdToPen * 100) / 100,
+    tax: 0, // In many Shopify checkouts, tax is calculated later or included
   };
 
   const shippingKey = cart.items.map((i) => `${i.variant.id}x${i.quantity}`).join(',');
@@ -203,36 +204,52 @@ const Checkout = () => {
       <PaymentTestModeBanner />
       
       {/* Mobile Order Summary Toggle */}
-      <div className="lg:hidden border-b border-gray-200 bg-white">
+      <div className="lg:hidden border-b border-gray-200 bg-white sticky top-0 z-50">
         <button 
           onClick={() => setShowOrderSummary(!showOrderSummary)}
           className="w-full px-4 py-4 flex items-center justify-between text-sm text-blue-600 font-medium"
         >
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" />
-            <span>{showOrderSummary ? 'Hide summary' : 'Show order summary'}</span>
+            <span>{showOrderSummary ? 'Hide order summary' : 'Show order summary'}</span>
+            <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${showOrderSummary ? 'rotate-90' : ''}`} />
           </div>
-          <span>{formatPrice(totals.total)}</span>
+          <span className="text-gray-900">{formatPrice(totals.total)}</span>
         </button>
         {showOrderSummary && (
-          <div className="px-4 py-4 bg-[#FAFAFA] border-t border-gray-200 space-y-4">
-            {cart.items.map((item) => (
-              <div key={item.id} className="flex gap-4">
-                <div className="relative h-16 w-16 bg-white border border-gray-200 rounded-md overflow-hidden shrink-0">
-                  <img src={item.product.images[0]?.url} alt={item.product.title} className="h-full w-full object-cover" />
-                  <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border border-white font-bold">{item.quantity}</span>
+          <div className="px-4 py-6 bg-[#FAFAFA] border-t border-gray-200 space-y-6 animate-in slide-in-from-top-4 duration-200">
+            <div className="space-y-4">
+              {cart.items.map((item) => (
+                <div key={item.id} className="flex gap-4">
+                  <div className="relative h-16 w-16 bg-white border border-gray-200 rounded-md overflow-hidden shrink-0">
+                    <img src={item.product.images[0]?.url} alt={item.product.title} className="h-full w-full object-cover" />
+                    <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border border-white font-bold">{item.quantity}</span>
+                  </div>
+                  <div className="flex-1 text-sm">
+                    <p className="font-medium text-gray-900">{item.product.title}</p>
+                    <p className="text-gray-500 text-xs">{item.variant.title}</p>
+                  </div>
+                  <div className="text-sm font-medium">{formatPrice(item.variant.price * item.quantity)}</div>
                 </div>
-                <div className="flex-1 text-sm">
-                  <p className="font-medium text-gray-900">{item.product.title}</p>
-                  <p className="text-gray-500 text-xs">{item.variant.title}</p>
-                </div>
-                <div className="text-sm font-medium">{formatPrice(item.variant.price * item.quantity)}</div>
-              </div>
-            ))}
-            <div className="pt-4 border-t border-gray-200 space-y-2 text-sm">
+              ))}
+            </div>
+
+            <div className="flex gap-2 py-4 border-t border-b border-gray-200">
+              <Input 
+                placeholder="Discount code" 
+                className="h-11 border-gray-300 bg-white" 
+                value={couponInput} 
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())} 
+              />
+              <Button onClick={applyCoupon} variant="secondary" className="h-11 px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium transition-colors">Apply</Button>
+            </div>
+
+            <div className="space-y-2 text-sm pt-2">
               <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>{formatPrice(totals.subtotal)}</span></div>
+              {totals.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(totals.discount)}</span></div>}
               <div className="flex justify-between text-gray-600"><span>Shipping</span><span>{loadingShipping ? 'Calculating...' : totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}</span></div>
-              <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200"><span>Total</span><span>{formatPrice(totals.total)}</span></div>
+              <div className="flex justify-between text-gray-600"><span>Taxes</span><span>{formatPrice(totals.tax)}</span></div>
+              <div className="flex justify-between text-lg font-bold text-gray-900 pt-4 border-t border-gray-200"><span>Total</span><div className="flex items-center gap-2"><span className="text-xs font-normal text-gray-400">USD</span>{formatPrice(totals.total)}</div></div>
             </div>
           </div>
         )}
@@ -372,9 +389,12 @@ const Checkout = () => {
                 <div className="border border-blue-500 rounded-lg overflow-hidden">
                   <div className="bg-blue-50 px-4 py-4 flex items-center justify-between border-b border-gray-200">
                     <span className="font-medium text-sm text-gray-900">Credit Card</span>
-                    <div className="flex gap-1">
-                      <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-2.5 w-auto grayscale" />
-                      <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-4 w-auto grayscale" />
+                    <div className="flex gap-1.5 items-center">
+                      <img src="https://cdn.worldvectorlogo.com/logos/visa.svg" alt="Visa" className="h-2.5 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/mastercard-6.svg" alt="Mastercard" className="h-4 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/american-express-1.svg" alt="Amex" className="h-3 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/discover-2.svg" alt="Discover" className="h-2.5 w-auto" />
+                      <img src="https://cdn.worldvectorlogo.com/logos/paypal-3.svg" alt="PayPal" className="h-3 w-auto" />
                     </div>
                   </div>
                   <div className="p-4 bg-white">
@@ -448,10 +468,15 @@ const Checkout = () => {
               <div className="flex justify-between text-gray-600"><span>Shipping</span><span className="font-medium text-gray-900">
                 {loadingShipping ? <Loader2 className="h-3 w-3 animate-spin inline" /> : totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}
               </span></div>
-              <div className="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-gray-200"><span>Total</span><div className="text-right">
-                <span className="text-xs font-normal text-gray-500 mr-2 uppercase tracking-tight">USD</span>
-                {formatPrice(totals.total)}
-              </div></div>
+              <div className="flex justify-between text-gray-600"><span>Estimated taxes</span><span className="font-medium text-gray-900">{formatPrice(totals.tax)}</span></div>
+              
+              <div className="flex justify-between items-baseline pt-4 border-t border-gray-200">
+                <span className="text-base font-bold text-gray-900">Total</span>
+                <div className="text-right flex items-baseline gap-2">
+                  <span className="text-xs font-normal text-gray-500 uppercase tracking-tight">USD</span>
+                  <span className="text-2xl font-bold text-gray-900">{formatPrice(totals.total)}</span>
+                </div>
+              </div>
               {countryCode === 'PE' && <p className="text-[11px] text-gray-400 text-right italic">Approximately S/ {totals.totalPen.toFixed(2)}</p>}
             </div>
 
