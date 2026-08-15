@@ -5,16 +5,16 @@ import { featuredShippingCountries, FREE_SHIPPING_THRESHOLD } from "@/lib/checko
 export const Route = createFileRoute("/shipping")({
   head: () => ({
     meta: [
-      { title: "Envíos y devoluciones — Ropa de Youtumundial" },
+      { title: "Shipping & Returns — Youtumundial" },
       {
         name: "description",
         content:
-          "Costos, plazos de entrega y política de cambios y devoluciones de Youtumundial para Perú, EE.UU., Canadá y Reino Unido.",
+          "Costs, delivery times, and returns policy for Youtumundial. Free Singapore delivery with no minimum spend.",
       },
-      { property: "og:title", content: "Envíos y devoluciones — Ropa de Youtumundial" },
+      { property: "og:title", content: "Shipping & Returns — Youtumundial" },
       {
         property: "og:description",
-        content: "Costos, plazos de entrega y política de cambios y devoluciones.",
+        content: "Worldwide shipping costs, delivery times, and 7-day return policy.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -26,17 +26,20 @@ export const Route = createFileRoute("/shipping")({
 function ShippingPage() {
   return (
     <StaticPage
-      title="Envíos y devoluciones"
-      intro="Todo lo que necesitás saber antes y después de comprar."
+      title="Shipping & Returns"
+      intro="Everything you need to know about getting your order and our guarantee."
     >
-      <Section heading="Costos y plazos">
+      <Section heading="Costs & Delivery Times">
+        <p className="mb-4 text-primary font-medium">
+          🇸🇬 Singapore Special: Free delivery on all orders, no minimum spend.
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border border-border rounded-lg">
             <thead className="bg-secondary/50 text-foreground">
               <tr>
-                <th className="p-3 font-medium">Destino</th>
-                <th className="p-3 font-medium">Costo</th>
-                <th className="p-3 font-medium">Plazo estimado</th>
+                <th className="p-3 font-medium">Destination</th>
+                <th className="p-3 font-medium">Cost</th>
+                <th className="p-3 font-medium">Estimated Time</th>
               </tr>
             </thead>
             <tbody>
@@ -46,54 +49,52 @@ function ShippingPage() {
                     {c.flag} {c.name}
                   </td>
                   <td className="p-3">US$ {c.shipping}</td>
-                  <td className="p-3">{c.eta} hábiles</td>
+                  <td className="p-3">{c.eta}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p>
-          Envío gratis en compras superiores a US$ {FREE_SHIPPING_THRESHOLD}. Los plazos empiezan a
-          correr desde la confirmación del pago, no desde la compra.
+          Free shipping on international orders over US$ {FREE_SHIPPING_THRESHOLD}. Delivery times 
+          start from payment confirmation.
         </p>
       </Section>
 
-      <Section heading="Seguimiento del pedido">
+      <Section heading="Order Tracking">
         <p>
-          Cuando el paquete sale del almacén te enviamos por email y WhatsApp el número de
-          seguimiento. Puede tardar entre 2 y 5 días en mostrar movimientos: es normal.
+          Once your package leaves our warehouse, we'll send you a tracking number via email 
+          and WhatsApp. It may take 2-5 days to show initial movements.
         </p>
       </Section>
 
-      <Section heading="Impuestos y aduanas">
+      <Section heading="Taxes & Customs">
         <p>
-          Para envíos internacionales, algunos países pueden aplicar aranceles o impuestos de
-          importación al momento de la entrega. Esos cargos los define la aduana de destino y
-          corren por cuenta del comprador.
+          For international shipments, some countries may apply import duties or taxes. These 
+          charges are determined by the destination customs and are the responsibility of the buyer.
         </p>
       </Section>
 
-      <Section heading="Cambios y devoluciones">
+      <Section heading="Returns & Money Back Guarantee">
+        <p className="font-medium text-foreground">Love it or Your Money Back!</p>
         <p>
-          Tenés 14 días desde la recepción para solicitar un cambio de talla o la devolución de una
-          prenda sin uso, con sus etiquetas originales y en su empaque.
+          You have 7 days from receipt to request a full refund or exchange. Items must be 
+          unworn, with original tags and packaging.
         </p>
         <p>
-          Si el producto llegó fallado, dañado o no corresponde a lo pedido, nos hacemos cargo del
-          costo de la devolución y reponemos o reembolsamos el 100%. Mandanos fotos dentro de las
-          72 horas de recibido.
+          If a product arrived faulty or incorrect, we cover all return costs and offer a 100% 
+          replacement or refund. Please send photos within 72 hours of receipt.
         </p>
         <p>
-          En cambios por preferencia (talla o color), el costo del envío de retorno corre por cuenta
-          del comprador. No aceptamos devoluciones de ropa interior ni de artículos en liquidación
-          final.
+          For exchanges based on preference (size/color), return shipping costs are the 
+          responsibility of the buyer. We do not accept returns on underwear or final sale items.
         </p>
       </Section>
 
-      <Section heading="Reembolsos">
+      <Section heading="Refunds">
         <p>
-          Una vez aprobada la devolución, el reembolso se procesa al mismo medio de pago usado en la
-          compra y puede tardar entre 5 y 10 días hábiles en verse reflejado.
+          Once a return is approved, the refund is processed to the original payment method 
+          within 5-10 business days.
         </p>
       </Section>
     </StaticPage>
