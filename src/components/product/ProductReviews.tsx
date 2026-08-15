@@ -3,6 +3,7 @@ import { useReviewSummary } from "@/lib/reviews/use-reviews";
 import { StarRating } from "@/components/product/StarRating";
 import { BadgeCheck } from "lucide-react";
 import { ReviewForm } from "@/components/product/ReviewForm";
+import { useState, useEffect } from "react";
 
 const dateFormatter = new Intl.DateTimeFormat("es-ES", {
   day: "numeric",
