@@ -130,16 +130,21 @@ export function ExpressPayButtons({ amount, countryCode, disabled, onPay }: Expr
             </button>
           )}
 
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={onPay}
-            aria-label="Pay with PayPal"
-            style={{ backgroundColor: '#FFC439', color: '#003087' }}
-            className="rounded-md py-3 text-sm font-semibold hover:brightness-95 transition disabled:opacity-60 flex items-center justify-center"
-          >
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
-          </button>
+          <div className="relative group">
+            <button
+              type="button"
+              disabled
+              aria-label="PayPal (Coming Soon)"
+              style={{ backgroundColor: '#FFC439', color: '#003087' }}
+              className="w-full rounded-md py-3 text-sm font-semibold opacity-60 cursor-not-allowed flex items-center justify-center relative overflow-hidden"
+            >
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto grayscale" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/5 backdrop-blur-[1px]">
+                <span className="text-[10px] uppercase tracking-tighter font-bold bg-white/90 px-2 py-0.5 rounded shadow-sm">Coming Soon</span>
+              </div>
+            </button>
+          </div>
+
         </div>
 
         {/* Row 2: Apple/Google Pay */}
