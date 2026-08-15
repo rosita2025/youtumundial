@@ -142,16 +142,28 @@ export async function createCartSession(data: CartCheckoutInput) {
   });
   const shippingInCents = Math.round(priced.shipping * 100);
 
-  const line_items = priced.lines.map((item) => ({
-    price_data: {
-      currency: 'usd',
-      product_data: { name: item.name },
-      unit_amount: item.amountInCents,
-    },
-    quantity: item.quantity,
-  }));
+  // Cupón de prueba con total fijo: se cobra una sola línea con ese importe.
+  const line_items = priced.fixedTotal
+    ? [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: { name: 'Pedido de prueba — Youtumundial' },
+            unit_amount: Math.round(priced.fixedTotal * 100),
+          },
+          quantity: 1,
+        },
+      ]
+    : priced.lines.map((item) => ({
+        price_data: {
+          currency: 'usd',
+          product_data: { name: item.name },
+          unit_amount: item.amountInCents,
+        },
+        quantity: item.quantity,
+      }));
 
-  if (shippingInCents > 0) {
+  if (!priced.fixedTotal && shippingInCents > 0) {
     line_items.push({
       price_data: {
         currency: 'usd',
