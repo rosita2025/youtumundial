@@ -106,6 +106,9 @@ const Checkout = () => {
     }).catch(() => {});
   }, [getVisitorGeo]);
 
+  // Countries where the courier requires a state/province
+  const provinceRequired = countryCode === 'US' || countryCode === 'CA';
+
   // Address autocomplete: resolve city/state from postal code (reduces typing errors)
   useEffect(() => {
     const code = customer.postalCode.trim();
@@ -123,10 +126,12 @@ const Checkout = () => {
           if (result.places.length > 0) {
             const best = result.places[0];
             setCustomer((prev) => {
-              if (prev.city.trim()) return prev;
-              return { ...prev, city: best.city };
+              const next = { ...prev };
+              if (!prev.city.trim()) next.city = best.city;
+              if (!String(prev.province ?? '').trim() && best.state) next.province = best.state;
+              return next;
             });
-            setErrors((prev) => ({ ...prev, city: undefined }));
+            setErrors((prev) => ({ ...prev, city: undefined, province: undefined }));
           }
         })
         .catch(() => { if (!cancelled) setCitySuggestions([]); })
@@ -134,6 +139,7 @@ const Checkout = () => {
     }, 450);
     return () => { cancelled = true; window.clearTimeout(timer); };
   }, [customer.postalCode, countryCode, lookupPostal]);
+
 
 
 
