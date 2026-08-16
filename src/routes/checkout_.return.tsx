@@ -238,6 +238,57 @@ function CheckoutReturn() {
           </div>
         )}
 
+        {sessionId && !isFreeOrder && !isManualOrder && (
+          <div
+            className={`rounded-lg border p-4 mb-8 text-left ${
+              syncState === 'synced'
+                ? 'border-primary/40 bg-primary/5'
+                : 'border-border bg-secondary/20'
+            }`}
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-3">
+              {syncState === 'synced' ? (
+                <PackageCheck className="h-5 w-5 shrink-0 text-primary" />
+              ) : (
+                <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium">
+                  {syncState === 'synced'
+                    ? 'Order confirmed in our store'
+                    : syncState === 'syncing'
+                      ? 'Syncing with our store...'
+                      : 'Finishing your order registration'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {syncState === 'synced'
+                    ? `Store order number ${shopifyNumber}`
+                    : syncState === 'syncing'
+                      ? 'We are generating your store order number. This page updates automatically.'
+                      : 'We will email you the store order number in a few minutes.'}
+                </p>
+              </div>
+            </div>
+
+            {syncState !== 'synced' && (
+              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{
+                    width: `${Math.min(
+                      95,
+                      15 + (autoTries / MAX_AUTO_TRIES) * 80,
+                    )}%`,
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+
+
         {sessionId && (summaryLoading || summary?.ok) && (
 
           <div className="rounded-lg border border-border p-5 text-left mb-8">
