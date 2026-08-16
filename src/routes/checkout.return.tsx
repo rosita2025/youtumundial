@@ -205,10 +205,17 @@ function CheckoutReturn() {
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Generating your order number...
                 </p>
-                {state === 'done' && !resyncing && (
-                  <p className="text-xs text-amber-600 bg-amber-50 rounded px-2 py-1">
-                    Synchronization is taking longer than usual.
-                  </p>
+                {state === 'done' && !resyncing && !result?.shopifyOrderNumber && (
+                  <div className="text-xs space-y-2">
+                    <p className="text-amber-600 bg-amber-50 rounded px-2 py-1">
+                      Synchronization is taking longer than usual.
+                    </p>
+                    {result?.message && (
+                      <p className="text-muted-foreground italic">
+                        Details: {result.message}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             )}
