@@ -300,7 +300,14 @@ export async function findSupOrderByReference(reference: string): Promise<string
     for (const page of [1, 2]) {
       const orders = await listSupOrders({ page, limit: 50 });
       for (const order of orders) {
-        const marks = [order.out_trade_no, order.outTradeNo, order.remark, order.note]
+        const marks = [
+          order.out_trade_no, 
+          order.outTradeNo, 
+          order.remark, 
+          order.note,
+          order.order_sn,
+          order.order_no
+        ]
           .filter(Boolean)
           .map((v) => String(v));
         if (marks.some((m) => m.includes(reference))) {

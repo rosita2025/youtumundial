@@ -164,7 +164,7 @@ function CheckoutReturn() {
         .then((res) => setResult(res))
         .catch(() => undefined)
         .finally(() => setResyncing(false));
-    }, 4000);
+    }, 2500);
     return () => clearTimeout(timer);
   }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
 
