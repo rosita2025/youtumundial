@@ -335,7 +335,7 @@ export async function createShopifyOrder(
           ...(variantId
             ? { variantId }
             : {
-                title: line.title.slice(0, 250),
+                title: sanitizeShopifyText(line.title),
                 sku: line.sku || undefined,
                 // Sin esto Shopify marca "Shipping not required" y el pedido
                 // no puede enviarse a Sup Dropshipping.
