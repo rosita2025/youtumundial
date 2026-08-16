@@ -118,11 +118,6 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Youtumundial. All rights reserved.
           </p>
-          <p className="text-xs text-muted-foreground max-w-xl md:text-center">
-            Youtumundial is an independent multi-brand retailer. Products are manufactured in China
-            and imported through Taobao and partner suppliers. All brand names and trademarks belong
-            to their respective owners; we are not an official distributor or affiliate.
-          </p>
 
           {/* Social Links */}
           <div className="flex items-center gap-4">
