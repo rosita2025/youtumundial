@@ -7,7 +7,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
  * `/checkout/success`. Redirigimos conservando `session_id`, `free` y `order`
  * para que la página de confirmación muestre el número de pedido de Shopify.
  */
-export const Route = createFileRoute('/checkout/success')({
+export const Route = createFileRoute('/checkout_/success')({
   validateSearch: (
     search: Record<string, unknown>,
   ): { session_id?: string; free?: string; order?: string } => ({

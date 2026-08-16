@@ -24,7 +24,7 @@ function Row({ label, value }: { label: string; value: string }) {
 
 
 
-export const Route = createFileRoute('/checkout/return')({
+export const Route = createFileRoute('/checkout_/return')({
   head: () => ({
     meta: [
       { name: "robots", content: "noindex, nofollow" },
