@@ -200,10 +200,17 @@ function CheckoutReturn() {
             {orderNumber ? (
               <p className="font-display text-4xl font-bold">{orderNumber}</p>
             ) : (
-              <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Generating your order number...
-              </p>
+              <div className="space-y-3 py-2">
+                <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating your order number...
+                </p>
+                {state === 'done' && !resyncing && (
+                  <p className="text-xs text-amber-600 bg-amber-50 rounded px-2 py-1">
+                    Synchronization is taking longer than usual.
+                  </p>
+                )}
+              </div>
             )}
             {isManualOrder && reference && (
               <p className="mt-2 text-xs text-muted-foreground">Reference: {reference}</p>
