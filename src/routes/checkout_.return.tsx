@@ -165,7 +165,7 @@ function CheckoutReturn() {
 
   // Reintento automático: si Shopify todavía no devolvió el número de pedido,
   // volvemos a pedirlo (la creación es idempotente, no duplica pedidos).
-  const MAX_AUTO_TRIES = 10;
+  const MAX_AUTO_TRIES = 2;
 
   useEffect(() => {
     if (!sessionId || state !== 'done' || resyncing) return;
@@ -178,7 +178,7 @@ function CheckoutReturn() {
         .then((res) => setResult(res))
         .catch(() => undefined)
         .finally(() => setResyncing(false));
-    }, 2500);
+    }, 1000);
     return () => clearTimeout(timer);
   }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
 
@@ -186,7 +186,7 @@ function CheckoutReturn() {
   const syncState: 'syncing' | 'synced' | 'delayed' =
     shopifyNumber
       ? 'synced'
-      : state === 'loading' || resyncing || autoTries < MAX_AUTO_TRIES
+      : state === 'loading' || resyncing
         ? 'syncing'
         : 'delayed';
 
