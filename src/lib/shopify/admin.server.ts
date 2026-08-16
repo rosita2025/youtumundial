@@ -11,6 +11,7 @@
 
  */
 
+import { createServerFn } from '@tanstack/react-start';
 import {
   SHOPIFY_API_VERSION,
   SHOPIFY_STORE_PERMANENT_DOMAIN,
@@ -696,13 +697,29 @@ export async function requireShopifyOrderAccess(): Promise<ShopifyScopeGate> {
   const missing = needed.filter(
     (scope) => report.missing.includes(scope) || report.granted.length === 0,
   );
+
   if (missing.length) {
+    const isConfigError = !hasShopifyAdminCredentials();
+    const message = isConfigError
+      ? 'Shopify Admin: Missing SHOPIFY_CLIENT_ID or SHOPIFY_CLIENT_SECRET in project secrets.'
+      : `Missing Shopify order permissions: ${missing.join(', ')}. Please update your custom app scopes in Shopify Admin.`;
+
     return {
       ok: false,
       missing,
-      message: `Faltan permisos de pedidos en Shopify: ${missing.join(', ')}.`,
+      message,
     };
   }
   return { ok: true, missing: [] };
 }
+
+/**
+ * Diagnostic status for Shopify Admin integration.
+ * Only intended for admin-level checks.
+ */
+export const getShopifySyncStatus = createServerFn({ method: 'GET' })
+  .handler(async (): Promise<ShopifyScopeReport> => {
+    return checkShopifyAdminScopes();
+  });
+
 
