@@ -74,10 +74,17 @@ export async function adminRequest<T = any>(
     throw new Error(`Shopify Admin HTTP ${response.status}`);
   }
 
-  if (!response.ok) throw new Error(`Shopify Admin HTTP ${response.status}`);
-  const json = (await response.json()) as { data?: T; errors?: { message: string }[] };
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Shopify Admin Error Response:', errorText);
+    throw new Error(`Shopify Admin HTTP ${response.status}: ${errorText.slice(0, 200)}`);
+  }
+
+  const json = (await response.json()) as { data?: T; errors?: { message: string; locations?: any; fields?: any }[] };
   if (json.errors?.length) {
-    throw new Error(`Shopify Admin: ${json.errors.map((e) => e.message).join(', ')}`);
+    const messages = json.errors.map((e) => e.message).join(', ');
+    console.error('Shopify Admin GraphQL Errors:', json.errors);
+    throw new Error(`Shopify Admin GraphQL: ${messages}`);
   }
   return json.data as T;
 }
@@ -132,30 +139,37 @@ export interface ShopifyOrderResult {
 }
 
 /**
- * Normaliza el teléfono a formato E.164.
- * Shopify rechaza el pedido entero ("Phone is invalid") si el número no es
- * válido, así que si no cumple el formato lo omitimos en vez de fallar.
+ * Normaliza el teléfono a formato E.164 o similar aceptado por Shopify.
+ * Shopify es muy estricto: si el teléfono no es válido, rechaza el pedido.
+ * Si no viene con +, intentamos agregarlo basándonos en que Stripe suele enviarlo limpio.
  */
 export function normalizePhone(raw?: string): string | undefined {
-  const digits = String(raw ?? '').replace(/[^\d+]/g, '');
+  let digits = String(raw ?? '').trim().replace(/[^\d+]/g, '');
   if (!digits) return undefined;
-  const e164 = digits.startsWith('+') ? `+${digits.slice(1).replace(/\D/g, '')}` : undefined;
-  if (!e164) return undefined;
-  const numeric = e164.slice(1);
+
+  // Si no tiene +, pero parece un número largo (ej. 51999...), le ponemos +
+  if (!digits.startsWith('+') && digits.length >= 9) {
+    digits = `+${digits}`;
+  }
+
+  // Validación básica de longitud E.164 (8-15 dígitos después del +)
+  const numeric = digits.replace(/\D/g, '');
   if (numeric.length < 8 || numeric.length > 15) return undefined;
-  return e164;
+
+  return digits.startsWith('+') ? digits : undefined;
 }
 
 /**
  * Limpia y sanitiza textos para Shopify.
- * Shopify rechaza caracteres especiales o emojis en ciertos campos.
+ * Shopify rechaza caracteres especiales, emojis o textos demasiado largos en ciertos campos.
  */
 function sanitizeShopifyText(text?: string): string {
   if (!text) return '';
   // Mantiene alfanuméricos, espacios, puntuación básica y caracteres latinos acentuados.
-  // Elimina emojis y caracteres de control.
+  // Elimina emojis y caracteres de control invisibles.
   return text
-    .replace(/[^\u0020-\u007E\u00A0-\u00FF]/g, '')
+    .replace(/[^\u0020-\u007E\u00A0-\u00FF\u0100-\u017F]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 250);
 }
@@ -378,13 +392,13 @@ export async function createShopifyOrder(
     };
     let { created, errors } = await send(buildOrder(attemptOpts));
 
-    // Reintento automático degradando el dato que Shopify rechazó,
-    // para que el pedido siempre quede registrado con su número.
+    // Reintento automático degradando el dato que Shopify rechazó.
+    // Analizamos el mensaje de error para saber qué campo omitir.
     const failedOn = (needle: string) =>
       errors.some(
         (e) =>
-          (e.field ?? []).some((f) => f.toLowerCase().includes(needle)) ||
-          e.message.toLowerCase().includes(needle),
+          (e.field ?? []).some((f) => f.toLowerCase().includes(needle.toLowerCase())) ||
+          e.message.toLowerCase().includes(needle.toLowerCase()),
       );
 
     if (!created && errors.length && attemptOpts.withCustomer && failedOn('customer')) {
