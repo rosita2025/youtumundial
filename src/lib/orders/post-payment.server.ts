@@ -42,11 +42,14 @@ async function runPostPaymentTasksNow(params: {
   let shopifyOrderName = snapshot.shopifyOrderName;
 
   // 1) Pedido en Shopify (una sola vez).
-  if (!snapshot.shopifyOrderId && snapshot.items.length) {
+  if (!shopifyOrderName && !snapshot.shopifyOrderId && snapshot.items.length) {
     const { createShopifyOrderIdempotent } = await import('@/lib/shopify/admin.server');
     const totalQty = snapshot.items.reduce((sum, i) => sum + i.quantity, 0) || 1;
     // El snapshot no guarda el precio por línea: repartimos el total cobrado.
     const unit = snapshot.amountTotal / totalQty;
+    
+    console.log('Post-payment: triggering Shopify order sync', { reference: sessionId });
+    
     const result = await createShopifyOrderIdempotent({
       reference: sessionId,
       email: snapshot.email,
@@ -69,8 +72,15 @@ async function runPostPaymentTasksNow(params: {
         patch.shopify_order_name = result.orderName;
         shopifyOrderName = result.orderName;
       }
+      console.log('Post-payment: Shopify order created successfully', { 
+        reference: sessionId, 
+        orderName: result.orderName 
+      });
     } else {
-      console.warn('createShopifyOrder failed in post-payment', { reference: sessionId, message: result.message });
+      console.warn('Post-payment: createShopifyOrder failed', { 
+        reference: sessionId, 
+        message: result.message 
+      });
     }
   }
 
