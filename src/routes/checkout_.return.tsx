@@ -100,7 +100,8 @@ function CheckoutReturn() {
 
 
   useEffect(() => {
-    if (orderNumber && !trackedRef.current) {
+    const paid = Boolean(shopifyNumber) || Boolean(result?.paid) || summary?.paid === true;
+    if (orderNumber && paid && !trackedRef.current) {
       trackedRef.current = true;
       fbEvent.track('Purchase', {
         content_ids: result?.supOrderId ? [result.supOrderId] : [],
@@ -110,7 +111,8 @@ function CheckoutReturn() {
         order_id: orderNumber
       });
     }
-  }, [orderNumber, result, summary]);
+  }, [orderNumber, shopifyNumber, result, summary]);
+
 
   // Resumen del pedido tal como se cobró en Stripe.
   useEffect(() => {
