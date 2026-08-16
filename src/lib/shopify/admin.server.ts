@@ -368,17 +368,30 @@ export async function createShopifyOrder(
   };
 
   const send = async (order: ReturnType<typeof buildOrder>) => {
-    const data = await adminRequest<{
-      orderCreate: {
-        order: { id: string; name: string } | null;
-        userErrors: { field: string[] | null; message: string }[];
+    try {
+      const data = await adminRequest<{
+        orderCreate: {
+          order: { id: string; name: string } | null;
+          userErrors: { field: string[] | null; message: string }[];
+        };
+      }>(ORDER_CREATE, { order });
+      return {
+        created: data?.orderCreate?.order ?? null,
+        errors: data?.orderCreate?.userErrors ?? [],
       };
-    }>(ORDER_CREATE, { order });
-    return {
-      created: data?.orderCreate?.order ?? null,
-      errors: data?.orderCreate?.userErrors ?? [],
-    };
+    } catch (error) {
+      // Un error de la API (variable inválida, permiso, red) no debe cortar la
+      // cadena de reintentos: se trata como un error de campo más para que el
+      // siguiente intento degrade el dato rechazado.
+      const message = (error as Error).message || 'Shopify Admin error';
+      console.warn('createShopifyOrder(send)', message);
+      return {
+        created: null as { id: string; name: string } | null,
+        errors: [{ field: null as string[] | null, message }],
+      };
+    }
   };
+
 
   const hasVariants = resolvedVariants.some(Boolean);
 
