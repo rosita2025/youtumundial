@@ -146,6 +146,20 @@ export function normalizePhone(raw?: string): string | undefined {
   return e164;
 }
 
+/**
+ * Limpia y sanitiza textos para Shopify.
+ * Shopify rechaza caracteres especiales o emojis en ciertos campos.
+ */
+function sanitizeShopifyText(text?: string): string {
+  if (!text) return '';
+  // Mantiene alfanuméricos, espacios, puntuación básica y caracteres latinos acentuados.
+  // Elimina emojis y caracteres de control.
+  return text
+    .replace(/[^\u0020-\u007E\u00A0-\u00FF]/g, '')
+    .trim()
+    .slice(0, 250);
+}
+
 /* ------------------------------------------------------------------ */
 /* Enlace de las líneas con la variante real de la tienda              */
 /* ------------------------------------------------------------------ */
