@@ -574,6 +574,8 @@ export interface ShopifyScopeReport {
   granted: string[];
   missing: string[];
   message?: string;
+  /** Últimos errores de sincronización registrados en el servidor. */
+  recentErrors?: any[];
 }
 
 /**
