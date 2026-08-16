@@ -387,7 +387,7 @@ export async function createShopifyOrder(
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
 
-    if (!created && errors.length && (failedOn('address') || failedOn('zip') || failedOn('province') || failedOn('country'))) {
+    if (!created && errors.length && (failedOn('address') || failedOn('zip') || failedOn('province') || failedOn('country') || failedOn('city'))) {
       attemptOpts = { ...attemptOpts, withPhone: false, withAddress: false };
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
