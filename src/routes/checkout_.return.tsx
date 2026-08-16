@@ -86,8 +86,18 @@ function CheckoutReturn() {
   const trackedRef = useRef(false);
 
 
-  const orderNumber =
+  const shopifyNumber =
     isFreeOrder || isManualOrder ? freeOrderNumber : result?.shopifyOrderNumber;
+
+  // Código de respaldo estable: si Shopify tarda o falla, el cliente siempre se
+  // lleva un número con el que podemos encontrar su pedido (deriva del pago).
+  const fallbackNumber = sessionId
+    ? `YTM-${sessionId.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase()}`
+    : reference || undefined;
+
+  const orderNumber = shopifyNumber ?? fallbackNumber;
+  const isFallbackNumber = !shopifyNumber && Boolean(fallbackNumber);
+
 
   useEffect(() => {
     if (orderNumber && !trackedRef.current) {
