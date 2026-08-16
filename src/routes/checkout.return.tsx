@@ -334,20 +334,25 @@ function CheckoutReturn() {
             )}
 
             {(!result.supOrderId || !result.shopifyOrderNumber) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resync}
-                disabled={resyncing}
-                className="mt-2"
-              >
-                {resyncing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-                Retry synchronization
-              </Button>
+              <div className="mt-4 p-4 rounded bg-secondary/30 border border-secondary text-center">
+                <p className="text-xs text-muted-foreground mb-3">
+                  If your order number hasn't appeared, you can try to register it manually.
+                </p>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={resync}
+                  disabled={resyncing}
+                  className="w-full sm:w-auto"
+                >
+                  {resyncing ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                  )}
+                  {resyncing ? 'Registering...' : 'Register order in Shopify'}
+                </Button>
+              </div>
             )}
 
           </div>
