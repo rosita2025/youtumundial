@@ -165,7 +165,7 @@ function CheckoutReturn() {
 
   // Reintento automático: si Shopify todavía no devolvió el número de pedido,
   // volvemos a pedirlo (la creación es idempotente, no duplica pedidos).
-  const MAX_AUTO_TRIES = 10;
+  const MAX_AUTO_TRIES = 2;
 
   useEffect(() => {
     if (!sessionId || state !== 'done' || resyncing) return;
@@ -178,7 +178,7 @@ function CheckoutReturn() {
         .then((res) => setResult(res))
         .catch(() => undefined)
         .finally(() => setResyncing(false));
-    }, 2500);
+    }, 1000);
     return () => clearTimeout(timer);
   }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
 
@@ -186,7 +186,7 @@ function CheckoutReturn() {
   const syncState: 'syncing' | 'synced' | 'delayed' =
     shopifyNumber
       ? 'synced'
-      : state === 'loading' || resyncing || autoTries < MAX_AUTO_TRIES
+      : state === 'loading' || resyncing
         ? 'syncing'
         : 'delayed';
 
@@ -248,44 +248,31 @@ function CheckoutReturn() {
             aria-live="polite"
           >
             <div className="flex items-center gap-3">
-              {syncState === 'synced' ? (
-                <PackageCheck className="h-5 w-5 shrink-0 text-primary" />
-              ) : (
+              {syncState === 'syncing' ? (
                 <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+              ) : (
+                <PackageCheck className="h-5 w-5 shrink-0 text-primary" />
               )}
               <div className="min-w-0">
                 <p className="text-sm font-medium">
                   {syncState === 'synced'
                     ? 'Order confirmed in our store'
                     : syncState === 'syncing'
-                      ? 'Syncing with our store...'
-                      : 'Finishing your order registration'}
+                      ? 'Confirming your order...'
+                      : 'Order registered'}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {syncState === 'synced'
                     ? `Store order number ${shopifyNumber}`
                     : syncState === 'syncing'
-                      ? 'We are generating your store order number. This page updates automatically.'
-                      : 'We will email you the store order number in a few minutes.'}
+                      ? 'Just a moment.'
+                      : 'We will email you the store order number shortly.'}
                 </p>
               </div>
             </div>
-
-            {syncState !== 'synced' && (
-              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{
-                    width: `${Math.min(
-                      95,
-                      15 + (autoTries / MAX_AUTO_TRIES) * 80,
-                    )}%`,
-                  }}
-                />
-              </div>
-            )}
           </div>
         )}
+
 
 
 
