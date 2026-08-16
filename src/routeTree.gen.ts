@@ -27,6 +27,7 @@ import { Route as ProductosSkuRouteImport } from './routes/productos.$sku'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
+import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
 import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
 import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
@@ -124,6 +125,11 @@ const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
   path: '/return',
   getParentRoute: () => CheckoutRoute,
 } as any)
+const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
+  id: '/admin/diagnostico',
+  path: '/admin/diagnostico',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminClientesRoute = AdminClientesRouteImport.update({
   id: '/admin/clientes',
   path: '/admin/clientes',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin/clientes': typeof AdminClientesRoute
+  '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin/clientes': typeof AdminClientesRoute
+  '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin/clientes': typeof AdminClientesRoute
+  '/admin/diagnostico': typeof AdminDiagnosticoRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/admin/clientes'
+    | '/admin/diagnostico'
     | '/checkout/return'
     | '/checkout/success'
     | '/collections/$slug'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/admin/clientes'
+    | '/admin/diagnostico'
     | '/checkout/return'
     | '/checkout/success'
     | '/collections/$slug'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/admin/clientes'
+    | '/admin/diagnostico'
     | '/checkout/return'
     | '/checkout/success'
     | '/collections/$slug'
@@ -331,6 +343,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   AdminClientesRoute: typeof AdminClientesRoute
+  AdminDiagnosticoRoute: typeof AdminDiagnosticoRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ProductosSkuRoute: typeof ProductosSkuRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
@@ -470,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/admin/diagnostico': {
+      id: '/admin/diagnostico'
+      path: '/admin/diagnostico'
+      fullPath: '/admin/diagnostico'
+      preLoaderRoute: typeof AdminDiagnosticoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/clientes': {
       id: '/admin/clientes'
       path: '/admin/clientes'
@@ -543,6 +563,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   AdminClientesRoute: AdminClientesRoute,
+  AdminDiagnosticoRoute: AdminDiagnosticoRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ProductosSkuRoute: ProductosSkuRoute,
   ProductsSlugRoute: ProductsSlugRoute,
