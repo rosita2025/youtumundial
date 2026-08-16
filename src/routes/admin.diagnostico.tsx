@@ -98,6 +98,38 @@ function ShopifyDiagnostics() {
             </CardContent>
           </Card>
 
+          {status.recentErrors && status.recentErrors.length > 0 && (
+            <Card className="border-destructive/30 bg-destructive/5">
+              <CardHeader>
+                <CardTitle className="text-destructive flex items-center gap-2 text-lg">
+                  <ShieldAlert className="h-5 w-5" />
+                  Recent Sync Failures
+                </CardTitle>
+                <CardDescription>
+                  Detailed errors from the last 10 synchronization attempts.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {status.recentErrors.map((error: any, i: number) => (
+                    <div key={i} className="text-xs p-3 rounded border border-destructive/20 bg-white">
+                      <div className="flex justify-between mb-1">
+                        <span className="font-bold uppercase text-[10px] text-muted-foreground">
+                          {error.entity} · {error.action}
+                        </span>
+                        <span className="text-muted-foreground">{new Date(error.at).toLocaleString()}</span>
+                      </div>
+                      <p className="font-mono text-destructive break-words">{error.cause}</p>
+                      {error.reference && (
+                        <p className="mt-1 text-muted-foreground">Ref: {error.reference}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {!status.ok && status.message && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
               <strong>Error Message:</strong> {status.message}

@@ -146,6 +146,20 @@ export function normalizePhone(raw?: string): string | undefined {
   return e164;
 }
 
+/**
+ * Limpia y sanitiza textos para Shopify.
+ * Shopify rechaza caracteres especiales o emojis en ciertos campos.
+ */
+function sanitizeShopifyText(text?: string): string {
+  if (!text) return '';
+  // Mantiene alfanuméricos, espacios, puntuación básica y caracteres latinos acentuados.
+  // Elimina emojis y caracteres de control.
+  return text
+    .replace(/[^\u0020-\u007E\u00A0-\u00FF]/g, '')
+    .trim()
+    .slice(0, 250);
+}
+
 /* ------------------------------------------------------------------ */
 /* Enlace de las líneas con la variante real de la tienda              */
 /* ------------------------------------------------------------------ */
@@ -285,11 +299,11 @@ export async function createShopifyOrder(
     const shippingAddress =
       input.address && opts.withAddress
         ? {
-            firstName: firstName || 'Cliente',
-            lastName: rest.join(' ') || 'Youtumundial',
-            address1: input.address.line1 ?? '',
-            address2: input.address.line2 ?? '',
-            city: input.address.city ?? '',
+            firstName: sanitizeShopifyText(firstName || 'Cliente'),
+            lastName: sanitizeShopifyText(rest.join(' ') || 'Youtumundial'),
+            address1: sanitizeShopifyText(input.address.line1 ?? ''),
+            address2: sanitizeShopifyText(input.address.line2 ?? ''),
+            city: sanitizeShopifyText(input.address.city ?? ''),
             provinceCode: input.address.state ?? undefined,
             zip: input.address.postal_code ?? '',
             countryCode: input.address.country ?? undefined,
@@ -321,7 +335,7 @@ export async function createShopifyOrder(
           ...(variantId
             ? { variantId }
             : {
-                title: line.title.slice(0, 250),
+                title: sanitizeShopifyText(line.title),
                 sku: line.sku || undefined,
                 // Sin esto Shopify marca "Shipping not required" y el pedido
                 // no puede enviarse a Sup Dropshipping.
@@ -574,6 +588,8 @@ export interface ShopifyScopeReport {
   granted: string[];
   missing: string[];
   message?: string;
+  /** Últimos errores de sincronización registrados en el servidor. */
+  recentErrors?: any[];
 }
 
 /**
@@ -719,7 +735,15 @@ export async function requireShopifyOrderAccess(): Promise<ShopifyScopeGate> {
  */
 export const getShopifySyncStatus = createServerFn({ method: 'GET' })
   .handler(async (): Promise<ShopifyScopeReport> => {
-    return checkShopifyAdminScopes();
+    const report = await checkShopifyAdminScopes();
+    try {
+      const { recentSyncAudit } = await import('@/lib/observability/sync-audit.server');
+      const audits = recentSyncAudit(10);
+      report.recentErrors = audits.filter((a) => a.status === 'rejected' || a.status === 'error');
+    } catch (e) {
+      console.warn('getShopifySyncStatus audit', (e as Error).message);
+    }
+    return report;
   });
 
 
