@@ -299,11 +299,11 @@ export async function createShopifyOrder(
     const shippingAddress =
       input.address && opts.withAddress
         ? {
-            firstName: firstName || 'Cliente',
-            lastName: rest.join(' ') || 'Youtumundial',
-            address1: input.address.line1 ?? '',
-            address2: input.address.line2 ?? '',
-            city: input.address.city ?? '',
+            firstName: sanitizeShopifyText(firstName || 'Cliente'),
+            lastName: sanitizeShopifyText(rest.join(' ') || 'Youtumundial'),
+            address1: sanitizeShopifyText(input.address.line1 ?? ''),
+            address2: sanitizeShopifyText(input.address.line2 ?? ''),
+            city: sanitizeShopifyText(input.address.city ?? ''),
             provinceCode: input.address.state ?? undefined,
             zip: input.address.postal_code ?? '',
             countryCode: input.address.country ?? undefined,
