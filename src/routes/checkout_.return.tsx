@@ -163,9 +163,9 @@ function CheckoutReturn() {
     };
   }, [sessionId]);
 
-  // Reintento automático: si Shopify todavía no devolvió el número de pedido,
-  // volvemos a pedirlo (la creación es idempotente, no duplica pedidos).
-  const MAX_AUTO_TRIES = 2;
+  // Un solo reintento rápido: si Shopify aún no devolvió el número de pedido,
+  // lo volvemos a pedir una sola vez tras 1 segundo (la creación es idempotente).
+  const MAX_AUTO_TRIES = 1;
 
   useEffect(() => {
     if (!sessionId || state !== 'done' || resyncing) return;
