@@ -721,7 +721,15 @@ export async function requireShopifyOrderAccess(): Promise<ShopifyScopeGate> {
  */
 export const getShopifySyncStatus = createServerFn({ method: 'GET' })
   .handler(async (): Promise<ShopifyScopeReport> => {
-    return checkShopifyAdminScopes();
+    const report = await checkShopifyAdminScopes();
+    try {
+      const { recentSyncAudit } = await import('@/lib/observability/sync-audit.server');
+      const audits = recentSyncAudit(10);
+      report.recentErrors = audits.filter((a) => a.status === 'rejected' || a.status === 'error');
+    } catch (e) {
+      console.warn('getShopifySyncStatus audit', (e as Error).message);
+    }
+    return report;
   });
 
 
