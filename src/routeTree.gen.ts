@@ -29,7 +29,6 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout_.success'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout_.return'
 import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
 import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
-import { Route as ApiPublicTmpSyncCheckRouteImport } from './routes/api/public/tmp-sync-check'
 import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
 import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
@@ -136,11 +135,6 @@ const AdminClientesRoute = AdminClientesRouteImport.update({
   path: '/admin/clientes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTmpSyncCheckRoute = ApiPublicTmpSyncCheckRouteImport.update({
-  id: '/api/public/tmp-sync-check',
-  path: '/api/public/tmp-sync-check',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicSupSyncTrackingRoute =
   ApiPublicSupSyncTrackingRouteImport.update({
     id: '/api/public/sup/sync-tracking',
@@ -190,7 +184,6 @@ export interface FileRoutesByFullPath {
   '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
-  '/api/public/tmp-sync-check': typeof ApiPublicTmpSyncCheckRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
   '/api/public/shopify/webhook': typeof ApiPublicShopifyWebhookRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
@@ -218,7 +211,6 @@ export interface FileRoutesByTo {
   '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
-  '/api/public/tmp-sync-check': typeof ApiPublicTmpSyncCheckRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
   '/api/public/shopify/webhook': typeof ApiPublicShopifyWebhookRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
@@ -247,7 +239,6 @@ export interface FileRoutesById {
   '/productos/$sku': typeof ProductosSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
-  '/api/public/tmp-sync-check': typeof ApiPublicTmpSyncCheckRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
   '/api/public/shopify/webhook': typeof ApiPublicShopifyWebhookRoute
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
@@ -277,7 +268,6 @@ export interface FileRouteTypes {
     | '/productos/$sku'
     | '/products/$slug'
     | '/products/'
-    | '/api/public/tmp-sync-check'
     | '/api/public/audit/connections'
     | '/api/public/shopify/webhook'
     | '/api/public/sup/shipping'
@@ -305,7 +295,6 @@ export interface FileRouteTypes {
     | '/productos/$sku'
     | '/products/$slug'
     | '/products'
-    | '/api/public/tmp-sync-check'
     | '/api/public/audit/connections'
     | '/api/public/shopify/webhook'
     | '/api/public/sup/shipping'
@@ -333,7 +322,6 @@ export interface FileRouteTypes {
     | '/productos/$sku'
     | '/products/$slug'
     | '/products/'
-    | '/api/public/tmp-sync-check'
     | '/api/public/audit/connections'
     | '/api/public/shopify/webhook'
     | '/api/public/sup/shipping'
@@ -362,7 +350,6 @@ export interface RootRouteChildren {
   ProductosSkuRoute: typeof ProductosSkuRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
-  ApiPublicTmpSyncCheckRoute: typeof ApiPublicTmpSyncCheckRoute
   ApiPublicAuditConnectionsRoute: typeof ApiPublicAuditConnectionsRoute
   ApiPublicShopifyWebhookRoute: typeof ApiPublicShopifyWebhookRoute
   ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
@@ -512,13 +499,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminClientesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/tmp-sync-check': {
-      id: '/api/public/tmp-sync-check'
-      path: '/api/public/tmp-sync-check'
-      fullPath: '/api/public/tmp-sync-check'
-      preLoaderRoute: typeof ApiPublicTmpSyncCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/sup/sync-tracking': {
       id: '/api/public/sup/sync-tracking'
       path: '/api/public/sup/sync-tracking'
@@ -578,7 +558,6 @@ const rootRouteChildren: RootRouteChildren = {
   ProductosSkuRoute: ProductosSkuRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
-  ApiPublicTmpSyncCheckRoute: ApiPublicTmpSyncCheckRoute,
   ApiPublicAuditConnectionsRoute: ApiPublicAuditConnectionsRoute,
   ApiPublicShopifyWebhookRoute: ApiPublicShopifyWebhookRoute,
   ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
