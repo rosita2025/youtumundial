@@ -207,20 +207,18 @@ function CheckoutReturn() {
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
               Order number
             </p>
-            {orderNumber ? (
-              <p className="font-display text-4xl font-bold">{orderNumber}</p>
-            ) : (
-              <div className="space-y-3 py-2">
-                <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating your order number...
-                </p>
-                {state === 'done' && !resyncing && !result?.shopifyOrderNumber && (
-                  <p className="text-xs text-muted-foreground">
-                    Your payment is confirmed. We will email you the order number in a few minutes.
-                  </p>
+            <p className="font-display text-4xl font-bold break-all">{orderNumber}</p>
+            {isFallbackNumber && (
+              <p className="mt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                {resyncing || state === 'loading' ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Confirming your store order number...
+                  </>
+                ) : (
+                  'Keep this code. We will email you the final store order number shortly.'
                 )}
-              </div>
+              </p>
             )}
             {isManualOrder && reference && (
               <p className="mt-2 text-xs text-muted-foreground">Reference: {reference}</p>
@@ -228,7 +226,8 @@ function CheckoutReturn() {
           </div>
         )}
 
-        {sessionId && (summaryLoading || (summary?.ok && summary.lines.length > 0)) && (
+        {sessionId && (summaryLoading || summary?.ok) && (
+
           <div className="rounded-lg border border-border p-5 text-left mb-8">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">
               Order summary
