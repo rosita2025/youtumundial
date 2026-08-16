@@ -50,7 +50,7 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
       return {
         ...(await readTracking(snapshot.supOrderId, getOrderDetail)),
         paid: true,
-        shopifyOrderNumber: post.shopifyOrderName,
+        shopifyOrderNumber: post.shopifyOrderName || snapshot.shopifyOrderName,
       };
     }
 
@@ -59,7 +59,7 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
       return {
         ok: true,
         paid: true,
-        shopifyOrderNumber: post.shopifyOrderName,
+        shopifyOrderNumber: post.shopifyOrderName || snapshot.shopifyOrderName,
         message: 'Pago confirmado. Este pedido se prepara de forma manual (no tiene productos de SUP).',
       };
     }
@@ -96,7 +96,13 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
         snapshot,
         delayed: true,
       });
-      return { ok: true, paid: true, pending: true, message, shopifyOrderNumber: post.shopifyOrderName };
+      return { 
+        ok: true, 
+        paid: true, 
+        pending: true, 
+        message, 
+        shopifyOrderNumber: post.shopifyOrderName || snapshot.shopifyOrderName 
+      };
     };
 
     // Reintentos automáticos + búsqueda previa por referencia: si el pedido ya
@@ -117,7 +123,7 @@ export const fulfillSupOrder = createServerFn({ method: 'POST' })
     return {
       ...(await readTracking(created.supOrderId, getOrderDetail)),
       paid: true,
-      shopifyOrderNumber: post.shopifyOrderName,
+      shopifyOrderNumber: post.shopifyOrderName || snapshot.shopifyOrderName,
     };
 
   });

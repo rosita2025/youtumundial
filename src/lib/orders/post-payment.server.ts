@@ -69,6 +69,8 @@ async function runPostPaymentTasksNow(params: {
         patch.shopify_order_name = result.orderName;
         shopifyOrderName = result.orderName;
       }
+    } else {
+      console.warn('createShopifyOrder failed in post-payment', { reference: sessionId, message: result.message });
     }
   }
 
