@@ -399,12 +399,16 @@ export async function createShopifyOrder(
 
 
     if (!created) {
-      console.error('createShopifyOrder userErrors', input.reference, errors);
+      console.error('createShopifyOrder failure', {
+        reference: input.reference,
+        errors,
+        attemptOpts
+      });
       return {
         ok: false,
         message: errors.length
           ? errors.map((e) => e.message).join(', ')
-          : 'Shopify no devolvió el pedido.',
+          : 'Shopify did not return the order.',
       };
     }
 
