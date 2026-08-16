@@ -206,16 +206,9 @@ function CheckoutReturn() {
                   Generating your order number...
                 </p>
                 {state === 'done' && !resyncing && !result?.shopifyOrderNumber && (
-                  <div className="text-xs space-y-2">
-                    <p className="text-amber-600 bg-amber-50 rounded px-2 py-1">
-                      Synchronization is taking longer than usual.
-                    </p>
-                    {result?.message && (
-                      <p className="text-muted-foreground italic">
-                        Details: {result.message}
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Your payment is confirmed. We will email you the order number in a few minutes.
+                  </p>
                 )}
               </div>
             )}
