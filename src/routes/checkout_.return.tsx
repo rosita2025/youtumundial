@@ -326,9 +326,8 @@ function CheckoutReturn() {
               </>
             ) : (
               <div className="space-y-1">
-                <p className="text-muted-foreground">
-                  {result.message ?? 'We are preparing your order.'}
-                </p>
+                <p className="text-muted-foreground">We are preparing your order.</p>
+
                 {result.pending && (
                   <p className="text-muted-foreground">
                     We have sent you an email and will notify you as soon as the package is shipped.
