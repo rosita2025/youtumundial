@@ -28,6 +28,13 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/products", changefreq: "daily", priority: "0.9" },
+          { path: "/about", changefreq: "monthly", priority: "0.5" },
+          { path: "/contact", changefreq: "monthly", priority: "0.5" },
+          { path: "/shipping", changefreq: "monthly", priority: "0.5" },
+          { path: "/seguimiento", changefreq: "monthly", priority: "0.4" },
+          { path: "/privacy", changefreq: "yearly", priority: "0.3" },
+          { path: "/terms", changefreq: "yearly", priority: "0.3" },
+          { path: "/disclaimer", changefreq: "yearly", priority: "0.3" },
           { path: "/search", changefreq: "monthly", priority: "0.4" },
           { path: "/cart", changefreq: "monthly", priority: "0.3" },
           ...collections.map((c) => ({
@@ -41,6 +48,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             priority: "0.7",
           })),
         ];
+
 
         const escapeXml = (value: string) =>
           value
@@ -61,6 +69,7 @@ export const Route = createFileRoute("/sitemap.xml")({
                 .join("/"),
           );
 
+        const lastmod = new Date().toISOString().slice(0, 10);
         const seen = new Set<string>();
         const urls = entries
           .filter((e) => {
@@ -72,6 +81,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             [
               `  <url>`,
               `    <loc>${toLoc(e.path)}</loc>`,
+              `    <lastmod>${lastmod}</lastmod>`,
               e.changefreq
                 ? `    <changefreq>${e.changefreq}</changefreq>`
                 : null,
