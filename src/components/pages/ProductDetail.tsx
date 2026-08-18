@@ -21,6 +21,7 @@ import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift, 
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
 import { ProductCareGuarantee } from '@/components/product/ProductCareGuarantee';
+import { PhotoCarouselBanner } from '@/components/product/PhotoCarouselBanner';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from '@/lib/utils';
 import benefitCatBag from '@/assets/benefit-cat-bag.jpg.asset.json';
@@ -344,6 +345,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 {selectedVariant?.available ? 'ADD TO CART' : 'OUT OF STOCK'}
               </Button>
             </div>
+            
+            <PhotoCarouselBanner slug={product.slug} />
 
             <div className="flex flex-col items-center gap-3 py-2 border-y border-border/50">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Guaranteed Safe Checkout</span>
