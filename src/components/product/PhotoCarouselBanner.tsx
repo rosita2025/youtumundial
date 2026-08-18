@@ -16,10 +16,22 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
 
   return (
     <section className="photo-carousel-banner py-6 bg-white overflow-hidden">
-      <div className="container-wide px-4 mb-4">
-        <h2 className="text-[18px] font-bold text-[#111111] text-center">
+      <div className="container-wide px-4 mb-4 text-center">
+        <h2 className="text-[18px] font-bold text-[#111111]">
           10,000+ Happy Customers
         </h2>
+        <div className="flex items-center justify-center gap-2 mt-1">
+          <div className="flex gap-0.5">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <div key={s} className="w-3 h-3 bg-[#00B67A] flex items-center justify-center rounded-[1px]">
+                <span className="text-white text-[7px]">★</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] font-medium text-muted-foreground">
+            Rated <span className="font-bold text-[#111111]">Excellent 4.9 out of 5</span> based on 2,500+ Trustpilot reviews
+          </p>
+        </div>
       </div>
 
       <div 
