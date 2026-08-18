@@ -175,6 +175,37 @@ export function CartDrawer() {
                 ))}
               </div>
 
+              {/* In-Cart Upsell */}
+              {upsellProduct && cart.items.length > 0 && (
+                <div className="p-4 mx-6 mb-6 bg-primary/5 border-2 border-primary/20 rounded-2xl animate-fade-in">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap size={14} className="text-primary fill-primary" />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest italic">Frequently Bought Together</h4>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={upsellProduct.images[0]?.url} 
+                      className="w-12 h-12 rounded-lg object-cover" 
+                      alt={upsellProduct.title}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold truncate">{upsellProduct.title}</p>
+                      <p className="text-sm font-black text-primary">{formatPrice(upsellProduct.price)}</p>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="h-8 px-4 text-[10px] font-bold rounded-full shadow-sm"
+                      onClick={() => {
+                        const variant = upsellProduct.variants.find(v => v.available) || upsellProduct.variants[0];
+                        if (variant) addToCart(upsellProduct, variant, 1);
+                      }}
+                    >
+                      ADD
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Footer */}
               <div className="border-t border-border p-6 space-y-4">
                 <div className="flex items-center justify-between">
@@ -186,13 +217,31 @@ export function CartDrawer() {
                 <p className="text-sm text-muted-foreground">
                   Shipping and taxes calculated at checkout
                 </p>
-                <Button className="w-full" size="lg" asChild>
+                <Button 
+                  className="w-full h-14 text-lg font-black shadow-xl active:scale-95 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black border-none" 
+                  size="lg" 
+                  asChild
+                >
                   <Link to="/checkout" onClick={() => {
                     closeCart();
                   }}>
-                    Proceed to Checkout
+                    PROCEED TO CHECKOUT
                   </Link>
                 </Button>
+
+                {/* Trust Badges */}
+                <div className="flex flex-col items-center gap-3 pt-2">
+                  <div className="flex items-center justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all duration-300">
+                    <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-5 w-auto" />
+                    <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-5 w-auto" />
+                    <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-5 w-auto" />
+                    <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-5 w-auto" />
+                  </div>
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <Lock size={10} className="text-green-600" />
+                    256-Bit Encrypted Checkout
+                  </p>
+                </div>
 
                 <button
                   onClick={closeCart}
