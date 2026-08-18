@@ -259,7 +259,14 @@ export function ProductReviews({ slug }: { slug: string }) {
                       <Dialog key={idx}>
                         <DialogTrigger asChild>
                           <button className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-border/40 hover:border-primary transition-colors select-none group">
-                            <img src={photo} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                            <img 
+                              src={photo} 
+                              alt="" 
+                              className="w-full h-full object-cover transition-transform group-hover:scale-110 pointer-events-none" 
+                              onContextMenu={(e) => e.preventDefault()}
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                             <div className="absolute bottom-1 right-1 bg-black/40 p-1 rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
                               <Camera size={12} className="text-white" />
