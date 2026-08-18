@@ -118,7 +118,7 @@ export function ProductReviews({ slug }: { slug: string }) {
                           </p>
                           <StarRating rating={review.rating} size={14} />
                         </div>
-                        <span className="text-xs text-muted-foreground">{dateFormatter.format(new Date(review.date))}</span>
+                        <span className="text-xs text-muted-foreground">{formatDate(review.date)}</span>
                       </div>
                       <p className="text-sm leading-relaxed text-muted-foreground italic mb-6">"{review.body}"</p>
                       <div className="mt-auto pt-6 border-t">
