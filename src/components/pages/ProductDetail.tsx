@@ -335,7 +335,6 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
 
               {/* Optional Add-on Upsell */}
-
               <div 
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer",
@@ -343,25 +342,26 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 )}
                 onClick={() => setAddLeash(!addLeash)}
               >
+                <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                  <div className="h-[48px] w-[48px] rounded-[6px] overflow-hidden bg-[#f9f9f9] border border-border/50 shrink-0">
+                    <img 
+                      src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=200&auto=format&fit=crop" 
+                      alt="Pet Safety Leash" 
+                      className="h-full w-full object-contain" 
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold truncate">
+                      Add Matching Safety Leash & Harness (+$9.99)
+                    </p>
+                    <p className="text-[10px] text-muted-foreground italic">(Save 50% - Highly Recommended)</p>
+                  </div>
+                </div>
                 <Checkbox 
                   checked={addLeash} 
                   onCheckedChange={(checked) => setAddLeash(checked === true)} 
-                  className="data-[state=checked]:bg-[#00875A] data-[state=checked]:border-[#00875A] border-2 h-5 w-5"
+                  className="data-[state=checked]:bg-[#00875A] data-[state=checked]:border-[#00875A] border-2 h-5 w-5 shrink-0"
                 />
-                <div className="flex-1">
-                  <p className="text-xs font-bold flex items-center gap-1.5">
-                    Add Matching Pet Safety Leash & Harness 
-                    <span className="text-[#00875A]">for only +$9.99</span>
-                  </p>
-                  <p className="text-[10px] text-muted-foreground italic">(Save 50% - Highly Recommended)</p>
-                </div>
-                <div className="h-12 w-12 rounded-[6px] overflow-hidden bg-muted border border-border/50 shrink-0">
-                  <img 
-                    src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=200&auto=format&fit=crop" 
-                    alt="Pet Safety Leash" 
-                    className="h-full w-full object-cover" 
-                  />
-                </div>
               </div>
 
 
