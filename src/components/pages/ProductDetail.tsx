@@ -257,15 +257,15 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                           {bundleSize === offer.qty && <div className="w-2 h-2 rounded-full bg-white" />}
                         </div>
                         <div>
-                          <span className="font-bold text-sm block">{offer.label}</span>
-                          <span className="text-xs text-muted-foreground">{offer.sublabel}</span>
+                          <span className="font-bold text-sm block leading-tight">{offer.label}</span>
+                          <span className="text-[10px] text-muted-foreground leading-tight block mt-0.5">{offer.sublabel}</span>
                         </div>
                       </div>
-                      <div className="text-right pl-2">
-                        <span className="font-heading text-lg font-bold block whitespace-nowrap">{formatPrice(offer.price)}</span>
+                      <div className="text-right pl-2 shrink-0">
+                        <span className="font-heading text-base md:text-lg font-bold block whitespace-nowrap">{formatPrice(offer.price)}</span>
                       </div>
                       {offer.badge && (
-                        <div className="absolute top-[-10px] right-2 z-10">
+                        <div className="absolute top-[-10px] right-2 z-10 whitespace-nowrap">
                           <span className={cn(
                             "text-[10px] font-bold uppercase tracking-[0.5px] px-[8px] py-[3px] rounded-[4px] shadow-sm border border-white/20",
                             offer.qty === 2 ? "bg-[#FFB800] text-black" : "bg-[#1B4D3E] text-white"
