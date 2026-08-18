@@ -227,7 +227,7 @@ export function ProductReviews({ slug }: { slug: string }) {
                     <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                       <span>{countryFlags[review.country] ?? ""} {review.country}</span>
                       <span>•</span>
-                      <span>{dateFormatter.format(new Date(review.date))}</span>
+                      <span>{formatDate(review.date)}</span>
                     </div>
                   </div>
                 </div>
