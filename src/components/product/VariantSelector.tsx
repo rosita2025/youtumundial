@@ -31,9 +31,9 @@ function cleanVariantLabel(value: string, isHeader = false): string {
       if (lower.includes('7-15')) return 'L';
     }
     
-    if (lower.includes('1-6')) return 'M - Small Pets';
-    if (lower.includes('7-15')) return 'L - Large Pets';
-    return value.replace(/16catty/i, '').replace(/catty/i, ' lbs capacity');
+    if (lower.includes('1-6')) return 'M';
+    if (lower.includes('7-15')) return 'L';
+    return value.replace(/16catty/i, '').replace(/catty/i, '');
   }
 
   for (const [key, label] of Object.entries(CLEAN_LABELS)) {
@@ -52,8 +52,8 @@ function cleanVariantLabel(value: string, isHeader = false): string {
 function getSizeSubtitle(value: string): string {
   const lower = value.toLowerCase();
   if (lower.includes('catty')) {
-    if (lower.includes('1-6')) return '0.5–3kg dogs / 0–4kg cats';
-    if (lower.includes('7-15')) return 'Dogs under 6kg / cats under 8kg';
+    if (lower.includes('1-6')) return 'Recommended 0.5–3kg dogs / 0–4kg cats';
+    if (lower.includes('7-15')) return 'Recommended for dogs under 6kg / cats under 8kg';
   }
   return '';
 }
