@@ -180,28 +180,24 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace(/Brags/g, 'Bags')}
               </h1>
               <div className="mt-2 flex items-center flex-wrap gap-2 md:gap-3">
-                {reviewSummary.total > 0 && (
-                  <a href="#reviews" className="inline-flex items-center gap-2 text-sm shrink-0">
-                    <StarRating rating={reviewSummary.average} size={15} />
-                    <span className="text-muted-foreground underline-offset-4 hover:underline font-medium">
-                      {reviewSummary.average.toFixed(1)} ({reviewSummary.total} Reviews)
-                    </span>
-                  </a>
-                )}
-                <div className="h-4 w-[1px] bg-border mx-1 hidden sm:block" />
-                <div className="flex items-center gap-1.5 bg-[#00B67A]/5 px-2 py-1 rounded-md border border-[#00B67A]/10">
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <div key={s} className="w-3.5 h-3.5 bg-[#00B67A] flex items-center justify-center rounded-[1px]">
-                        <span className="text-white text-[8px]">★</span>
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[10px] font-bold text-[#111111]">
-                    Trustpilot <span className="text-[#00B67A]">Excellent 4.9/5</span>
+                <div className="flex items-center gap-2">
+                  <StarRating rating={reviewSummary.average} size={15} />
+                  <span className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline">
+                    {reviewSummary.average.toFixed(1)} ({reviewSummary.total} Reviews)
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] font-bold text-[#00875A] bg-[#E6F4EA] px-2 py-1 rounded-md">
+                <div className="h-4 w-[1px] bg-border mx-1 hidden sm:block" />
+                <div className="flex items-center gap-1.5 bg-[#00B67A] px-2.5 py-1 rounded-md">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <span key={s} className="text-white text-[12px]">★</span>
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-bold text-white">
+                    Trustpilot Excellent 4.9/5
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-[#00875A] bg-[#E6F4EA] px-2.5 py-1 rounded-md">
                   <Shield size={10} strokeWidth={3} /> VERIFIED PRODUCT
                 </div>
               </div>
