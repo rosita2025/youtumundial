@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { Cart, CartItem, Product, ProductVariant } from '@/lib/data/types';
 import { generateId } from '@/lib/utils/format';
 import { toast } from 'sonner';
+import { calculateCartTotals } from '@/lib/cart/bundle-pricing';
 
 interface CartState {
   cart: Cart;
@@ -27,15 +28,7 @@ const createEmptyCart = (): Cart => ({
   itemCount: 0,
 });
 
-const calculateTotals = (items: CartItem[]): { subtotal: number; itemCount: number } => {
-  return items.reduce(
-    (acc, item) => ({
-      subtotal: acc.subtotal + item.variant.price * item.quantity,
-      itemCount: acc.itemCount + item.quantity,
-    }),
-    { subtotal: 0, itemCount: 0 }
-  );
-};
+const calculateTotals = calculateCartTotals;
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
