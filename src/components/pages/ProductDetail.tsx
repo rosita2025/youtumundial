@@ -17,7 +17,7 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
-import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift, ChevronDown, CheckCircle2, Sparkles } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
 import { Checkbox } from "@/components/ui/checkbox";
