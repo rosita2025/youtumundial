@@ -169,6 +169,6 @@ export const featuredShippingCountries: ShippingCountry[] = featuredCountryCodes
 );
 
 /** Umbral de envío gratis (USD). */
-export const FREE_SHIPPING_THRESHOLD = 45;
+export const FREE_SHIPPING_THRESHOLD = 40;
 
 
