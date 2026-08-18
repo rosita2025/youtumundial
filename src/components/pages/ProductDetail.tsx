@@ -8,6 +8,8 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
+import { FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
+
 import { selectRelatedProducts } from '@/lib/data/data-provider';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { formatPrice, calculateDiscount } from '@/lib/utils/format';
@@ -15,7 +17,7 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
-import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift, ChevronDown, CheckCircle2, Sparkles } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -214,10 +216,11 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </label>
               <div className="grid gap-3">
                 {[
-                  { qty: 1, price: 43.99, label: 'Buy 1 - Standard', badge: null, sublabel: 'Free Shipping Included' },
-                  { qty: 2, price: 69.99, label: 'Buy 2 - Double Pack', badge: 'MOST POPULAR', sublabel: '$35.00 each | Save 20%' },
-                  { qty: 3, price: 89.99, label: 'Buy 3 - Triple Pack', badge: 'BEST VALUE', sublabel: '$30.00 each | Save 31%' },
+                  { qty: 1, price: 43.99, label: 'Buy 1', badge: null, sublabel: '+ Standard International Shipping' },
+                  { qty: 2, price: 69.99, label: 'Buy 2 (MOST POPULAR)', badge: 'MOST POPULAR', sublabel: '$35.00/ea + FREE International Shipping [Save $17.99]' },
+                  { qty: 3, price: 89.99, label: 'Buy 3 (BEST VALUE)', badge: 'BEST VALUE', sublabel: '$30.00/ea + FREE International Shipping [Save $41.98]' },
                 ].map((offer) => (
+
                   <div key={offer.qty} className="space-y-0">
                     <button
                       onClick={() => setBundleSize(offer.qty)}
@@ -294,8 +297,39 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
+              {/* Free Shipping Progress Bar */}
+              <div className="p-3 bg-muted/20 rounded-xl border border-border/50">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
+                  {bundleSize > 1 ? (
+                    <span className="text-green-600 flex items-center gap-1.5">
+                      <Sparkles size={12} className="animate-pulse" />
+                      🎉 CONGRATS! You unlocked FREE International Shipping!
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      🚚 Add $6.01 more to unlock FREE International Shipping!
+                    </span>
+                  )}
+                  <span className="text-muted-foreground">{bundleSize > 1 ? '100%' : '88%'}</span>
+                </div>
+                <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
+                  <div 
+                    className={cn(
+                      "h-full transition-all duration-700 ease-out rounded-full",
+                      bundleSize > 1 ? "bg-green-500 w-full" : "bg-primary w-[88%]"
+                    )}
+                  />
+                </div>
+                {bundleSize === 1 && (
+                  <p className="mt-2 text-[10px] text-center text-muted-foreground italic font-medium">
+                    Add 1 more item or select Buy 2 to unlock FREE International Shipping!
+                  </p>
+                )}
+              </div>
+
               {/* Optional Add-on Upsell */}
+
               <div 
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer",

@@ -14,9 +14,10 @@ export function CartDrawer() {
   const { cart, isOpen, closeCart, updateQuantity, removeItem, addToCart } = useCart();
   const [upsellProduct, setUpsellProduct] = useState<Product | null>(null);
   
-  const FREE_SHIPPING_THRESHOLD = 40;
+  const FREE_SHIPPING_THRESHOLD = 50;
   const progress = Math.min((cart.subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
   const remaining = FREE_SHIPPING_THRESHOLD - cart.subtotal;
+
 
   useEffect(() => {
     if (isOpen) {
@@ -72,13 +73,14 @@ export function CartDrawer() {
                 {cart.subtotal >= FREE_SHIPPING_THRESHOLD ? (
                   <span className="text-green-600 flex items-center gap-1.5">
                     <Sparkles size={12} className="animate-pulse" />
-                    🎉 You unlocked FREE Express Shipping!
+                    🎉 CONGRATS! You unlocked FREE International Shipping!
                   </span>
                 ) : (
-                  <span className="text-muted-foreground">
-                    Add <span className="text-primary">{formatPrice(remaining)}</span> for FREE Shipping
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    🚚 Add <span className="text-primary">{formatPrice(remaining)}</span> more to unlock FREE International Shipping!
                   </span>
                 )}
+
                 <span className="text-muted-foreground">{Math.round(progress)}%</span>
               </div>
               <div className="h-2 w-full bg-border rounded-full overflow-hidden">
