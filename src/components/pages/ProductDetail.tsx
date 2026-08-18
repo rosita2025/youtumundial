@@ -175,7 +175,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 </p>
               )}
               <h1 className="font-heading text-3xl md:text-4xl font-medium w-full break-words">
-                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace('Brags', 'Bags')}
+                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace('Brags', 'Bags').replace('Bee Shaped Pet & Cat Bags', 'Bee Shaped Pet & Cat Bags')}
               </h1>
               <div className="mt-2 flex items-center flex-wrap gap-2 md:gap-3">
                 {reviewSummary.total > 0 && (
@@ -221,8 +221,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               <div className="grid gap-3">
                 {[
                   { qty: 1, price: 43.99, label: 'Buy 1', badge: null, sublabel: '+ Standard International Shipping' },
-                  { qty: 2, price: 69.99, label: 'Buy 2 (MOST POPULAR)', badge: 'MOST POPULAR', sublabel: '$35.00/ea + FREE International Shipping [Save $17.99]' },
-                  { qty: 3, price: 89.99, label: 'Buy 3 (BEST VALUE)', badge: 'BEST VALUE', sublabel: '$30.00/ea + FREE International Shipping [Save $41.98]' },
+                  { qty: 2, price: 69.99, label: 'Buy 2 - Double Pack', badge: 'MOST POPULAR', sublabel: '$35.00/ea + FREE International Shipping [Save $17.99]' },
+                  { qty: 3, price: 89.99, label: 'Buy 3 - Triple Pack', badge: 'BEST VALUE', sublabel: '$30.00/ea + FREE International Shipping [Save $41.98]' },
                 ].map((offer) => (
 
                   <div key={offer.qty} className="space-y-0">
@@ -251,7 +251,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                         <span className="font-heading text-lg font-bold block">{formatPrice(offer.price)}</span>
                       </div>
                       {offer.badge && (
-                        <div className="absolute -top-2.5 -right-2 z-10">
+                        <div className="absolute top-2 right-2 z-10">
                           <span className={cn(
                             "text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm border border-white/20",
                             offer.qty === 2 ? "bg-[#FFB800] text-black" : "bg-primary text-white"
@@ -263,7 +263,6 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
 
                     </button>
                     
-                    {/* Collapsible Panel for Selections */}
                     {bundleSize === offer.qty && offer.qty > 1 && (
                       <div className="mt-2 ml-8 space-y-3 p-3 bg-muted/30 rounded-lg border border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
                         {Array.from({ length: offer.qty }).map((_, i) => (
@@ -348,7 +347,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                     <img 
                       src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=200&auto=format&fit=crop" 
                       alt="Pet Safety Leash" 
-                      className="h-full w-full object-contain" 
+                      className="h-full w-full object-contain rotate-0" 
                     />
                   </div>
                   <div className="flex-1 min-w-0">
