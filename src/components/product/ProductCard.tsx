@@ -79,11 +79,11 @@ export const ProductCard = memo(function ProductCard({ product, className }: Pro
             {product.vendor}
           </p>
         )}
-        <h3 className="font-medium text-foreground group-hover:underline transition-all">
+        <h3 className="font-medium text-foreground group-hover:underline transition-all line-clamp-2 min-h-[2.5rem] text-sm md:text-base">
           {product.title}
         </h3>
-        <div className="flex items-center gap-2">
-          <span className="font-medium">{formatPrice(product.price)}</span>
+        <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
+          <span className="font-bold text-sm md:text-base">{formatPrice(product.price)}</span>
           {product.compareAtPrice && (
             <span className="text-muted-foreground line-through text-sm">
               {formatPrice(product.compareAtPrice)}
