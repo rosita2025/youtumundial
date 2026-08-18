@@ -2,11 +2,8 @@ import { useState, useEffect } from 'react';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils/format';
-import { ShoppingCart, Star, Truck, RotateCcw, Gem, Sparkles } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { ShoppingCart, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useReviewSummary } from '@/lib/reviews/use-reviews';
-import { StarRating } from '@/components/product/StarRating';
 
 interface StickyAddToCartProps {
   product: Product;
@@ -17,17 +14,13 @@ interface StickyAddToCartProps {
 
 export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: StickyAddToCartProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const { cart } = useCart();
-  const reviewSummary = useReviewSummary(product.slug);
-
-  const totalQuantity = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-  const differentProducts = new Set(cart.items.map(i => i.productId)).size;
-  const isUpsellEligible = totalQuantity >= 1; // Si ya tiene algo, el sticky incentiva el 2do
   
+  const currentPrice = quantity === 1 ? 43.99 : quantity === 2 ? 69.99 : 89.99;
+
   useEffect(() => {
     const handleScroll = () => {
-      // Mostrar después de que el botón principal de "Añadir al carrito" (aprox 600px) pase
-      setIsVisible(window.scrollY > 600);
+      // Reveal sticky bar earlier for mobile users to capture intent
+      setIsVisible(window.scrollY > 400);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -39,79 +32,68 @@ export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: S
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border p-4 shadow-lg transition-transform duration-300 md:px-8",
+        "fixed bottom-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-md border-t border-border shadow-2xl transition-transform duration-300 transform pb-safe",
         isVisible ? "translate-y-0" : "translate-y-full"
       )}
     >
-      <div className="container-wide flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 select-none">
-            <img
-              src={product.images[0]?.url}
-              alt={product.title}
-              className="h-full w-full rounded-md object-cover border border-border"
-              onContextMenu={(e) => e.preventDefault()}
-              draggable={false}
-            />
-            <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-xs sm:text-sm font-medium truncate">{product.title}</h3>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-              <div className="flex items-center gap-1.5">
-                <p className="text-[10px] sm:text-xs font-bold whitespace-nowrap">
-                  {formatPrice(product.price)}
-                </p>
-                {reviewSummary.total > 0 && (
-                  <div className="flex items-center gap-1 border-l border-border pl-1.5">
-                    <StarRating rating={reviewSummary.average} size={10} />
-                    <span className="text-[10px] text-muted-foreground hidden xs:inline">
-                      ({reviewSummary.total})
-                    </span>
-                  </div>
+      {/* Urgency Counter - Critical for CRO */}
+      <div className="bg-orange-50 border-b border-orange-100 py-1.5 text-center">
+        <p className="text-[10px] sm:text-xs font-bold text-orange-600 uppercase tracking-tight flex items-center justify-center gap-1.5">
+          🔥 Only 14 items left in stock - Order today!
+        </p>
+      </div>
+
+      <div className="p-3 sm:p-4 md:px-8">
+        <div className="container-wide flex items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="relative h-12 w-12 sm:h-14 sm:w-14 shrink-0 select-none">
+              <img
+                src={selectedVariant.image?.url || product.images[0]?.url}
+                alt={product.title}
+                className="h-full w-full rounded-lg object-cover border border-border shadow-sm"
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
+              />
+              <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-[10px] sm:text-xs font-bold truncate text-muted-foreground uppercase tracking-widest">
+                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier' : product.title}
+              </h3>
+              
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-base sm:text-lg font-bold text-foreground">
+                  {formatPrice(currentPrice)}
+                </span>
+                {quantity > 1 && (
+                  <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold uppercase">
+                    Save {quantity === 2 ? '20%' : '31%'}
+                  </span>
                 )}
               </div>
-
-              <div className="hidden md:flex items-center gap-3 text-[10px] text-muted-foreground border-l border-border pl-3">
-                <span className="flex items-center gap-1"><Truck size={10} /> Fast Shipping</span>
-                <span className="flex items-center gap-1"><RotateCcw size={10} /> Easy Returns</span>
-                <span className="flex items-center gap-1"><Gem size={10} /> Premium Quality</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 mt-1 opacity-60">
-              <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-4 sm:h-6 w-auto" />
-              <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-4 sm:h-6 w-auto" />
-              <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-4 sm:h-6 w-auto" />
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:block md:hidden text-[9px] text-muted-foreground space-y-0.5 mr-2">
-            <span className="flex items-center gap-1"><Truck size={8} /> Fast Shipping</span>
-            <span className="flex items-center gap-1"><RotateCcw size={8} /> Returns</span>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            {isUpsellEligible && (
-              <span className="text-[9px] font-bold text-green-600 animate-pulse flex items-center gap-1">
-                <Sparkles size={10} /> 10% OFF EXTRA (Kit)
-              </span>
-            )}
+          <div className="flex flex-col items-center gap-2 min-w-[140px] sm:min-w-[200px]">
             <Button 
-              className="w-32 sm:w-48 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1 transition-all" 
+              className="w-full h-11 sm:h-13 gap-2 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black font-black text-xs sm:text-sm shadow-lg transition-transform active:scale-95 border-none"
               onClick={onAdd}
               disabled={!selectedVariant.available}
             >
-              <ShoppingCart size={18} />
-              <span className="hidden xs:inline">
-                {selectedVariant.available ? 'Add to Cart' : 'Out of Stock'}
-              </span>
-              <span className="xs:hidden">
-                {selectedVariant.available ? 'Add' : 'Sold Out'}
-              </span>
+              {selectedVariant.available ? (
+                <>
+                  <ShoppingCart size={16} className="hidden xs:block" />
+                  ADD TO CART
+                </>
+              ) : 'OUT OF STOCK'}
             </Button>
+            
+            <div className="flex items-center justify-center gap-2.5 opacity-60 grayscale hover:grayscale-0 transition-all">
+              <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-3.5 w-auto" />
+              <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-3.5 w-auto" />
+              <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-3.5 w-auto" />
+              <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-3.5 w-auto" />
+            </div>
           </div>
         </div>
       </div>
