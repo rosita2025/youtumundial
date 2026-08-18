@@ -348,7 +348,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                     <img 
                       src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=200&auto=format&fit=crop" 
                       alt="Pet Safety Leash" 
-                      className="h-full w-full object-contain" 
+                      className="h-full w-full object-contain rotate-0" 
                     />
                   </div>
                   <div className="flex-1 min-w-0">
