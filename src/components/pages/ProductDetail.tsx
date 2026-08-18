@@ -245,15 +245,18 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                       </div>
                       <div className="text-right">
                         <span className="font-heading text-lg font-bold block">{formatPrice(offer.price)}</span>
-                        {offer.badge && (
+                      </div>
+                      {offer.badge && (
+                        <div className="absolute -top-2.5 -right-2 z-10">
                           <span className={cn(
-                            "text-[9px] font-bold uppercase tracking-tighter px-2 py-0.5 rounded-full",
-                            offer.qty === 2 ? "bg-yellow-400 text-black" : "bg-primary text-white"
+                            "text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm border border-white/20",
+                            offer.qty === 2 ? "bg-[#FFB800] text-black" : "bg-primary text-white"
                           )}>
                             {offer.badge}
                           </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
+
                     </button>
                     
                     {/* Collapsible Panel for Selections */}
@@ -340,28 +343,25 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 <Checkbox 
                   checked={addLeash} 
                   onCheckedChange={(checked) => setAddLeash(checked === true)} 
-                  className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  className="data-[state=checked]:bg-[#00875A] data-[state=checked]:border-[#00875A] border-2 h-5 w-5"
                 />
                 <div className="flex-1">
                   <p className="text-xs font-bold flex items-center gap-1.5">
                     Add Matching Pet Safety Leash & Harness 
-                    <span className="text-green-600">for only +$9.99</span>
+                    <span className="text-[#00875A]">for only +$9.99</span>
                   </p>
                   <p className="text-[10px] text-muted-foreground italic">(Save 50% - Highly Recommended)</p>
                 </div>
-                <div className="h-10 w-10 rounded-md overflow-hidden bg-muted">
+                <div className="h-12 w-12 rounded-[6px] overflow-hidden bg-muted border border-border/50 shrink-0">
                   <img 
-                    src="https://images.unsplash.com/photo-1591768793355-74d7cbad7c34?q=80&w=200" 
-                    alt="Leash" 
+                    src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=200&auto=format&fit=crop" 
+                    alt="Pet Safety Leash" 
                     className="h-full w-full object-cover" 
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-xs font-bold text-orange-600 animate-pulse">
-                <Shield size={12} />
-                Only 18 left in stock - Selling fast!
-              </div>
+
               <Button
                 size="lg"
                 className="w-full h-14 text-lg font-bold shadow-xl transition-all active:scale-95 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black border-none"
