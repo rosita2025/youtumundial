@@ -18,6 +18,7 @@ import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
 import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
+import { cn } from '@/lib/utils';
 
 interface ProductDetailProps {
   catalog?: Product[];
