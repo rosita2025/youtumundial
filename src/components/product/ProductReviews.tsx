@@ -87,10 +87,13 @@ export function ProductReviews({ slug }: { slug: string }) {
                     <img
                       src={review.photos![0]}
                       alt={`Review by ${review.author}`}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                      className="h-full w-full object-cover transition-transform group-hover:scale-110 pointer-events-none"
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute bottom-3 left-3 right-3 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                    <div className="absolute bottom-3 left-3 right-3 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       <div className="flex items-center gap-1 mb-1">
                         <StarRating rating={5} size={10} className="text-yellow-400" />
                       </div>
