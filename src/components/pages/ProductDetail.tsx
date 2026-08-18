@@ -166,23 +166,23 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           ]}
         />
 
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-16 product-single">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-16 product-single w-full max-w-full">
           <div className="space-y-4 pt-3">
             <ProductGallery images={product.images} productTitle={product.title} />
           </div>
 
-          <div className="space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6 w-full max-w-full">
             <div className="space-y-1">
               {(product.vendor || product.productType) && (
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
                   {[product.vendor, product.productType].filter(Boolean).join(' · ')}
                 </p>
               )}
-              <h1 className="font-heading text-3xl md:text-4xl font-medium w-full break-words">
+              <h1 className="font-heading text-2xl md:text-4xl font-medium w-full break-words leading-tight">
                 {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace(/Brags/g, 'Bags')}
               </h1>
               
-              <div className="flex items-center flex-wrap gap-2 text-[13px] leading-none pt-3 pb-4 w-full">
+              <div className="flex items-center flex-wrap gap-2 text-[12px] leading-tight pt-3 pb-4 w-full">
                 <div className="flex items-center gap-1.5 shrink-0">
                   <StarRating rating={reviewSummary.average} size={14} />
                   <span className="font-medium text-muted-foreground underline-offset-4 hover:underline whitespace-nowrap">
@@ -261,8 +261,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                           <span className="text-xs text-muted-foreground">{offer.sublabel}</span>
                         </div>
                       </div>
-                      <div className="text-right pr-3">
-                        <span className="font-heading text-lg font-bold block">{formatPrice(offer.price)}</span>
+                      <div className="text-right pl-2">
+                        <span className="font-heading text-lg font-bold block whitespace-nowrap">{formatPrice(offer.price)}</span>
                       </div>
                       {offer.badge && (
                         <div className="absolute top-[-10px] right-2 z-10">
