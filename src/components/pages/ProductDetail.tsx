@@ -18,6 +18,7 @@ import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
 import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
+import { cn } from '@/lib/utils';
 
 interface ProductDetailProps {
   catalog?: Product[];
@@ -119,7 +120,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 </p>
               )}
               <h1 className="font-heading text-3xl md:text-4xl font-medium">
-                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Roaring Cub Pouch' : product.title}
+                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title}
               </h1>
               {product.collections.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -136,12 +137,18 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 </div>
               )}
               {reviewSummary.total > 0 && (
-                <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm">
-                  <StarRating rating={reviewSummary.average} size={15} />
-                  <span className="text-muted-foreground underline-offset-4 hover:underline">
-                    {reviewSummary.average.toFixed(1)} · {reviewSummary.total} reviews
+                <div className="mt-2 flex items-center gap-3">
+                  <a href="#reviews" className="inline-flex items-center gap-2 text-sm">
+                    <StarRating rating={reviewSummary.average} size={15} />
+                    <span className="text-muted-foreground underline-offset-4 hover:underline font-medium">
+                      {reviewSummary.average.toFixed(1)} ({reviewSummary.total} Reviews)
+                    </span>
+                  </a>
+                  <span className="h-4 w-[1px] bg-border" />
+                  <span className="text-xs font-bold text-green-600 flex items-center gap-1 uppercase tracking-tighter">
+                    <Shield size={12} /> Verified Product
                   </span>
-                </a>
+                </div>
               )}
               <div className="flex items-center gap-3 mt-2">
 
@@ -177,45 +184,72 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               onSelect={setSelectedVariant}
             />
 
-            {/* Quantity */}
-            <div>
-              <label className="block text-sm font-medium mb-3">Quantity</label>
-              <div className="flex items-center border border-border rounded-md w-fit">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="p-3 hover:bg-muted transition-colors"
-                  aria-label="Decrease quantity"
-                >
-                  <Minus size={16} />
-                </button>
-                <span className="w-12 text-center font-medium">{quantity}</span>
-                <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="p-3 hover:bg-muted transition-colors"
-                  aria-label="Increase quantity"
-                >
-                  <Plus size={16} />
-                </button>
+            {/* Bundle & Save Section */}
+            <div className="space-y-3 pt-2">
+              <label className="text-sm font-bold uppercase tracking-wider text-foreground/80 flex items-center gap-2">
+                <Gift size={16} className="text-primary" />
+                Bundle & Save
+              </label>
+              <div className="grid gap-3">
+                {[
+                  { qty: 1, price: 43.99, label: 'Buy 1', badge: 'Standard', save: null },
+                  { qty: 2, price: 69.99, label: 'Buy 2', badge: 'Most Popular', save: '20% OFF' },
+                  { qty: 3, price: 89.99, label: 'Buy 3', badge: 'Best Value', save: '30% OFF' },
+                ].map((offer) => (
+                  <button
+                    key={offer.qty}
+                    onClick={() => setQuantity(offer.qty)}
+                    className={cn(
+                      "relative flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left",
+                      quantity === offer.qty 
+                        ? "border-primary bg-primary/5 shadow-sm" 
+                        : "border-border bg-background hover:border-primary/30"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                        quantity === offer.qty ? "border-primary bg-primary" : "border-muted-foreground/30"
+                      )}>
+                        {quantity === offer.qty && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <span className="font-bold text-sm block">{offer.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {offer.qty === 1 ? 'Free Shipping Included' : `Only ${formatPrice(offer.price / offer.qty)} each`}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-heading text-lg font-bold block">{formatPrice(offer.price)}</span>
+                      {offer.badge && (
+                        <span className={cn(
+                          "text-[9px] font-bold uppercase tracking-tighter px-2 py-0.5 rounded-full",
+                          offer.qty === 2 ? "bg-yellow-400 text-black" : "bg-primary text-white"
+                        )}>
+                          {offer.badge}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Add to Cart */}
             <Button
               size="lg"
-              className="w-full"
+              className="w-full h-14 text-lg font-bold shadow-xl shadow-primary/10 transition-transform active:scale-95"
               onClick={handleAddToCart}
               disabled={!selectedVariant?.available}
             >
-              {selectedVariant?.available ? 'Add to Cart' : 'Out of Stock'}
+              {selectedVariant?.available ? 'ADD TO CART' : 'OUT OF STOCK'}
             </Button>
 
-            {/* Upsell Section */}
-            <UpsellSection product={product} relatedProducts={relatedProducts} />
-            
-            {/* Payment Trust Badges for Conversion */}
-            <div className="pt-4 flex flex-col items-center gap-2">
+            {/* Trust Badges for Conversion */}
+            <div className="flex flex-col items-center gap-3 py-2 border-y border-border/50">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Guaranteed Safe Checkout</span>
-              <div className="flex items-center justify-center gap-4 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
+              <div className="flex items-center justify-center gap-5 opacity-70">
                 <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-6 w-auto" />
                 <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-6 w-auto" />
                 <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-6 w-auto" />
@@ -224,50 +258,49 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
             </div>
 
-
-            {/* Features & Trust Markers - Babuno Style High Conversion */}
-            <div className="pt-6 border-t-2 border-primary/10 space-y-5">
-              <div className="bg-green-50 border border-green-100 rounded-xl p-4 flex items-center gap-4">
-                <div className="bg-green-500 rounded-full p-2 text-white shadow-lg shadow-green-200">
-                  <Shield size={20} />
-                </div>
-                <div>
-                  <span className="font-bold text-sm block text-green-800 italic">30-DAY MONEY BACK GUARANTEE</span>
-                  <span className="text-green-700 text-xs">If you are not 100% satisfied, we will refund you.</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 text-sm p-3 bg-secondary/30 rounded-lg">
-                  <Truck size={20} className="text-primary" />
-                  <div>
-                    <span className="font-bold block text-[11px] uppercase tracking-tight">FAST SHIPPING</span>
-                    <span className="text-muted-foreground text-[10px]">Worldwide delivery</span>
+            {/* Info Accordions */}
+            <div className="space-y-1">
+              {[
+                { 
+                  title: 'Product Details & Sizing', 
+                  icon: <Gem size={16} />,
+                  content: 'Our Cozy Pet Carrier is crafted from ultra-soft, breathable cotton canvas. Sizing: M (up to 3kg/6lbs), L (up to 6kg/13lbs). Features a secure internal harness clip and adjustable neck opening for max comfort.'
+                },
+                { 
+                  title: 'Shipping & Delivery', 
+                  icon: <Truck size={16} />,
+                  content: 'We offer FREE worldwide shipping on all orders. Preparation time: 3-4 days. Estimated delivery: 10-15 business days depending on location. Tracking number provided via email.'
+                },
+                { 
+                  title: '30-Day Money-Back Guarantee', 
+                  icon: <Shield size={16} />,
+                  content: 'We stand behind our products. If you and your pet are not 100% happy with your purchase, we offer a hassle-free refund within 30 days of delivery. No questions asked.'
+                }
+              ].map((item, idx) => (
+                <div key={idx} className="border-b border-border/50 last:border-none">
+                  <button 
+                    className="w-full py-4 flex items-center justify-between text-left group"
+                    onClick={(e) => {
+                      const content = e.currentTarget.nextElementSibling;
+                      content?.classList.toggle('hidden');
+                      e.currentTarget.querySelector('svg:last-child')?.classList.toggle('rotate-180');
+                    }}
+                  >
+                    <span className="flex items-center gap-3 text-sm font-medium">
+                      <span className="text-primary">{item.icon}</span>
+                      {item.title}
+                    </span>
+                    <Plus size={14} className="text-muted-foreground transition-transform duration-200" />
+                  </button>
+                  <div className="hidden pb-4 text-xs text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-top-1">
+                    {item.content}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm p-3 bg-secondary/30 rounded-lg">
-                  <RotateCcw size={20} className="text-primary" />
-                  <div>
-                    <span className="font-bold block text-[11px] uppercase tracking-tight">EASY RETURNS</span>
-                    <span className="text-muted-foreground text-[10px]">7-day policy</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center gap-3 py-2 border-y border-border/50">
-                <div className="flex -space-x-2">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-background overflow-hidden bg-muted">
-                      <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" />
-                    </div>
-                  ))}
-                  <div className="w-8 h-8 rounded-full border-2 border-background bg-primary text-[10px] font-bold text-white flex items-center justify-center">
-                    +1k
-                  </div>
-                </div>
-                <span className="text-[11px] font-medium text-muted-foreground italic">Joined by 1,147 happy pet owners this month!</span>
-              </div>
+              ))}
             </div>
+
+            {/* Upsell Section */}
+            <UpsellSection product={product} relatedProducts={relatedProducts} />
           </div>
         </div>
 

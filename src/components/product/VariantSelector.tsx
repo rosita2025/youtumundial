@@ -7,6 +7,26 @@ interface VariantSelectorProps {
   onSelect: (variant: ProductVariant) => void;
 }
 
+const CLEAN_LABELS: Record<string, string> = {
+  'bee': 'Bee',
+  'lion': 'Lion',
+  'rabbit': 'Rabbit',
+  'mickey': 'Mickey',
+  'burger': 'Burger',
+  'hamburger': 'Burger',
+  'dinosaur': 'Dino',
+  'frog': 'Frog',
+};
+
+function cleanVariantLabel(value: string): string {
+  const lower = value.toLowerCase();
+  for (const [key, label] of Object.entries(CLEAN_LABELS)) {
+    if (lower.includes(key)) return label;
+  }
+  // Fallback: quitar códigos numéricos al inicio y palabras tipo "color"
+  return value.replace(/^\d+\s+/, '').replace(/color/i, '').trim();
+}
+
 export function VariantSelector({
   variants,
   selectedVariant,
@@ -64,8 +84,8 @@ export function VariantSelector({
     <div className="space-y-6">
       {uniqueOptions.map((option) => (
         <div key={option.name}>
-          <label className="block text-sm font-medium mb-3">
-            {option.name}: <span className="text-muted-foreground">{selectedValues[option.name]}</span>
+          <label className="block text-sm font-bold uppercase tracking-wider text-foreground/80 mb-3">
+            {option.name}: <span className="text-primary font-bold">{cleanVariantLabel(selectedValues[option.name] || '')}</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {option.values.map((value) => {
@@ -84,16 +104,17 @@ export function VariantSelector({
                   onClick={() => handleSelect(option.name, value)}
                   disabled={!isAvailable}
                   className={cn(
-                    'group relative border rounded-md transition-all flex flex-col items-center gap-1 overflow-hidden',
-                    variantImage ? 'p-1 min-w-[70px]' : 'px-4 py-2 min-w-[45px]',
+                    'group relative border rounded-full transition-all flex items-center justify-center overflow-hidden',
+                    variantImage ? 'w-14 h-14 p-0.5' : 'px-4 py-2 min-w-[45px]',
                     isSelected
-                      ? 'border-foreground ring-1 ring-foreground'
-                      : 'border-border bg-background hover:border-foreground/50',
+                      ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110 z-10'
+                      : 'border-border bg-background hover:border-foreground/30',
                     !isAvailable && 'opacity-30 cursor-not-allowed'
                   )}
+                  title={value}
                 >
-                  {variantImage && (
-                    <div className="w-14 h-14 overflow-hidden rounded-sm bg-muted mb-1">
+                  {variantImage ? (
+                    <div className="w-full h-full overflow-hidden rounded-full bg-muted">
                       <img 
                         src={variantImage} 
                         alt={value} 
@@ -101,13 +122,18 @@ export function VariantSelector({
                         referrerPolicy="no-referrer"
                       />
                     </div>
+                  ) : (
+                    <span className="text-xs font-medium px-1">
+                      {value}
+                    </span>
                   )}
-                  <span className={cn(
-                    "text-xs font-medium px-1",
-                    variantImage ? "pb-1" : ""
-                  )}>
-                    {value}
-                  </span>
+                  
+                  {isSelected && (
+                    <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5 shadow-sm">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                  )}
+
                   {!isAvailable && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-full h-[1px] bg-muted-foreground/40 rotate-45" />

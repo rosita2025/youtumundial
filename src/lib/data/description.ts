@@ -24,7 +24,7 @@ const DESCRIPTION_OVERRIDES: Record<string, string> = {
   "lion-shaped-pet-canvas-shoulder-bag": `Happy kitten owners share their stories: See how neighbors turn daily outdoor strolls into cozy bonding time with their little companions.
 
 ### SECTION 1: HERO SECTION
-# Cozy Roaring Cub Pouch
+# Cozy Pet Carrier Tote Bag - Cute Costume Series
 Experience safe and fun walks like never before. Keep your little companion close to your heart in total comfort, wrapped in breathable, premium materials.
 Get yours today for just $43.99 USD and start exploring together.
 CTA: GET YOURS TODAY
