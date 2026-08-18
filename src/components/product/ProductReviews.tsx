@@ -3,6 +3,13 @@ import { useReviewSummary } from "@/lib/reviews/use-reviews";
 import { StarRating } from "@/components/product/StarRating";
 import { BadgeCheck } from "lucide-react";
 import { ReviewForm } from "@/components/product/ReviewForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState, useEffect } from "react";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -99,23 +106,36 @@ export function ProductReviews({ slug }: { slug: string }) {
               {review.photos && review.photos.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {review.photos.slice(0, 6).map((photo) => (
-                    <a
-                      key={photo}
-                      href={photo}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="relative block overflow-hidden rounded-md border border-border"
-                    >
-                      <img
-                        src={photo}
-                        alt={`Review photo by ${review.author}`}
-                        loading="lazy"
-                        className="h-24 w-24 object-cover"
-                      />
-                      <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-foreground/60 px-1 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wide text-background">
-                        @youtumundial
-                      </span>
-                    </a>
+                    <Dialog key={photo}>
+                      <DialogTrigger asChild>
+                        <button className="relative block overflow-hidden rounded-md border border-border transition-transform hover:scale-105">
+                          <img
+                            src={photo}
+                            alt={`Review photo by ${review.author}`}
+                            loading="lazy"
+                            className="h-24 w-24 object-cover"
+                          />
+                          <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-foreground/60 px-1 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wide text-background">
+                            @youtumundial
+                          </span>
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none sm:rounded-none">
+                        <VisuallyHidden>
+                          <DialogTitle>Review photo by {review.author}</DialogTitle>
+                        </VisuallyHidden>
+                        <div className="relative flex items-center justify-center p-4">
+                          <img
+                            src={photo}
+                            alt={`Review photo by ${review.author}`}
+                            className="max-h-[85vh] w-auto rounded-lg object-contain shadow-2xl"
+                          />
+                          <span className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 rounded bg-black/40 px-3 py-1 text-sm font-semibold tracking-wider text-white backdrop-blur-sm">
+                            @youtumundial
+                          </span>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   ))}
                 </div>
               )}
