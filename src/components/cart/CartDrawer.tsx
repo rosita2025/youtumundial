@@ -1,13 +1,35 @@
 import { Link } from '@/lib/router-compat';
 import { fbEvent } from '@/lib/facebook-pixel';
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag, Sparkles, Lock, ShieldCheck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { getCatalog } from '@/lib/data/data-provider';
+import { Product } from '@/lib/data/types';
+import { calculateItemTotal } from '@/lib/cart/bundle-pricing';
 
 export function CartDrawer() {
-  const { cart, isOpen, closeCart, updateQuantity, removeItem } = useCart();
+  const { cart, isOpen, closeCart, updateQuantity, removeItem, addToCart } = useCart();
+  const [upsellProduct, setUpsellProduct] = useState<Product | null>(null);
+  
+  const FREE_SHIPPING_THRESHOLD = 40;
+  const progress = Math.min((cart.subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const remaining = FREE_SHIPPING_THRESHOLD - cart.subtotal;
+
+  useEffect(() => {
+    if (isOpen) {
+      // Find a low cost accessory or related product for upsell
+      getCatalog().then(products => {
+        const accessory = products.find(p => 
+          p.price < 20 && 
+          !cart.items.some(item => item.productId === p.id)
+        );
+        if (accessory) setUpsellProduct(accessory);
+      });
+    }
+  }, [isOpen, cart.items]);
 
   return (
     <>
@@ -29,17 +51,46 @@ export function CartDrawer() {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border">
-            <h2 className="font-heading text-xl font-medium">
-              Your Cart ({cart.itemCount})
-            </h2>
-            <button
-              onClick={closeCart}
-              className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Close cart"
-            >
-              <X size={24} />
-            </button>
+          <div className="p-6 border-b border-border bg-muted/30">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-xl font-bold flex items-center gap-2">
+                <ShoppingBag size={20} className="text-primary" />
+                Your Cart ({cart.itemCount})
+              </h2>
+              <button
+                onClick={closeCart}
+                className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Close cart"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Free Shipping Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
+                {cart.subtotal >= FREE_SHIPPING_THRESHOLD ? (
+                  <span className="text-green-600 flex items-center gap-1.5">
+                    <Sparkles size={12} className="animate-pulse" />
+                    🎉 You unlocked FREE Express Shipping!
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    Add <span className="text-primary">{formatPrice(remaining)}</span> for FREE Shipping
+                  </span>
+                )}
+                <span className="text-muted-foreground">{Math.round(progress)}%</span>
+              </div>
+              <div className="h-2 w-full bg-border rounded-full overflow-hidden">
+                <div 
+                  className={cn(
+                    "h-full transition-all duration-700 ease-out rounded-full",
+                    cart.subtotal >= FREE_SHIPPING_THRESHOLD ? "bg-green-500" : "bg-primary"
+                  )}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Cart Items */}
@@ -82,8 +133,13 @@ export function CartDrawer() {
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {item.variant.title}
                       </p>
-                      <p className="font-medium mt-1">
-                        {formatPrice(item.variant.price)}
+                      <p className="font-bold mt-1 text-primary">
+                        {formatPrice(calculateItemTotal(item))}
+                        {item.quantity > 1 && item.product.slug.includes('lion') && (
+                          <span className="text-[10px] text-green-600 ml-2 font-black uppercase tracking-tighter bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
+                            Bundle applied
+                          </span>
+                        )}
                       </p>
 
                       {/* Quantity controls */}
