@@ -126,8 +126,8 @@ export function VariantSelector({
                   onClick={() => handleSelect(option.name, value)}
                   disabled={!isAvailable}
                   className={cn(
-                    'group relative border rounded-full transition-all flex items-center justify-center overflow-hidden shrink-0',
-                    !isSize ? 'w-[44px] h-[44px] p-0.5' : 'px-4 py-2.5 flex-1 min-w-[140px]',
+                    'group relative border rounded-full transition-all flex items-center justify-center shrink-0',
+                    !isSize ? 'w-[44px] h-[44px] p-0.5' : 'px-2 py-2.5 flex-1 min-w-[120px]',
                     isSelected
                       ? isSize 
                         ? 'border-[#1B4D3E] bg-[#FBF9F5] ring-1 ring-[#1B4D3E] z-10' 
@@ -161,12 +161,12 @@ export function VariantSelector({
                   ) : (
                     <div className="flex flex-col items-center">
                       <span className={cn(
-                        "text-[12px] px-2 text-center leading-tight transition-colors",
+                        "text-[11px] px-1 text-center leading-tight transition-colors",
                         isSelected ? "font-bold text-[#1B4D3E]" : "font-medium"
                       )}>
                         {cleanVariantLabel(value)}
                       </span>
-                      <span className="text-[9px] text-muted-foreground/80 mt-0.5 px-2 text-center">
+                      <span className="text-[8px] text-muted-foreground/80 mt-0.5 px-1 text-center line-clamp-2">
                         {getSizeSubtitle(value)}
                       </span>
                     </div>
