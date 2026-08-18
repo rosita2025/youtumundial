@@ -161,7 +161,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
         <Breadcrumbs
           items={[
             { label: 'Products', href: '/products' },
-            { label: product.title },
+            { label: product.title.replace(/Brags/g, 'Bags') },
           ]}
         />
 
@@ -176,7 +176,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 </p>
               )}
               <h1 className="font-heading text-3xl md:text-4xl font-medium w-full break-words">
-                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace('Brags', 'Bags').replace('Bee Shaped Pet & Cat Bags', 'Bee Shaped Pet & Cat Bags')}
+                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace(/Brags/g, 'Bags')}
               </h1>
               <div className="mt-2 flex items-center flex-wrap gap-2 md:gap-3">
                 {reviewSummary.total > 0 && (
@@ -346,7 +346,6 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </Button>
             </div>
             
-            <PhotoCarouselBanner slug={product.slug} />
 
             <div className="flex flex-col items-center gap-3 py-2 border-y border-border/50">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Guaranteed Safe Checkout</span>
@@ -410,22 +409,23 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             </div>
 
             <UpsellSection product={product} relatedProducts={relatedProducts} />
-
           </div>
         </div>
 
-        <ProductReviews 
-          slug={product.slug} 
-          selectedVariant={selectedVariant}
-          onAddToCart={handleAddToCart}
-        />
+        <div className="mt-8 md:mt-12 space-y-0">
+          <PhotoCarouselBanner slug={product.slug} />
+          <ProductCareGuarantee />
+          <ProductReviews 
+            slug={product.slug} 
+            selectedVariant={selectedVariant}
+            onAddToCart={handleAddToCart}
+          />
+        </div>
 
         {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
 
-        <ProductCareGuarantee />
-
         {relatedProducts.length > 0 && (
-          <section className="mt-20">
+          <section className="mt-20 container-wide px-4">
             <h2 className="heading-section mb-8">You May Also Like</h2>
             <ProductGrid products={relatedProducts} />
           </section>
