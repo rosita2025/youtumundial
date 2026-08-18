@@ -204,19 +204,20 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace(/Brags/g, 'Bags')}
               </h1>
             </div>
-              <div className="flex items-center gap-3 mt-1">
-                {product.compareAtPrice && (
-                  <>
-                    <span className="text-lg text-muted-foreground line-through">
-                      {formatPrice(product.compareAtPrice)}
-                    </span>
-                    <span className="bg-destructive text-destructive-foreground text-sm font-medium px-2 py-0.5 rounded">
-                      {discount}% Off
-                    </span>
-                  </>
-                )}
-              </div>
+            <div className="flex items-center gap-3 mt-1">
+              {product.compareAtPrice && (
+                <>
+                  <span className="text-lg text-muted-foreground line-through">
+                    {formatPrice(product.compareAtPrice)}
+                  </span>
+                  <span className="bg-destructive text-destructive-foreground text-sm font-medium px-2 py-0.5 rounded">
+                    {discount}% Off
+                  </span>
+                </>
+              )}
             </div>
+            
+            <div className="pt-2">
 
             <div className="pt-2">
               <VariantSelector
