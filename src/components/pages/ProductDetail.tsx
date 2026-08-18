@@ -383,7 +383,57 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
             </div>
 
+            {/* Benefits & Features Section */}
+            <div className="py-6 border-t border-border/50 space-y-6">
+              <h3 className="font-heading text-xl font-bold text-center mb-6">Why You & Your Pet Will Love It</h3>
+              
+              {/* Product Photos / Highlights */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="aspect-square rounded-2xl overflow-hidden border border-border shadow-sm">
+                  <img src="https://i.postimg.cc/mD7tDMT5/WtzcmR3M.jpg" alt="Pet Highlight 1" className="w-full h-full object-cover" />
+                </div>
+                <div className="aspect-square rounded-2xl overflow-hidden border border-border shadow-sm">
+                  <img src="https://i.postimg.cc/85z1X890/K4RCknpb.jpg" alt="Pet Highlight 2" className="w-full h-full object-cover" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="flex gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">🌿</div>
+                  <div>
+                    <h4 className="font-bold text-sm mb-1">Stress-Free Head Cutout</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Allows pets to breathe freely and enjoy the outdoor view, reducing travel anxiety.</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">🔒</div>
+                  <div>
+                    <h4 className="font-bold text-sm mb-1">Anti-Escape Security</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Adjustable soft collar opening keeps your pet safely tucked inside with zero risk of jumping out.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">🎒</div>
+                  <div>
+                    <h4 className="font-bold text-sm mb-1">Ergonomic Hands-Free</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Wide, sturdy canvas straps evenly distribute weight for comfortable walks and coffee runs.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">📸</div>
+                  <div>
+                    <h4 className="font-bold text-sm mb-1">Viral-Ready Plush</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Cute 3D plush details make your pet the center of attention wherever you go.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <UpsellSection product={product} relatedProducts={relatedProducts} />
+
           </div>
         </div>
 
