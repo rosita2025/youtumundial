@@ -23,19 +23,27 @@ const HTML_ENTITIES: Record<string, string> = {
 const DESCRIPTION_OVERRIDES: Record<string, string> = {
   "lion-shaped-pet-canvas-shoulder-bag": `Happy kitten owners share their stories: See how neighbors turn daily outdoor strolls into cozy bonding time with their little companions.
 
-¡Lleva a tu mascota con estilo y comodidad absoluta! Inspirado en babuno, este bolso de lona con forma de león es el accesorio viral que tu mascota estaba esperando.
+### SECTION 1: HERO SECTION
+# Cozy Roaring Cub Pouch
+Experience safe and fun walks like never before. Keep your little companion close to your heart in total comfort, wrapped in breathable, premium materials.
+Get yours today for just $43.99 USD and start exploring together.
+CTA: GET YOURS TODAY
 
-Beneficios Premium:
-• 96% Seguridad Total: Se sienten completamente seguros mientras llevan a su mascota en aventuras al aire libre gracias al gancho de seguridad integrado.
-• 95% Libertad de Exploración: Gana la libertad de explorar senderos del vecindario sin preocuparte por una mascota inquieta.
-• 98% Confianza en el Diseño: Confianza total al elegir este diseño divertido para cada paseo.
+### SECTION 2: SOCIAL PROOF & KEY BENEFITS
+## Join 1,000+ Happy Pet Parents
+- **Total Security**: Feel 100% confident taking your small pet on outdoor adventures. Our built-in safety hook and adjustable neck opening ensure your cub stays snug and secure.
+- **Stress-Free Freedom**: Explore the world together while keeping your hands free. Whether you're at the park or the mall, your pet enjoys the view safely by your side.
+- **Cute & Playful Design**: Turn heads and inspire smiles with our viral "Lion Cub" design. It's more than a carrier—it's a fun fashion statement that celebrates your bond.
 
-Características Técnicas:
-- Soft Canvas: El algodón suave crea un lugar acogedor y fresco (Máxima Ventilación).
-- Effortless Comfort: Correa ancha diseñada para que el peso sea imperceptible.
-- Secure Fit: Mantiene a tu pequeña mascota segura y cerca de ti en todo momento.
+### SECTION 3: OFFER, CHECKOUT & GUARANTEE
+## Start Your Journey Together
+Price: $43.99 USD
+• FREE Shipping Worldwide
+• Secure Checkout (SSL Encrypted)
+• Fast Delivery (10-15 Days)
 
-UPDATE: Debido a nuestra reciente venta masiva, el stock es muy limitado. Asegura el tuyo mientras duren las existencias. ¡Solo quedan pocas unidades en stock!`
+**30-Day Money-Back Guarantee**
+Your satisfaction is our priority. If you and your pet aren't 100% happy, we offer a full refund, no hassle, no questions asked.`,
 };
 
 export function cleanDescription(raw: string | null | undefined, slug?: string, maxLength = 1200): string {
