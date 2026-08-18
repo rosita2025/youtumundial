@@ -54,12 +54,15 @@ export function UpsellSection({ product, relatedProducts }: UpsellSectionProps) 
       <div className="grid gap-4">
         {upsellCandidates.map((upsell) => (
           <div key={upsell.id} className="flex items-center gap-3 bg-background p-2 rounded-lg shadow-sm border border-border/50">
-            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md bg-muted relative select-none">
               <img
                 src={upsell.images[0]?.url}
                 alt={upsell.title}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover pointer-events-none"
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
               />
+              <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-xs font-medium truncate">{upsell.title}</h4>

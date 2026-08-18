@@ -88,11 +88,23 @@ export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: S
               ) : 'OUT OF STOCK'}
             </Button>
             
-            <div className="flex items-center justify-center gap-2.5 opacity-60 grayscale hover:grayscale-0 transition-all">
-              <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-3.5 w-auto" />
-              <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-3.5 w-auto" />
-              <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-3.5 w-auto" />
-              <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-3.5 w-auto" />
+            <div className="flex items-center justify-center gap-2.5 opacity-60 grayscale hover:grayscale-0 transition-all select-none">
+              <div className="relative">
+                <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-3.5 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+              </div>
+              <div className="relative">
+                <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-3.5 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+              </div>
+              <div className="relative">
+                <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-3.5 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+              </div>
+              <div className="relative">
+                <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-3.5 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+              </div>
             </div>
           </div>
         </div>
