@@ -450,6 +450,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
 
         {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
 
+        <ProductCareGuarantee />
+
         {relatedProducts.length > 0 && (
           <section className="mt-20">
             <h2 className="heading-section mb-8">You May Also Like</h2>
