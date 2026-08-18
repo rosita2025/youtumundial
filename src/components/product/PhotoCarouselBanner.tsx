@@ -15,7 +15,7 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
   const displayReviews = [...photoReviews, ...photoReviews, ...photoReviews];
 
   return (
-    <section className="py-6 bg-white overflow-hidden">
+    <section className="photo-carousel-banner py-6 bg-white overflow-hidden">
       <div className="container-wide px-4 mb-4">
         <h2 className="text-[18px] font-bold text-[#111111] text-center">
           10,000+ Happy Customers
@@ -57,8 +57,14 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
           0% { transform: translateX(0); }
           100% { transform: translateX(calc(-33.33% - 8px)); }
         }
-        .animate-marquee {
+        .photo-carousel-banner .animate-marquee {
           animation: marquee 30s linear infinite;
+        }
+        .photo-carousel-banner img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
         }
       `}</style>
     </section>

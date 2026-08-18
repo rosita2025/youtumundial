@@ -49,11 +49,11 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted group select-none">
+      <div className="relative aspect-square md:aspect-square max-h-[420px] md:max-h-none overflow-hidden rounded-lg bg-muted group select-none flex items-center justify-center">
         <img
           src={images[selectedIndex].url}
           alt={images[selectedIndex].altText || productTitle}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
           referrerPolicy="no-referrer"
           onContextMenu={(e) => e.preventDefault()}
           draggable={false}
