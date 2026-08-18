@@ -187,6 +187,23 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                     </span>
                   </a>
                 )}
+                <div className="h-4 w-[1px] bg-border mx-1 hidden sm:block" />
+                <div className="flex items-center gap-1.5 bg-[#00B67A]/5 px-2 py-1 rounded-md border border-[#00B67A]/10">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <div key={s} className="w-3.5 h-3.5 bg-[#00B67A] flex items-center justify-center rounded-[1px]">
+                        <span className="text-white text-[8px]">★</span>
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-bold text-[#111111]">
+                    Trustpilot <span className="text-[#00B67A]">Excellent 4.9/5</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] font-bold text-[#00875A] bg-[#E6F4EA] px-2 py-1 rounded-md">
+                  <Shield size={10} strokeWidth={3} /> VERIFIED PRODUCT
+                </div>
+                )}
                 <span className="hidden md:block h-4 w-[1px] bg-border" />
                 <span className="text-xs font-bold text-green-600 flex items-center gap-1 uppercase tracking-tighter shrink-0">
                   <Shield size={12} /> Verified Product
