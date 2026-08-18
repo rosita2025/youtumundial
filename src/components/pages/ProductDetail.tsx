@@ -221,8 +221,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               <div className="grid gap-3">
                 {[
                   { qty: 1, price: 43.99, label: 'Buy 1', badge: null, sublabel: '+ Standard International Shipping' },
-                  { qty: 2, price: 69.99, label: 'Buy 2 (MOST POPULAR)', badge: 'MOST POPULAR', sublabel: '$35.00/ea + FREE International Shipping [Save $17.99]' },
-                  { qty: 3, price: 89.99, label: 'Buy 3 (BEST VALUE)', badge: 'BEST VALUE', sublabel: '$30.00/ea + FREE International Shipping [Save $41.98]' },
+                  { qty: 2, price: 69.99, label: 'Buy 2 - Double Pack', badge: 'MOST POPULAR', sublabel: '$35.00/ea + FREE International Shipping [Save $17.99]' },
+                  { qty: 3, price: 89.99, label: 'Buy 3 - Triple Pack', badge: 'BEST VALUE', sublabel: '$30.00/ea + FREE International Shipping [Save $41.98]' },
                 ].map((offer) => (
 
                   <div key={offer.qty} className="space-y-0">
