@@ -161,7 +161,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
         <Breadcrumbs
           items={[
             { label: 'Products', href: '/products' },
-            { label: product.title },
+            { label: product.title.replace('Brags', 'Bags') },
           ]}
         />
 
@@ -346,7 +346,6 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </Button>
             </div>
             
-            <PhotoCarouselBanner slug={product.slug} />
 
             <div className="flex flex-col items-center gap-3 py-2 border-y border-border/50">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Guaranteed Safe Checkout</span>
@@ -414,6 +413,10 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           </div>
         </div>
 
+        <PhotoCarouselBanner slug={product.slug} />
+        
+        <ProductCareGuarantee />
+
         <ProductReviews 
           slug={product.slug} 
           selectedVariant={selectedVariant}
@@ -421,8 +424,6 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
         />
 
         {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
-
-        <ProductCareGuarantee />
 
         {relatedProducts.length > 0 && (
           <section className="mt-20">
