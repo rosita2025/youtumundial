@@ -218,8 +218,6 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             </div>
             
             <div className="pt-2">
-
-            <div className="pt-2">
               <VariantSelector
                 variants={product.variants}
                 selectedVariant={selectedVariant}
