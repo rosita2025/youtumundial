@@ -2,7 +2,7 @@ import { Product } from "@/lib/data/types";
 import { formatPrice } from "@/lib/utils/format";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Plus, CheckCircle2 } from "lucide-react";
+import { ShoppingCart, Plus, CheckCircle2, Sparkles, Truck, RotateCcw, Shield } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -40,10 +40,15 @@ export function UpsellSection({ product, relatedProducts }: UpsellSectionProps) 
   };
 
   return (
-    <div className="mt-8 p-4 border border-primary/20 bg-primary/5 rounded-xl space-y-4">
-      <div className="flex items-center gap-2">
-        <ShoppingCart size={18} className="text-primary" />
-        <h3 className="text-sm font-bold uppercase tracking-wider">Completa tu kit</h3>
+    <div className="mt-8 p-6 border-2 border-primary/30 bg-primary/5 rounded-2xl space-y-5 shadow-inner">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShoppingCart size={20} className="text-primary animate-pulse" />
+          <h3 className="text-sm font-black uppercase tracking-tighter italic">BUNDLE & SAVE</h3>
+        </div>
+        <div className="bg-destructive text-white text-[9px] font-bold px-2 py-0.5 rounded-full animate-bounce">
+          MOST POPULAR
+        </div>
       </div>
       
       <div className="grid gap-4">
@@ -82,9 +87,24 @@ export function UpsellSection({ product, relatedProducts }: UpsellSectionProps) 
         ))}
       </div>
       
-      <p className="text-[10px] text-muted-foreground text-center">
-        ⚡️ Agrega productos relacionados y ahorra un 10% en tu segunda unidad.
-      </p>
+      <div className="bg-yellow-100/50 border border-yellow-200 rounded-lg p-3">
+        <p className="text-[11px] text-yellow-800 font-bold text-center flex items-center justify-center gap-1">
+          <Sparkles size={12} />
+          ¡Ahorra un 10% EXTRA automáticamente al llevar 2 o más productos!
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 opacity-50 grayscale pt-2 border-t border-primary/10">
+        <div className="flex flex-col items-center gap-1 text-[8px] font-bold">
+          <Truck size={12} /> FAST SHIPPING
+        </div>
+        <div className="flex flex-col items-center gap-1 text-[8px] font-bold">
+          <RotateCcw size={12} /> EASY RETURNS
+        </div>
+        <div className="flex flex-col items-center gap-1 text-[8px] font-bold">
+          <Shield size={12} /> SECURE PAY
+        </div>
+      </div>
     </div>
   );
 }
