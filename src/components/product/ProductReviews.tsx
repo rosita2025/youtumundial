@@ -99,13 +99,22 @@ export function ProductReviews({ slug }: { slug: string }) {
               {review.photos && review.photos.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {review.photos.slice(0, 6).map((photo) => (
-                    <a key={photo} href={photo} target="_blank" rel="noreferrer">
+                    <a
+                      key={photo}
+                      href={photo}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="relative block overflow-hidden rounded-md border border-border"
+                    >
                       <img
                         src={photo}
                         alt={`Review photo by ${review.author}`}
                         loading="lazy"
-                        className="h-20 w-20 rounded-md border border-border object-cover"
+                        className="h-24 w-24 object-cover"
                       />
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-foreground/60 px-1 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wide text-background">
+                        @youtumundial
+                      </span>
                     </a>
                   ))}
                 </div>
