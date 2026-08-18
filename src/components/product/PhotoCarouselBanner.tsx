@@ -35,7 +35,7 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
       </div>
 
       <div 
-        className="relative h-[200px] md:h-[240px] overflow-hidden group flex items-center"
+        className="relative h-[200px] md:h-[240px] overflow-hidden group flex items-center w-full"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
@@ -67,10 +67,11 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
-          100% { transform: translateX(calc(-33.33% - 8px)); }
+          100% { transform: translateX(calc(-33.33% - 4px)); }
         }
         .photo-carousel-banner .animate-marquee {
           animation: marquee 30s linear infinite;
+          width: fit-content;
         }
         .photo-carousel-banner img {
           width: 100%;
