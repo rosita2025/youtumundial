@@ -40,7 +40,12 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
       product.variants[0] ??
       null
     : null;
-  const setSelectedVariant = (variant: ProductVariant) => setVariantId(variant.id);
+    
+  const setSelectedVariant = (variant: ProductVariant) => {
+    setVariantId(variant.id);
+    // Dispatch custom event for gallery sync
+    window.dispatchEvent(new CustomEvent('product-variant-changed', { detail: { variant } }));
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -112,8 +117,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           <ProductGallery images={product.images} productTitle={product.title} />
 
           {/* Product Info */}
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-4 md:space-y-6">
+            <div className="space-y-1">
               {(product.vendor || product.productType) && (
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
                   {[product.vendor, product.productType].filter(Boolean).join(' · ')}
@@ -150,11 +155,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                   </span>
                 </div>
               )}
-              <div className="flex items-center gap-3 mt-2">
-
-                <span className="text-2xl font-medium">
-                  {formatPrice(product.price)}
-                </span>
+              <div className="flex items-center gap-3 mt-1">
                 {product.compareAtPrice && (
                   <>
                     <span className="text-lg text-muted-foreground line-through">
@@ -168,13 +169,10 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5 py-1">
-              <span className="text-2xl font-heading font-bold text-foreground">
-                {quantity === 1 ? formatPrice(43.99) : quantity === 2 ? formatPrice(69.99) : formatPrice(89.99)}
-              </span>
-              <ul className="space-y-2.5">
+            <div className="flex flex-col gap-1 py-0">
+              <ul className="space-y-2">
                 {[
-                  '100% Breathable & Soft Premium Canvas (Ultra-comfortable for pets up to 15 lbs / 7 kg).',
+                  '100% Breathable & Soft Premium Canvas (Ultra-comfortable for pets).',
                   'Safe & Secure Head Opening with plush costume hood to prevent jumping out.',
                   'Hands-Free Ergonomic Design for stress-free daily walks and outdoor trips.'
                 ].map((point, i) => (
@@ -187,11 +185,13 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             </div>
 
             {/* Variant Selector */}
-            <VariantSelector
-              variants={product.variants}
-              selectedVariant={selectedVariant}
-              onSelect={setSelectedVariant}
-            />
+            <div className="pt-2">
+              <VariantSelector
+                variants={product.variants}
+                selectedVariant={selectedVariant}
+                onSelect={setSelectedVariant}
+              />
+            </div>
 
             {/* Bundle & Save Section */}
             <div className="space-y-3 pt-2">

@@ -11,11 +11,12 @@ const CLEAN_LABELS: Record<string, string> = {
   'bee': 'Bee',
   'lion': 'Lion',
   'rabbit': 'Rabbit',
-  'mickey': 'Mickey',
+  'mickey': 'Black Mickey',
   'burger': 'Burger',
   'hamburger': 'Burger',
   'dinosaur': 'Dino',
   'frog': 'Frog',
+  '381bqiqi': 'Mickey',
 };
 
 function cleanVariantLabel(value: string): string {
@@ -23,16 +24,22 @@ function cleanVariantLabel(value: string): string {
   
   // Custom mapping for sizes to be more user friendly
   if (lower.includes('catty')) {
-    if (lower.includes('1-6')) return 'Size M: Suitable for pets up to 7 lbs (3.5 kg)';
-    if (lower.includes('7-15')) return 'Size L: Suitable for pets up to 15 lbs (7 kg)';
-    return value.replace(/catty/i, 'lbs capacity');
+    if (lower.includes('1-6')) return 'Size M: Recommended for pets up to 7 lbs (3.5 kg)';
+    if (lower.includes('7-15')) return 'Size L: Recommended for pets up to 15 lbs (7 kg)';
+    return value.replace(/16catty/i, '').replace(/catty/i, 'lbs capacity');
   }
 
   for (const [key, label] of Object.entries(CLEAN_LABELS)) {
     if (lower.includes(key)) return label;
   }
-  // Fallback: quitar códigos numéricos al inicio y palabras tipo "color"
-  return value.replace(/^\d+\s+/, '').replace(/color/i, '').trim();
+  
+  // Handle technical color labels
+  let clean = value.replace(/^\d+\s+/, '') // Remove leading numbers
+                   .replace(/[a-z0-9]+bag/i, '') // Remove bag codes
+                   .replace(/color/i, '')
+                   .trim();
+                   
+  return clean || value;
 }
 
 export function VariantSelector({
