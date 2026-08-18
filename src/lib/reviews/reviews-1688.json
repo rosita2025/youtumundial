@@ -81,6 +81,106 @@
         "verified": true,
         "published": true,
         "photos": ["https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=2070"]
+      },
+      {
+        "author": "Sarah J.",
+        "country": "US",
+        "rating": 5,
+        "date": "2026-08-18",
+        "title": "My fur baby loves it!",
+        "body": "My fur baby loves it! the customer service was really patient and helpful, and the shipping was super fast.",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Mark D.",
+        "country": "CA",
+        "rating": 5,
+        "date": "2026-08-17",
+        "title": "Pretty good quality",
+        "body": "It's pretty good, and the quality is what you'd expect at this price point. the size i bought is suitable for smaller pets.",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Emily W.",
+        "country": "GB",
+        "rating": 5,
+        "date": "2026-08-17",
+        "title": "Very cute!",
+        "body": "Very bright colors, very cute for puppies and kittens.",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "David L.",
+        "country": "US",
+        "rating": 5,
+        "date": "2026-08-16",
+        "title": "Excellent service",
+        "body": "Excellent service, impeccable quality, and unbeatable value. highly recommend placing an order!",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Jessica K.",
+        "country": "AU",
+        "rating": 5,
+        "date": "2026-08-15",
+        "title": "Convenient and lightweight",
+        "body": "The quality and craftsmanship of this pet carrier are excellent. plus, it's so convenient and lightweight – you can just grab it and go! i'd definitely be happy to work with you again in the future",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Sophie M.",
+        "country": "FR",
+        "rating": 5,
+        "date": "2026-08-14",
+        "title": "Puppy likes it",
+        "body": "The mat is soft and the puppy likes it very much. the delivery is very fast",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Lucas G.",
+        "country": "ES",
+        "rating": 5,
+        "date": "2026-08-13",
+        "title": "Very comfortable",
+        "body": "The mat is quite thick, and the kitten is very comfortable lying on it in winter",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Oliver H.",
+        "country": "DE",
+        "rating": 5,
+        "date": "2026-08-12",
+        "title": "Thick and soft",
+        "body": "The mat is quite thick, and the kitten is very comfortable lying on it in winter",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Isabella R.",
+        "country": "IT",
+        "rating": 5,
+        "date": "2026-08-11",
+        "title": "Highly recommended",
+        "body": "The price is very favorable, i am very satisfied, the customer service is very enthusiastic, the quality is excellent, it is definitely worthy of the price, recommended",
+        "verified": true,
+        "published": true
+      },
+      {
+        "author": "Thomas B.",
+        "country": "US",
+        "rating": 5,
+        "date": "2026-08-10",
+        "title": "Five-star product",
+        "body": "The user thought the product was very good and gave it a five-star rating",
+        "verified": true,
+        "published": true
       }
     ],
     "organic-cotton-tee": [
