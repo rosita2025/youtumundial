@@ -119,7 +119,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 </p>
               )}
               <h1 className="font-heading text-3xl md:text-4xl font-medium">
-                {product.title}
+                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Roaring Cub Pouch' : product.title}
               </h1>
               {product.collections.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-3">
