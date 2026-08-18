@@ -124,16 +124,22 @@ export async function priceOrder(params: {
 
   subtotal = Math.round(subtotal * 100) / 100;
 
-  // Lógica de Upsell Automático: Si hay más de un producto diferente o cantidad > 1,
-  // y no hay un cupón manual aplicado, aplicamos un 10% de descuento automáticamente
-  // como incentivo de "Completa tu kit".
+  // Lógica de Ofertas de Pack (Bundle & Save):
+  // Buy 1: $43.99 (Precio Base)
+  // Buy 2: $69.99 (Aprox 20% OFF)
+  // Buy 3: $89.99 (Aprox 30% OFF)
   let automaticDiscount = 0;
   const totalQuantity = params.items.reduce((sum, item) => sum + item.quantity, 0);
-  const differentProducts = new Set(params.items.map(i => i.variantId.split(':')[0])).size;
 
-  if (!params.couponCode && (totalQuantity >= 2 || differentProducts >= 2)) {
-    // 10% de descuento en el total de productos si llevan más de uno (estrategia de Upsell)
-    automaticDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+  if (!params.couponCode) {
+    if (totalQuantity === 2) {
+      // Precio objetivo $69.99 -> Descuento = (43.99 * 2) - 69.99 = 17.99
+      automaticDiscount = 17.99;
+    } else if (totalQuantity >= 3) {
+      // Precio objetivo $89.99 (para 3) -> Descuento = (43.99 * 3) - 89.99 = 41.98
+      // Si son más de 3, mantenemos el descuento base del pack de 3
+      automaticDiscount = 41.98 + (Math.max(0, totalQuantity - 3) * 15);
+    }
   }
 
   let coupon: Coupon | null = null;
@@ -147,14 +153,13 @@ export async function priceOrder(params: {
 
   let discount = couponDiscount(coupon, subtotal);
   
-  // Si no hay cupón, aplicamos el descuento automático de upsell
+  // Si no hay cupón, aplicamos el descuento automático de pack
   if (!discount && automaticDiscount > 0) {
     discount = automaticDiscount;
-    // Creamos un cupón virtual para que el cliente vea el motivo del descuento
     coupon = {
-      code: 'UPSELL10',
-      percentOff: 10,
-      label: '¡Oferta de Pack! 10% de descuento por llevar más de un producto',
+      code: 'BUNDLE_SAVE',
+      percentOff: Math.round((automaticDiscount / subtotal) * 100),
+      label: '¡Oferta de Pack Aplicada!',
       active: true
     };
   }
