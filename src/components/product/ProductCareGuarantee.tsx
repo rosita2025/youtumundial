@@ -1,51 +1,41 @@
-import { Sparkles, WashingMachine, Wind, ShieldCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Shield, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export function ProductCareGuarantee() {
-  const points = [
+  const items = [
     {
-      icon: <Sparkles className="text-primary w-5 h-5" />,
+      icon: "🧼",
       title: "Easy-to-Clean Durable Canvas",
-      description: "Wipe clean with a damp cloth or hand-wash for deeper cleaning. Re-shape and air dry."
+      description: "Wipe clean with a damp cloth or hand-wash."
     },
     {
-      icon: <WashingMachine className="text-primary w-5 h-5" />,
+      icon: "🧺",
       title: "Machine Washable Cover",
-      description: "Costume cover removes easily and is machine washable on gentle cycle."
+      description: "Costume cover removes easily and is machine washable."
     },
     {
-      icon: <Wind className="text-primary w-5 h-5" />,
+      icon: "💨",
       title: "Breathable & Odor Resistant",
-      description: "Canvas fabric naturally inhibits odors and keeps your pet comfortable."
+      description: "Canvas fabric naturally inhibits odors."
     },
     {
-      icon: <ShieldCheck className="text-primary w-5 h-5" />,
+      icon: "🛡️",
       title: "1-Year Quality Guarantee",
-      description: "We stand by our product with a comprehensive 1-year guarantee against material defects."
+      description: "Full 1-year guarantee against material defects."
     }
   ];
 
   return (
-    <section className="container-wide my-12 md:my-16">
-      <div 
-        className="bg-[#FBF9F5] border border-[#EAE6DF] rounded-[12px] p-4 md:p-6"
-      >
-        <h2 className="text-[20px] font-bold mb-6 text-foreground">
-          Product Care & Quality Guarantee
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {points.map((point, index) => (
-            <div key={index} className="flex gap-4 items-start">
-              <div className="shrink-0 mt-1">
-                {point.icon}
-              </div>
+    <section className="py-12 px-4">
+      <div className="max-w-3xl mx-auto bg-[#FBF9F5] rounded-[12px] border border-[#EAE6DF] p-6 md:p-8 space-y-6">
+        <h3 className="text-xl font-bold text-center mb-8">Product Care & Quality Guarantee</h3>
+        <div className="grid gap-6">
+          {items.map((item, i) => (
+            <div key={i} className="flex items-start gap-4">
+              <span className="text-2xl shrink-0">{item.icon}</span>
               <div>
-                <h3 className="font-bold text-[14px] leading-tight mb-1">
-                  {point.title}
-                </h3>
-                <p className="text-[12px] text-muted-foreground leading-relaxed">
-                  {point.description}
+                <h4 className="font-bold text-sm text-foreground">{item.title}</h4>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {item.description}
                 </p>
               </div>
             </div>

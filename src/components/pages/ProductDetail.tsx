@@ -251,7 +251,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                         <span className="font-heading text-lg font-bold block">{formatPrice(offer.price)}</span>
                       </div>
                       {offer.badge && (
-                        <div className="absolute -top-2.5 -right-2 z-10">
+                        <div className="absolute top-2 right-2 z-10">
                           <span className={cn(
                             "text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm border border-white/20",
                             offer.qty === 2 ? "bg-[#FFB800] text-black" : "bg-primary text-white"
