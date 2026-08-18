@@ -168,27 +168,23 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
             </div>
 
-            {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? (
-              <ul className="space-y-3 py-2">
+            <div className="flex flex-col gap-1.5 py-1">
+              <span className="text-2xl font-heading font-bold text-foreground">
+                {quantity === 1 ? formatPrice(43.99) : quantity === 2 ? formatPrice(69.99) : formatPrice(89.99)}
+              </span>
+              <ul className="space-y-2.5">
                 {[
-                  'Soft & Breathable Canvas Material',
-                  'Safe Head Hole Cutout with Plush Costume Design',
-                  'Hands-Free Comfort for Walks & Travel'
+                  '100% Breathable & Soft Premium Canvas (Ultra-comfortable for pets up to 15 lbs / 7 kg).',
+                  'Safe & Secure Head Opening with plush costume hood to prevent jumping out.',
+                  'Hands-Free Ergonomic Design for stress-free daily walks and outdoor trips.'
                 ].map((point, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                  <li key={i} className="flex items-start gap-2.5 text-[13px] text-muted-foreground leading-snug">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
                     {point}
                   </li>
                 ))}
               </ul>
-            ) : product.description && (
-              <div className="space-y-4">
-                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Description</h2>
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-sm">
-                  {product.description}
-                </p>
-              </div>
-            )}
+            </div>
 
             {/* Variant Selector */}
             <VariantSelector
@@ -205,9 +201,9 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </label>
               <div className="grid gap-3">
                 {[
-                  { qty: 1, price: 43.99, label: 'Buy 1', badge: 'Standard', save: null },
-                  { qty: 2, price: 69.99, label: 'Buy 2', badge: 'Most Popular', save: '20% OFF' },
-                  { qty: 3, price: 89.99, label: 'Buy 3', badge: 'Best Value', save: '30% OFF' },
+                  { qty: 1, price: 43.99, label: 'Buy 1 - Standard', badge: null, sublabel: 'Free Shipping Included' },
+                  { qty: 2, price: 69.99, label: 'Buy 2 - Double Pack', badge: 'MOST POPULAR', sublabel: '$35.00 each | Save 20%' },
+                  { qty: 3, price: 89.99, label: 'Buy 3 - Triple Pack', badge: 'BEST VALUE', sublabel: '$30.00 each | Save 31%' },
                 ].map((offer) => (
                   <button
                     key={offer.qty}
@@ -229,7 +225,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                       <div>
                         <span className="font-bold text-sm block">{offer.label}</span>
                         <span className="text-xs text-muted-foreground">
-                          {offer.qty === 1 ? 'Free Shipping Included' : `Only ${formatPrice(offer.price / offer.qty)} each`}
+                          {offer.sublabel}
                         </span>
                       </div>
                     </div>
