@@ -167,7 +167,31 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
         />
 
         <div className="grid md:grid-cols-2 gap-8 lg:gap-16 product-single">
-          <ProductGallery images={product.images} productTitle={product.title} />
+          <div className="space-y-4">
+            <div className="flex items-center flex-wrap gap-2 text-[13px] leading-none mb-2">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <StarRating rating={reviewSummary.average} size={14} />
+                <span className="font-medium text-muted-foreground underline-offset-4 hover:underline">
+                  {reviewSummary.average.toFixed(1)} ({reviewSummary.total} Reviews)
+                </span>
+              </div>
+              <div className="h-3 w-[1px] bg-border mx-0.5 hidden sm:block" />
+              <div className="flex items-center gap-1.5 bg-[#00B67A] px-2 py-0.5 rounded-md text-white">
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <span key={s} className="text-[10px]">★</span>
+                  ))}
+                </div>
+                <span className="font-bold text-[9px] uppercase tracking-tighter">
+                  Trustpilot Excellent 4.9/5
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-[9px] font-bold text-[#00875A] bg-[#E6F4EA] px-2 py-0.5 rounded-md uppercase tracking-tighter">
+                <Shield size={10} strokeWidth={3} /> VERIFIED PRODUCT
+              </div>
+            </div>
+            <ProductGallery images={product.images} productTitle={product.title} />
+          </div>
 
           <div className="space-y-4 md:space-y-6">
             <div className="space-y-1">
@@ -179,42 +203,20 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               <h1 className="font-heading text-3xl md:text-4xl font-medium w-full break-words">
                 {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace(/Brags/g, 'Bags')}
               </h1>
-              <div className="mt-2 flex items-center flex-wrap gap-2 md:gap-3">
-                <div className="flex items-center gap-2">
-                  <StarRating rating={reviewSummary.average} size={15} />
-                  <span className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline">
-                    {reviewSummary.average.toFixed(1)} ({reviewSummary.total} Reviews)
-                  </span>
-                </div>
-                <div className="h-4 w-[1px] bg-border mx-1 hidden sm:block" />
-                <div className="flex items-center gap-1.5 bg-[#00B67A] px-2.5 py-1 rounded-md">
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <span key={s} className="text-white text-[12px]">★</span>
-                    ))}
-                  </div>
-                  <span className="text-[10px] font-bold text-white">
-                    Trustpilot Excellent 4.9/5
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-[10px] font-bold text-[#00875A] bg-[#E6F4EA] px-2.5 py-1 rounded-md">
-                  <Shield size={10} strokeWidth={3} /> VERIFIED PRODUCT
-                </div>
-              </div>
-              <div className="flex items-center gap-3 mt-1">
-                {product.compareAtPrice && (
-                  <>
-                    <span className="text-lg text-muted-foreground line-through">
-                      {formatPrice(product.compareAtPrice)}
-                    </span>
-                    <span className="bg-destructive text-destructive-foreground text-sm font-medium px-2 py-0.5 rounded">
-                      {discount}% Off
-                    </span>
-                  </>
-                )}
-              </div>
             </div>
-
+            <div className="flex items-center gap-3 mt-1">
+              {product.compareAtPrice && (
+                <>
+                  <span className="text-lg text-muted-foreground line-through">
+                    {formatPrice(product.compareAtPrice)}
+                  </span>
+                  <span className="bg-destructive text-destructive-foreground text-sm font-medium px-2 py-0.5 rounded">
+                    {discount}% Off
+                  </span>
+                </>
+              )}
+            </div>
+            
             <div className="pt-2">
               <VariantSelector
                 variants={product.variants}
