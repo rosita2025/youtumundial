@@ -26,8 +26,8 @@ function cleanVariantLabel(value: string): string {
   
   // Custom mapping for sizes to be more user friendly
   if (lower.includes('catty')) {
-    if (lower.includes('1-6')) return 'Size M: Pets up to 7 lbs (3.5 kg)';
-    if (lower.includes('7-15')) return 'Size L: Pets up to 15 lbs (7 kg)';
+    if (lower.includes('1-6')) return 'M (Recommended for 0.5-3kg dogs / 0-4kg cats)';
+    if (lower.includes('7-15')) return 'L (Recommended for dogs under 6kg / cats under 8kg)';
     return value.replace(/16catty/i, '').replace(/catty/i, ' lbs capacity');
   }
 
@@ -109,11 +109,7 @@ export function VariantSelector({
               const isSelected = selectedValues[option.name] === value;
               const isAvailable = isValueAvailable(option.name, value);
 
-              // Find a variant that has this option value to potentially show its image
-              const exampleVariant = variants.find(v => 
-                v.options.some(o => o.name === option.name && o.value === value)
-              );
-              const variantImage = exampleVariant?.image?.url;
+              const isSize = option.name.toLowerCase().includes('size');
 
               return (
                 <button
@@ -122,28 +118,42 @@ export function VariantSelector({
                   disabled={!isAvailable}
                   className={cn(
                     'group relative border rounded-full transition-all flex items-center justify-center overflow-hidden shrink-0',
-                    variantImage ? 'w-[44px] h-[44px] p-0.5' : 'px-4 py-2 min-w-[45px]',
+                    !isSize ? 'w-[44px] h-[44px] p-0.5' : 'px-6 py-3 min-w-[45px]',
                     isSelected
-                      ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110 z-10'
-                      : 'border-border bg-background hover:border-foreground/30',
+                      ? isSize 
+                        ? 'border-[#1B4D3E] bg-[#FBF9F5] ring-1 ring-[#1B4D3E] z-10' 
+                        : 'border-primary ring-2 ring-primary ring-offset-2 scale-110 z-10'
+                      : isSize
+                        ? 'border-[#EAE6DF] bg-white text-muted-foreground'
+                        : 'border-border bg-background hover:border-foreground/30',
                     !isAvailable && 'opacity-30 cursor-not-allowed'
                   )}
                   title={value}
                 >
-                  {variantImage ? (
+                  {!isSize ? (
                     <div className="w-full h-full overflow-hidden rounded-full bg-muted relative">
-                      <img 
-                        src={variantImage} 
-                        alt={value} 
-                        className="w-full h-full object-cover transition-transform group-hover:scale-110 pointer-events-none"
-                        referrerPolicy="no-referrer"
-                        onContextMenu={(e) => e.preventDefault()}
-                        draggable={false}
-                      />
+                      {(() => {
+                        const exampleVariant = variants.find(v => 
+                          v.options.some(o => o.name === option.name && o.value === value)
+                        );
+                        return exampleVariant?.image?.url ? (
+                          <img 
+                            src={exampleVariant.image.url} 
+                            alt={value} 
+                            className="w-full h-full object-cover transition-transform group-hover:scale-110 pointer-events-none"
+                            referrerPolicy="no-referrer"
+                            onContextMenu={(e) => e.preventDefault()}
+                            draggable={false}
+                          />
+                        ) : null;
+                      })()}
                       <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
                     </div>
                   ) : (
-                    <span className="text-[10px] font-bold px-2 text-center leading-tight">
+                    <span className={cn(
+                      "text-[12px] px-2 text-center leading-tight transition-colors",
+                      isSelected ? "font-bold text-[#1B4D3E]" : "font-medium"
+                    )}>
                       {cleanVariantLabel(value)}
                     </span>
                   )}
