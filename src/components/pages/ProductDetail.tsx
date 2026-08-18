@@ -175,7 +175,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 </p>
               )}
               <h1 className="font-heading text-3xl md:text-4xl font-medium w-full break-words">
-                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace('Brags', 'Bags')}
+                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace('Brags', 'Bags').replace('Bee Shaped Pet & Cat Bags', 'Bee Shaped Pet & Cat Bags')}
               </h1>
               <div className="mt-2 flex items-center flex-wrap gap-2 md:gap-3">
                 {reviewSummary.total > 0 && (
