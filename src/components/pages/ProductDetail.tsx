@@ -264,12 +264,27 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             {/* Trust Badges for Conversion */}
             <div className="flex flex-col items-center gap-3 py-2 border-y border-border/50">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Guaranteed Safe Checkout</span>
-              <div className="flex items-center justify-center gap-5 opacity-70">
-                <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/google-pay.png" alt="Google Pay" className="h-6 w-auto" />
+              <div className="flex items-center justify-center gap-5 opacity-70 relative select-none">
+                <div className="relative">
+                  <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-6 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                  <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                </div>
+                <div className="relative">
+                  <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-6 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                  <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                </div>
+                <div className="relative">
+                  <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-6 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                  <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                </div>
+                <div className="relative">
+                  <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-6 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                  <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                </div>
+                <div className="relative">
+                  <img src="https://img.icons8.com/color/48/google-pay.png" alt="Google Pay" className="h-6 w-auto pointer-events-none" onContextMenu={(e) => e.preventDefault()} draggable={false} />
+                  <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                </div>
               </div>
             </div>
 

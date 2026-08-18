@@ -122,13 +122,16 @@ export function VariantSelector({
                   title={value}
                 >
                   {variantImage ? (
-                    <div className="w-full h-full overflow-hidden rounded-full bg-muted">
+                    <div className="w-full h-full overflow-hidden rounded-full bg-muted relative">
                       <img 
                         src={variantImage} 
                         alt={value} 
-                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform group-hover:scale-110 pointer-events-none"
                         referrerPolicy="no-referrer"
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
                       />
+                      <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
                     </div>
                   ) : (
                     <span className="text-[10px] font-bold px-2 text-center leading-tight">

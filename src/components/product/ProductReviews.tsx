@@ -14,11 +14,12 @@ import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+// Hydration-safe date formatter
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+};
 
 export function ProductReviews({ slug }: { slug: string }) {
   const { reviews, total, average, distribution } = useReviewSummary(slug);
@@ -86,10 +87,13 @@ export function ProductReviews({ slug }: { slug: string }) {
                     <img
                       src={review.photos![0]}
                       alt={`Review by ${review.author}`}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                      className="h-full w-full object-cover transition-transform group-hover:scale-110 pointer-events-none"
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute bottom-3 left-3 right-3 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+                    <div className="absolute bottom-3 left-3 right-3 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       <div className="flex items-center gap-1 mb-1">
                         <StarRating rating={5} size={10} className="text-yellow-400" />
                       </div>
@@ -105,8 +109,15 @@ export function ProductReviews({ slug }: { slug: string }) {
                 <DialogContent className="max-w-2xl bg-white p-0 overflow-hidden rounded-2xl">
                   <VisuallyHidden><DialogTitle>Review by {review.author}</DialogTitle></VisuallyHidden>
                   <div className="flex flex-col md:flex-row h-full">
-                    <div className="w-full md:w-1/2 bg-black flex items-center justify-center p-0">
-                      <img src={review.photos![0]} alt="" className="max-h-[70vh] w-auto object-contain" />
+                    <div className="w-full md:w-1/2 bg-black flex items-center justify-center p-0 relative group">
+                      <img 
+                        src={review.photos![0]} 
+                        alt="" 
+                        className="max-h-[70vh] w-auto object-contain pointer-events-none" 
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                      />
+                      <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
                     </div>
                     <div className="w-full md:w-1/2 p-6 flex flex-col">
                       <div className="flex items-center justify-between mb-4">
@@ -117,7 +128,7 @@ export function ProductReviews({ slug }: { slug: string }) {
                           </p>
                           <StarRating rating={review.rating} size={14} />
                         </div>
-                        <span className="text-xs text-muted-foreground">{dateFormatter.format(new Date(review.date))}</span>
+                        <span className="text-xs text-muted-foreground">{formatDate(review.date)}</span>
                       </div>
                       <p className="text-sm leading-relaxed text-muted-foreground italic mb-6">"{review.body}"</p>
                       <div className="mt-auto pt-6 border-t">
@@ -226,7 +237,7 @@ export function ProductReviews({ slug }: { slug: string }) {
                     <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                       <span>{countryFlags[review.country] ?? ""} {review.country}</span>
                       <span>•</span>
-                      <span>{dateFormatter.format(new Date(review.date))}</span>
+                      <span>{formatDate(review.date)}</span>
                     </div>
                   </div>
                 </div>
@@ -248,7 +259,14 @@ export function ProductReviews({ slug }: { slug: string }) {
                       <Dialog key={idx}>
                         <DialogTrigger asChild>
                           <button className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-border/40 hover:border-primary transition-colors select-none group">
-                            <img src={photo} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                            <img 
+                              src={photo} 
+                              alt="" 
+                              className="w-full h-full object-cover transition-transform group-hover:scale-110 pointer-events-none" 
+                              onContextMenu={(e) => e.preventDefault()}
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
                             <div className="absolute bottom-1 right-1 bg-black/40 p-1 rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
                               <Camera size={12} className="text-white" />
@@ -257,8 +275,15 @@ export function ProductReviews({ slug }: { slug: string }) {
                         </DialogTrigger>
                         <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none sm:rounded-none">
                           <VisuallyHidden><DialogTitle>Review photo by {review.author}</DialogTitle></VisuallyHidden>
-                          <div className="relative flex items-center justify-center p-4">
-                            <img src={photo} alt="" className="max-h-[85vh] w-auto rounded-lg object-contain shadow-2xl" />
+                          <div className="relative flex items-center justify-center p-4 group">
+                            <img 
+                              src={photo} 
+                              alt="" 
+                              className="max-h-[85vh] w-auto rounded-lg object-contain shadow-2xl pointer-events-none" 
+                              onContextMenu={(e) => e.preventDefault()}
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
                             <span className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-bold tracking-widest backdrop-blur-md uppercase">
                               @youtumundial
                             </span>
