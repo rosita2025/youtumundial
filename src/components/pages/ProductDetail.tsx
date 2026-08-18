@@ -338,7 +338,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
 
               <Button
                 size="lg"
-                className="w-full h-14 text-lg font-bold shadow-xl transition-all active:scale-95 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black border-none"
+                className="w-full h-14 text-lg font-bold shadow-xl transition-all active:scale-95 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black border-none mt-4"
                 onClick={handleAddToCart}
                 disabled={!selectedVariant?.available}
               >
