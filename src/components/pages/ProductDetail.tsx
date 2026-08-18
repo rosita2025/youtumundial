@@ -263,7 +263,6 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
 
                     </button>
                     
-                    {/* Collapsible Panel for Selections */}
                     {bundleSize === offer.qty && offer.qty > 1 && (
                       <div className="mt-2 ml-8 space-y-3 p-3 bg-muted/30 rounded-lg border border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
                         {Array.from({ length: offer.qty }).map((_, i) => (

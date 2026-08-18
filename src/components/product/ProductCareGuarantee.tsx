@@ -25,7 +25,7 @@ export function ProductCareGuarantee() {
   ];
 
   return (
-    <section className="py-12 px-4">
+    <section className="py-12 px-4 border-t border-border mt-12">
       <div className="max-w-3xl mx-auto bg-[#FBF9F5] rounded-[12px] border border-[#EAE6DF] p-6 md:p-8 space-y-6">
         <h3 className="text-xl font-bold text-center mb-8">Product Care & Quality Guarantee</h3>
         <div className="grid gap-6">
