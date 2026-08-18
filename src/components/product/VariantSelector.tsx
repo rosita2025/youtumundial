@@ -7,6 +7,26 @@ interface VariantSelectorProps {
   onSelect: (variant: ProductVariant) => void;
 }
 
+const CLEAN_LABELS: Record<string, string> = {
+  'bee': 'Bee',
+  'lion': 'Lion',
+  'rabbit': 'Rabbit',
+  'mickey': 'Mickey',
+  'burger': 'Burger',
+  'hamburger': 'Burger',
+  'dinosaur': 'Dino',
+  'frog': 'Frog',
+};
+
+function cleanVariantLabel(value: string): string {
+  const lower = value.toLowerCase();
+  for (const [key, label] of Object.entries(CLEAN_LABELS)) {
+    if (lower.includes(key)) return label;
+  }
+  // Fallback: quitar códigos numéricos al inicio y palabras tipo "color"
+  return value.replace(/^\d+\s+/, '').replace(/color/i, '').trim();
+}
+
 export function VariantSelector({
   variants,
   selectedVariant,
@@ -64,8 +84,8 @@ export function VariantSelector({
     <div className="space-y-6">
       {uniqueOptions.map((option) => (
         <div key={option.name}>
-          <label className="block text-sm font-medium mb-3">
-            {option.name}: <span className="text-muted-foreground">{selectedValues[option.name]}</span>
+          <label className="block text-sm font-bold uppercase tracking-wider text-foreground/80 mb-3">
+            {option.name}: <span className="text-primary font-bold">{cleanVariantLabel(selectedValues[option.name] || '')}</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {option.values.map((value) => {
