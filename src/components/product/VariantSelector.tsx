@@ -72,20 +72,47 @@ export function VariantSelector({
               const isSelected = selectedValues[option.name] === value;
               const isAvailable = isValueAvailable(option.name, value);
 
+              // Find a variant that has this option value to potentially show its image
+              const exampleVariant = variants.find(v => 
+                v.options.some(o => o.name === option.name && o.value === value)
+              );
+              const variantImage = exampleVariant?.image?.url;
+
               return (
                 <button
                   key={value}
                   onClick={() => handleSelect(option.name, value)}
                   disabled={!isAvailable}
                   className={cn(
-                    'px-4 py-2 border rounded-md text-sm font-medium transition-all',
+                    'group relative border rounded-md transition-all flex flex-col items-center gap-1 overflow-hidden',
+                    variantImage ? 'p-1 min-w-[70px]' : 'px-4 py-2 min-w-[45px]',
                     isSelected
-                      ? 'border-foreground bg-foreground text-background'
-                      : 'border-border bg-background hover:border-foreground',
-                    !isAvailable && 'opacity-40 cursor-not-allowed line-through'
+                      ? 'border-foreground ring-1 ring-foreground'
+                      : 'border-border bg-background hover:border-foreground/50',
+                    !isAvailable && 'opacity-30 cursor-not-allowed'
                   )}
                 >
-                  {value}
+                  {variantImage && (
+                    <div className="w-14 h-14 overflow-hidden rounded-sm bg-muted mb-1">
+                      <img 
+                        src={variantImage} 
+                        alt={value} 
+                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  )}
+                  <span className={cn(
+                    "text-xs font-medium px-1",
+                    variantImage ? "pb-1" : ""
+                  )}>
+                    {value}
+                  </span>
+                  {!isAvailable && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-full h-[1px] bg-muted-foreground/40 rotate-45" />
+                    </div>
+                  )}
                 </button>
               );
             })}

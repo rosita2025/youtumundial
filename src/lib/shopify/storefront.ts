@@ -74,6 +74,7 @@ const PRODUCTS_QUERY = `
                 price { amount currencyCode }
                 compareAtPrice { amount }
                 selectedOptions { name value }
+                image { url altText width height }
               }
             }
           }
@@ -92,6 +93,7 @@ interface RawVariant {
   price: { amount: string };
   compareAtPrice: { amount: string } | null;
   selectedOptions: Array<{ name: string; value: string }>;
+  image?: { url: string; altText: string | null; width: number | null; height: number | null } | null;
 }
 interface RawProduct {
   id: string;
@@ -134,6 +136,13 @@ function mapVariant(raw: RawVariant): ProductVariant {
     available: raw.availableForSale,
     sku: raw.sku ?? '',
     options: raw.selectedOptions.map((o) => ({ name: o.name, value: o.value })),
+    image: raw.image ? {
+      id: raw.id + '-img',
+      url: raw.image.url,
+      altText: raw.image.altText || raw.title,
+      width: raw.image.width || 800,
+      height: raw.image.height || 1000,
+    } : undefined,
   };
 }
 

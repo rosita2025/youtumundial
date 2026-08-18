@@ -161,9 +161,12 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             </div>
 
             {product.description && (
-              <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                {product.description}
-              </p>
+              <div className="space-y-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Description</h2>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-sm">
+                  {product.description}
+                </p>
+              </div>
             )}
 
             {/* Variant Selector */}
