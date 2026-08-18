@@ -45,11 +45,16 @@ export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: S
     >
       <div className="container-wide flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 overflow-hidden">
-          <img
-            src={product.images[0]?.url}
-            alt={product.title}
-            className="h-10 w-10 sm:h-12 sm:w-12 rounded-md object-cover border border-border shrink-0"
-          />
+          <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 select-none">
+            <img
+              src={product.images[0]?.url}
+              alt={product.title}
+              className="h-full w-full rounded-md object-cover border border-border"
+              onContextMenu={(e) => e.preventDefault()}
+              draggable={false}
+            />
+            <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+          </div>
           <div className="min-w-0">
             <h3 className="text-xs sm:text-sm font-medium truncate">{product.title}</h3>
             

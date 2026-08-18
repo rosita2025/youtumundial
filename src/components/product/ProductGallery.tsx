@@ -30,13 +30,16 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted group">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted group select-none">
         <img
           src={images[selectedIndex].url}
           alt={images[selectedIndex].altText || productTitle}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
+          onContextMenu={(e) => e.preventDefault()}
+          draggable={false}
         />
+        <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
 
         {/* Navigation Arrows */}
         {images.length > 1 && (
@@ -90,12 +93,17 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
                   : 'border-transparent hover:border-muted-foreground/50'
               )}
             >
+            <div className="relative w-full h-full">
               <img
                 src={image.url}
                 alt={image.altText || `${productTitle} thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover select-none"
                 referrerPolicy="no-referrer"
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
               />
+              <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+            </div>
             </button>
           ))}
         </div>
