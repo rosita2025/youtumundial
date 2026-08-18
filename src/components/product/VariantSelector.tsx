@@ -24,18 +24,13 @@ const CLEAN_LABELS: Record<string, string> = {
 function cleanVariantLabel(value: string, isHeader = false): string {
   const lower = value.toLowerCase();
   
-  // Custom mapping for sizes to be more user friendly
+  // Custom mapping for sizes
   if (lower.includes('catty')) {
-    if (isHeader) {
-      if (lower.includes('1-6')) return 'M';
-      if (lower.includes('7-15')) return 'L';
-    }
-    
     if (lower.includes('1-6')) return 'M';
     if (lower.includes('7-15')) return 'L';
-    return value.replace(/16catty/i, '').replace(/catty/i, '');
   }
 
+  // Handle common color names
   for (const [key, label] of Object.entries(CLEAN_LABELS)) {
     if (lower.includes(key)) return label;
   }
@@ -112,7 +107,7 @@ export function VariantSelector({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-[16px]">
       {uniqueOptions.map((option) => (
         <div key={option.name}>
           <label className="block text-sm font-bold uppercase tracking-wider text-foreground/80 mb-3">
