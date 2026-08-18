@@ -174,23 +174,23 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                   {[product.vendor, product.productType].filter(Boolean).join(' · ')}
                 </p>
               )}
-              <h1 className="font-heading text-3xl md:text-4xl font-medium">
-                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title}
+              <h1 className="font-heading text-3xl md:text-4xl font-medium w-full break-words">
+                {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace('Brags', 'Bags')}
               </h1>
-              {reviewSummary.total > 0 && (
-                <div className="mt-2 flex items-center gap-3">
-                  <a href="#reviews" className="inline-flex items-center gap-2 text-sm">
+              <div className="mt-2 flex items-center flex-wrap gap-2 md:gap-3">
+                {reviewSummary.total > 0 && (
+                  <a href="#reviews" className="inline-flex items-center gap-2 text-sm shrink-0">
                     <StarRating rating={reviewSummary.average} size={15} />
                     <span className="text-muted-foreground underline-offset-4 hover:underline font-medium">
                       {reviewSummary.average.toFixed(1)} ({reviewSummary.total} Reviews)
                     </span>
                   </a>
-                  <span className="h-4 w-[1px] bg-border" />
-                  <span className="text-xs font-bold text-green-600 flex items-center gap-1 uppercase tracking-tighter">
-                    <Shield size={12} /> Verified Product
-                  </span>
-                </div>
-              )}
+                )}
+                <span className="hidden md:block h-4 w-[1px] bg-border" />
+                <span className="text-xs font-bold text-green-600 flex items-center gap-1 uppercase tracking-tighter shrink-0">
+                  <Shield size={12} /> Verified Product
+                </span>
+              </div>
               <div className="flex items-center gap-3 mt-1">
                 {product.compareAtPrice && (
                   <>

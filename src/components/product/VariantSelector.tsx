@@ -102,9 +102,9 @@ export function VariantSelector({
       {uniqueOptions.map((option) => (
         <div key={option.name}>
           <label className="block text-sm font-bold uppercase tracking-wider text-foreground/80 mb-3">
-            {option.name}: <span className="text-primary font-bold">{cleanVariantLabel(selectedValues[option.name] || '')}</span>
+            {option.name === 'Color' ? 'COLORS' : option.name}: <span className="text-primary font-bold">{cleanVariantLabel(selectedValues[option.name] || '')}</span>
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-6 sm:flex sm:flex-wrap gap-2 sm:gap-2 justify-items-center sm:justify-start">
             {option.values.map((value) => {
               const isSelected = selectedValues[option.name] === value;
               const isAvailable = isValueAvailable(option.name, value);
@@ -121,8 +121,8 @@ export function VariantSelector({
                   onClick={() => handleSelect(option.name, value)}
                   disabled={!isAvailable}
                   className={cn(
-                    'group relative border rounded-full transition-all flex items-center justify-center overflow-hidden',
-                    variantImage ? 'w-14 h-14 p-0.5' : 'px-4 py-2 min-w-[45px]',
+                    'group relative border rounded-full transition-all flex items-center justify-center overflow-hidden shrink-0',
+                    variantImage ? 'w-[44px] h-[44px] p-0.5' : 'px-4 py-2 min-w-[45px]',
                     isSelected
                       ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110 z-10'
                       : 'border-border bg-background hover:border-foreground/30',
