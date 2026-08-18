@@ -409,24 +409,23 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             </div>
 
             <UpsellSection product={product} relatedProducts={relatedProducts} />
-
           </div>
         </div>
 
-        <PhotoCarouselBanner slug={product.slug} />
-        
-        <ProductCareGuarantee />
-
-        <ProductReviews 
-          slug={product.slug} 
-          selectedVariant={selectedVariant}
-          onAddToCart={handleAddToCart}
-        />
+        <div className="mt-8 md:mt-12 space-y-0">
+          <PhotoCarouselBanner slug={product.slug} />
+          <ProductCareGuarantee />
+          <ProductReviews 
+            slug={product.slug} 
+            selectedVariant={selectedVariant}
+            onAddToCart={handleAddToCart}
+          />
+        </div>
 
         {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
 
         {relatedProducts.length > 0 && (
-          <section className="mt-20">
+          <section className="mt-20 container-wide px-4">
             <h2 className="heading-section mb-8">You May Also Like</h2>
             <ProductGrid products={relatedProducts} />
           </section>

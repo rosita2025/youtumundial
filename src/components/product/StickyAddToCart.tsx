@@ -37,8 +37,8 @@ export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: S
       )}
     >
       {/* Urgency Counter - Critical for CRO */}
-      <div className="bg-orange-50 border-b border-orange-100 py-1.5 text-center">
-        <p className="text-[10px] sm:text-xs font-bold text-orange-600 uppercase tracking-tight flex items-center justify-center gap-1.5">
+      <div className="bg-[#FFF4E5] border-b border-orange-100 py-2 text-center">
+        <p className="text-[10px] sm:text-xs font-bold text-[#D97706] uppercase tracking-wide flex items-center justify-center gap-1.5">
           🔥 Only 14 items left in stock - Order today!
         </p>
       </div>
