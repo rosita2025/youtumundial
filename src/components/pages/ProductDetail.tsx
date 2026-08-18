@@ -158,7 +158,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
 
   return (
     <Layout>
-      <div className="container-wide py-8 md:py-12 px-4 md:px-0 max-w-full box-border overflow-x-hidden main-product-wrapper">
+      <div className="container-wide py-8 md:py-12 px-4 md:px-0 max-w-full box-border overflow-x-hidden main-product-wrapper w-full">
         <Breadcrumbs
           items={[
             { label: 'Products', href: '/products' },
@@ -182,25 +182,25 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                 {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? 'Cozy Pet Carrier Tote Bag - Cute Costume Series' : product.title.replace(/Brags/g, 'Bags')}
               </h1>
               
-              <div className="flex items-center flex-wrap gap-2 text-[13px] leading-none pt-3 pb-4">
+              <div className="flex items-center flex-wrap gap-2 text-[13px] leading-none pt-3 pb-4 w-full">
                 <div className="flex items-center gap-1.5 shrink-0">
                   <StarRating rating={reviewSummary.average} size={14} />
-                  <span className="font-medium text-muted-foreground underline-offset-4 hover:underline">
+                  <span className="font-medium text-muted-foreground underline-offset-4 hover:underline whitespace-nowrap">
                     {reviewSummary.average.toFixed(1)} ({reviewSummary.total} Reviews)
                   </span>
                 </div>
-                <div className="h-3 w-[1px] bg-border mx-0.5 hidden sm:block" />
-                <div className="flex items-center gap-1.5 bg-[#00B67A] px-2 py-0.5 rounded-md text-white">
+                <div className="h-3 w-[1px] bg-border mx-0.5 hidden sm:block shrink-0" />
+                <div className="flex items-center gap-1.5 bg-[#00B67A] px-2 py-0.5 rounded-md text-white shrink-0">
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <span key={s} className="text-[10px]">★</span>
                     ))}
                   </div>
-                  <span className="font-bold text-[9px] uppercase tracking-tighter">
+                  <span className="font-bold text-[9px] uppercase tracking-tighter whitespace-nowrap">
                     Trustpilot Excellent 4.9/5
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-[9px] font-bold text-[#00875A] bg-[#E6F4EA] px-2 py-0.5 rounded-md uppercase tracking-tighter">
+                <div className="flex items-center gap-1 text-[9px] font-bold text-[#00875A] bg-[#E6F4EA] px-2 py-0.5 rounded-md uppercase tracking-tighter shrink-0 whitespace-nowrap">
                   <Shield size={10} strokeWidth={3} /> VERIFIED PRODUCT
                 </div>
               </div>
@@ -265,9 +265,9 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                         <span className="font-heading text-lg font-bold block">{formatPrice(offer.price)}</span>
                       </div>
                       {offer.badge && (
-                        <div className="absolute top-[-12px] right-4 z-10">
+                        <div className="absolute top-[-10px] right-2 z-10">
                           <span className={cn(
-                            "text-[11px] font-bold uppercase tracking-[0.5px] px-[10px] py-[4px] rounded-[4px] shadow-sm border border-white/20",
+                            "text-[10px] font-bold uppercase tracking-[0.5px] px-[8px] py-[3px] rounded-[4px] shadow-sm border border-white/20",
                             offer.qty === 2 ? "bg-[#FFB800] text-black" : "bg-[#1B4D3E] text-white"
                           )}>
                             {offer.badge}
