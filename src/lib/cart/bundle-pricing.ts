@@ -6,25 +6,33 @@ import { CartItem } from '../data/types';
  * - 1 unit: $43.99
  * - 2 units: $69.99 ($35.00 each)
  * - 3 units: $89.99 ($30.00 each)
+ * 
+ * New feature: Support for multiple variants (different selections) within a single bundle.
  */
 export function calculateItemTotal(item: CartItem): number {
   const isLionBag = item.product.slug === 'lion-shaped-pet-canvas-shoulder-bag' || 
                     item.productId.includes('lion') ||
                     item.product.title.toLowerCase().includes('lion');
 
-  if (isLionBag) {
-    if (item.quantity === 1) return 43.99;
-    if (item.quantity === 2) return 69.99;
-    if (item.quantity >= 3) {
+  // Check if this item is part of a bundle that has multiple selections
+  // If metadata exists, we treat the quantity as the bundle size
+  const metadata = (item as any).metadata;
+  const isBundle = metadata?.isBundle === true;
+
+  if (isLionBag || isBundle) {
+    const qty = item.quantity;
+    if (qty === 1) return 43.99;
+    if (qty === 2) return 69.99;
+    if (qty >= 3) {
       // 3 pack price + any additional at the best unit price ($30)
       const basePrice = 89.99;
-      const extraQty = item.quantity - 3;
+      const extraQty = qty - 3;
       return basePrice + (extraQty * 30.00);
     }
   }
 
   // Default: unit price * quantity
-  return item.variant.price * item.quantity;
+  return (item.variant.price || 0) * item.quantity;
 }
 
 export function calculateCartTotals(items: CartItem[]): { subtotal: number; itemCount: number } {
