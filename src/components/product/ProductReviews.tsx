@@ -109,8 +109,15 @@ export function ProductReviews({ slug }: { slug: string }) {
                 <DialogContent className="max-w-2xl bg-white p-0 overflow-hidden rounded-2xl">
                   <VisuallyHidden><DialogTitle>Review by {review.author}</DialogTitle></VisuallyHidden>
                   <div className="flex flex-col md:flex-row h-full">
-                    <div className="w-full md:w-1/2 bg-black flex items-center justify-center p-0">
-                      <img src={review.photos![0]} alt="" className="max-h-[70vh] w-auto object-contain" />
+                    <div className="w-full md:w-1/2 bg-black flex items-center justify-center p-0 relative group">
+                      <img 
+                        src={review.photos![0]} 
+                        alt="" 
+                        className="max-h-[70vh] w-auto object-contain pointer-events-none" 
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                      />
+                      <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
                     </div>
                     <div className="w-full md:w-1/2 p-6 flex flex-col">
                       <div className="flex items-center justify-between mb-4">
