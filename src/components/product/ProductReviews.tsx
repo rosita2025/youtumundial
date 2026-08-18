@@ -71,33 +71,33 @@ export function ProductReviews({ slug, selectedVariant, onAddToCart }: ProductRe
   }
 
   return (
-    <section className="mt-24 border-t border-border pt-16 max-w-6xl mx-auto px-4 pb-32" id="reviews">
-      {/* SUMMARY HEADER */}
-      <div className="bg-white rounded-[20px] p-8 shadow-sm border border-border/50 mb-12 flex flex-col md:flex-row items-center gap-10">
-        <div className="text-center md:text-left md:border-r border-border md:pr-10 min-w-[200px]">
-          <div className="text-6xl font-black text-foreground mb-1">{average.toFixed(1)}</div>
-          <StarRating rating={average} size={24} className="justify-center md:justify-start mb-2" />
-          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
-            Based on {total} Reviews
-          </p>
-        </div>
-
-        <div className="flex-1 w-full">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <section className="mt-16 border-t border-border pt-12 max-w-6xl mx-auto px-4 pb-40" id="reviews">
+      {/* SUMMARY HEADER - COMPACT REDESIGN */}
+      <div className="bg-white rounded-[20px] p-4 md:p-8 shadow-sm border border-border/50 mb-6 md:mb-12">
+        {/* Mobile Compact View (Hidden on Desktop) */}
+        <div className="flex md:hidden flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black">{average.toFixed(1)}</span>
+            <StarRating rating={average} size={16} className="text-yellow-400" />
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
+              (Based on {total} Verified Reviews)
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between gap-2">
             <div className="flex gap-2">
               {[
                 { id: 'all', label: 'All', count: total },
-                { id: 'photos', label: 'Photos', count: reviews.filter(r => r.photos?.length).length },
-                { id: '5stars', label: '5 Stars', count: distribution.find(d => d.star === 5)?.count ?? 0 },
+                { id: 'photos', label: 'With Photos', count: reviews.filter(r => r.photos?.length).length },
               ].map(filter => (
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id as any)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-xs font-bold transition-all border",
+                    "px-3 py-1.5 rounded-full text-[10px] font-bold transition-all border shrink-0",
                     activeFilter === filter.id 
-                      ? "bg-primary text-white border-primary shadow-md" 
-                      : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                      ? "bg-primary text-white border-primary" 
+                      : "bg-background text-muted-foreground border-border"
                   )}
                 >
                   {filter.label} ({filter.count})
@@ -105,29 +105,72 @@ export function ProductReviews({ slug, selectedVariant, onAddToCart }: ProductRe
               ))}
             </div>
             
-            <Button 
+            <button 
               onClick={() => setIsFormOpen(!isFormOpen)}
-              variant="outline"
-              className="rounded-full border-2 font-bold hover:bg-primary hover:text-white hover:border-primary transition-all gap-2"
+              className="text-[10px] font-black text-primary underline underline-offset-4 flex items-center gap-1 shrink-0"
             >
-              <Plus size={16} /> WRITE A REVIEW
-            </Button>
+              <Plus size={10} strokeWidth={3} /> WRITE A REVIEW
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop View (Hidden on Mobile) */}
+        <div className="hidden md:flex items-center gap-10">
+          <div className="text-center md:text-left md:border-r border-border md:pr-10 min-w-[200px]">
+            <div className="text-6xl font-black text-foreground mb-1">{average.toFixed(1)}</div>
+            <StarRating rating={average} size={24} className="justify-center md:justify-start mb-2" />
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+              Based on {total} Reviews
+            </p>
           </div>
 
-          <div className="space-y-2">
-            {[5, 4, 3, 2, 1].map(star => {
-              const d = distribution.find(x => x.star === star);
-              const percent = total ? ((d?.count || 0) / total) * 100 : 0;
-              return (
-                <div key={star} className="flex items-center gap-3 text-xs font-medium">
-                  <span className="w-10 text-muted-foreground">{star} Stars</span>
-                  <div className="h-2 flex-1 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary transition-all duration-500" style={{ width: `${percent}%` }} />
+          <div className="flex-1 w-full">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div className="flex gap-2">
+                {[
+                  { id: 'all', label: 'All', count: total },
+                  { id: 'photos', label: 'Photos', count: reviews.filter(r => r.photos?.length).length },
+                  { id: '5stars', label: '5 Stars', count: distribution.find(d => d.star === 5)?.count ?? 0 },
+                ].map(filter => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setActiveFilter(filter.id as any)}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-xs font-bold transition-all border",
+                      activeFilter === filter.id 
+                        ? "bg-primary text-white border-primary shadow-md" 
+                        : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                    )}
+                  >
+                    {filter.label} ({filter.count})
+                  </button>
+                ))}
+              </div>
+              
+              <Button 
+                onClick={() => setIsFormOpen(!isFormOpen)}
+                variant="outline"
+                className="rounded-full border-2 font-bold hover:bg-primary hover:text-white hover:border-primary transition-all gap-2"
+              >
+                <Plus size={16} /> WRITE A REVIEW
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              {[5, 4, 3, 2, 1].map(star => {
+                const d = distribution.find(x => x.star === star);
+                const percent = total ? ((d?.count || 0) / total) * 100 : 0;
+                return (
+                  <div key={star} className="flex items-center gap-3 text-xs font-medium">
+                    <span className="w-10 text-muted-foreground">{star} Stars</span>
+                    <div className="h-2 flex-1 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all duration-500" style={{ width: `${percent}%` }} />
+                    </div>
+                    <span className="w-8 text-right text-muted-foreground">{d?.count || 0}</span>
                   </div>
-                  <span className="w-8 text-right text-muted-foreground">{d?.count || 0}</span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
