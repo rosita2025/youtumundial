@@ -20,6 +20,14 @@ const CLEAN_LABELS: Record<string, string> = {
 
 function cleanVariantLabel(value: string): string {
   const lower = value.toLowerCase();
+  
+  // Custom mapping for sizes to be more user friendly
+  if (lower.includes('catty')) {
+    if (lower.includes('1-6')) return 'Size M: Suitable for pets up to 7 lbs (3.5 kg)';
+    if (lower.includes('7-15')) return 'Size L: Suitable for pets up to 15 lbs (7 kg)';
+    return value.replace(/catty/i, 'lbs capacity');
+  }
+
   for (const [key, label] of Object.entries(CLEAN_LABELS)) {
     if (lower.includes(key)) return label;
   }
@@ -123,8 +131,8 @@ export function VariantSelector({
                       />
                     </div>
                   ) : (
-                    <span className="text-xs font-medium px-1">
-                      {value}
+                    <span className="text-[10px] font-bold px-2 text-center leading-tight">
+                      {cleanVariantLabel(value)}
                     </span>
                   )}
                   

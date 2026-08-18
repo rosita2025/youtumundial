@@ -168,7 +168,20 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
             </div>
 
-            {product.description && (
+            {product.slug === 'lion-shaped-pet-canvas-shoulder-bag' ? (
+              <ul className="space-y-3 py-2">
+                {[
+                  'Soft & Breathable Canvas Material',
+                  'Safe Head Hole Cutout with Plush Costume Design',
+                  'Hands-Free Comfort for Walks & Travel'
+                ].map((point, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            ) : product.description && (
               <div className="space-y-4">
                 <h2 className="text-sm font-bold uppercase tracking-wider text-foreground/80">Description</h2>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-sm">
@@ -236,15 +249,21 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               </div>
             </div>
 
-            {/* Add to Cart */}
-            <Button
-              size="lg"
-              className="w-full h-14 text-lg font-bold shadow-xl shadow-primary/10 transition-transform active:scale-95"
-              onClick={handleAddToCart}
-              disabled={!selectedVariant?.available}
-            >
-              {selectedVariant?.available ? 'ADD TO CART' : 'OUT OF STOCK'}
-            </Button>
+            {/* Add to Cart with Urgency */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-orange-600 animate-pulse">
+                <Shield size={12} />
+                Only 18 left in stock - Selling fast!
+              </div>
+              <Button
+                size="lg"
+                className="w-full h-14 text-lg font-bold shadow-xl transition-all active:scale-95 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black border-none"
+                onClick={handleAddToCart}
+                disabled={!selectedVariant?.available}
+              >
+                {selectedVariant?.available ? 'ADD TO CART' : 'OUT OF STOCK'}
+              </Button>
+            </div>
 
             {/* Trust Badges for Conversion */}
             <div className="flex flex-col items-center gap-3 py-2 border-y border-border/50">
