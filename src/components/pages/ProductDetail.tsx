@@ -335,7 +335,11 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
         </div>
 
         {/* Reseñas */}
-        <ProductReviews slug={product.slug} />
+        <ProductReviews 
+          slug={product.slug} 
+          selectedVariant={selectedVariant}
+          onAddToCart={handleAddToCart}
+        />
 
         {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
 
