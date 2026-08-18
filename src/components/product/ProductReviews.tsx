@@ -14,11 +14,12 @@ import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+// Hydration-safe date formatter
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+};
 
 export function ProductReviews({ slug }: { slug: string }) {
   const { reviews, total, average, distribution } = useReviewSummary(slug);
