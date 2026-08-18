@@ -156,7 +156,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
 
   return (
     <Layout>
-      <div className="container-wide py-8 md:py-12">
+      <div className="container-wide py-8 md:py-12 px-4 md:px-0 max-w-full box-border overflow-x-hidden main-product-wrapper">
         <Breadcrumbs
           items={[
             { label: 'Products', href: '/products' },
@@ -164,7 +164,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           ]}
         />
 
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-16 product-single">
           <ProductGallery images={product.images} productTitle={product.title} />
 
           <div className="space-y-4 md:space-y-6">
@@ -225,11 +225,11 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                   { qty: 3, price: 89.99, label: 'Buy 3 - Triple Pack', badge: 'BEST VALUE', sublabel: '$30.00/ea + FREE International Shipping [Save $41.98]' },
                 ].map((offer) => (
 
-                  <div key={offer.qty} className="space-y-0">
+                  <div key={offer.qty} className="space-y-0 w-full relative">
                     <button
                       onClick={() => setBundleSize(offer.qty)}
                       className={cn(
-                        "relative w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left",
+                        "relative w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left overflow-hidden",
                         bundleSize === offer.qty 
                           ? "border-primary bg-primary/5 shadow-sm" 
                           : "border-border bg-background hover:border-primary/30"
@@ -247,11 +247,11 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                           <span className="text-xs text-muted-foreground">{offer.sublabel}</span>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right pr-3">
                         <span className="font-heading text-lg font-bold block">{formatPrice(offer.price)}</span>
                       </div>
                       {offer.badge && (
-                        <div className="absolute top-2 right-2 z-10">
+                        <div className="absolute top-[-10px] right-2 z-10">
                           <span className={cn(
                             "text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm border border-white/20",
                             offer.qty === 2 ? "bg-[#FFB800] text-black" : "bg-primary text-white"
