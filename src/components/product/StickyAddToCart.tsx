@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Product, ProductVariant } from '@/lib/data/types';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils/format';
-import { ShoppingCart, Star, Truck, RotateCcw, Gem } from 'lucide-react';
+import { ShoppingCart, Star, Truck, RotateCcw, Gem, Sparkles } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 import { cn } from '@/lib/utils';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { StarRating } from '@/components/product/StarRating';
@@ -16,8 +17,13 @@ interface StickyAddToCartProps {
 
 export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: StickyAddToCartProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const { cart } = useCart();
   const reviewSummary = useReviewSummary(product.slug);
 
+  const totalQuantity = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+  const differentProducts = new Set(cart.items.map(i => i.productId)).size;
+  const isUpsellEligible = totalQuantity >= 1; // Si ya tiene algo, el sticky incentiva el 2do
+  
   useEffect(() => {
     const handleScroll = () => {
       // Mostrar después de que el botón principal de "Añadir al carrito" (aprox 600px) pase
@@ -82,19 +88,26 @@ export function StickyAddToCart({ product, selectedVariant, quantity, onAdd }: S
             <span className="flex items-center gap-1"><Truck size={8} /> Fast Shipping</span>
             <span className="flex items-center gap-1"><RotateCcw size={8} /> Returns</span>
           </div>
-          <Button 
-            className="flex-1 sm:w-48 gap-2" 
-            onClick={onAdd}
-            disabled={!selectedVariant.available}
-          >
-            <ShoppingCart size={18} />
-            <span className="hidden xs:inline">
-              {selectedVariant.available ? 'Add to Cart' : 'Out of Stock'}
-            </span>
-            <span className="xs:hidden">
-              {selectedVariant.available ? 'Add' : 'Sold Out'}
-            </span>
-          </Button>
+          <div className="flex flex-col items-end gap-1">
+            {isUpsellEligible && (
+              <span className="text-[9px] font-bold text-green-600 animate-pulse flex items-center gap-1">
+                <Sparkles size={10} /> 10% OFF EXTRA (Kit)
+              </span>
+            )}
+            <Button 
+              className="w-32 sm:w-48 gap-2 bg-yellow-400 hover:bg-yellow-500 text-black border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1 transition-all" 
+              onClick={onAdd}
+              disabled={!selectedVariant.available}
+            >
+              <ShoppingCart size={18} />
+              <span className="hidden xs:inline">
+                {selectedVariant.available ? 'Add to Cart' : 'Out of Stock'}
+              </span>
+              <span className="xs:hidden">
+                {selectedVariant.available ? 'Add' : 'Sold Out'}
+              </span>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
