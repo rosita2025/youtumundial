@@ -28,23 +28,28 @@ export const ProductCard = memo(function ProductCard({ product, className }: Pro
       )}
     >
       {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted select-none group/img">
         <img
           src={product.images[0]?.url}
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none"
           loading="lazy"
           referrerPolicy="no-referrer"
+          onContextMenu={(e) => e.preventDefault()}
+          draggable={false}
         />
+        <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
         
         {/* Hover image */}
         {product.images[1] && (
           <img
             src={product.images[1].url}
             alt={`${product.title} - alternate view`}
-            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none"
             loading="lazy"
             referrerPolicy="no-referrer"
+            onContextMenu={(e) => e.preventDefault()}
+            draggable={false}
           />
         )}
 
