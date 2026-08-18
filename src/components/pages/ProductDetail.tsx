@@ -22,6 +22,7 @@ import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
 import { ProductCareGuarantee } from '@/components/product/ProductCareGuarantee';
 import { PhotoCarouselBanner } from '@/components/product/PhotoCarouselBanner';
+import { ProductFAQ } from '@/components/product/ProductFAQ';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from '@/lib/utils';
 import benefitCatBag from '@/assets/benefit-cat-bag.jpg.asset.json';
@@ -432,6 +433,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             selectedVariant={selectedVariant}
             onAddToCart={handleAddToCart}
           />
+          <ProductFAQ />
         </div>
 
         {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
