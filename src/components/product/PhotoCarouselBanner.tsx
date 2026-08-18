@@ -15,7 +15,7 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
   const displayReviews = [...photoReviews, ...photoReviews, ...photoReviews];
 
   return (
-    <section className="py-6 overflow-hidden bg-white">
+    <section className="py-6 bg-white overflow-hidden">
       <div className="container-wide px-4 mb-4">
         <h2 className="text-[18px] font-bold text-[#111111] text-center">
           10,000+ Happy Customers
@@ -23,7 +23,7 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
       </div>
 
       <div 
-        className="relative flex whitespace-nowrap overflow-hidden group"
+        className="relative h-[200px] md:h-[240px] overflow-hidden group flex items-center"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
@@ -31,19 +31,19 @@ export function PhotoCarouselBanner({ slug }: { slug: string }) {
       >
         <div 
           className={cn(
-            "flex gap-3 px-3",
+            "flex flex-row items-center gap-3 w-max",
             isPaused ? "[animation-play-state:paused]" : "animate-marquee"
           )}
         >
           {displayReviews.map((review, i) => (
             <div 
               key={`${review.author}-${i}`}
-              className="relative w-[130px] md:w-[160px] aspect-[4/5] shrink-0 rounded-[12px] overflow-hidden bg-muted border border-border/40 shadow-sm"
+              className="relative w-[130px] h-[165px] md:w-[160px] md:h-[200px] shrink-0 rounded-[12px] overflow-hidden bg-muted border border-border/40 shadow-sm"
             >
               <img
                 src={review.photos?.[0]}
                 alt={`Review by ${review.author}`}
-                className="h-full w-full object-cover pointer-events-none select-none"
+                className="block h-full w-full object-cover pointer-events-none select-none"
                 draggable={false}
               />
               <div className="absolute inset-0 bg-transparent z-10" />
