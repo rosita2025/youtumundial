@@ -104,7 +104,7 @@ export function VariantSelector({
           <label className="block text-sm font-bold uppercase tracking-wider text-foreground/80 mb-3">
             {option.name === 'Color' ? 'COLORS' : option.name}: <span className="text-primary font-bold">{cleanVariantLabel(selectedValues[option.name] || '')}</span>
           </label>
-          <div className="grid grid-cols-6 gap-2 justify-items-center">
+          <div className="flex flex-wrap gap-2 justify-start max-w-full overflow-hidden">
             {option.values.map((value) => {
               const isSelected = selectedValues[option.name] === value;
               const isAvailable = isValueAvailable(option.name, value);
