@@ -108,14 +108,17 @@ export function ProductReviews({ slug }: { slug: string }) {
                   {review.photos.slice(0, 6).map((photo) => (
                     <Dialog key={photo}>
                       <DialogTrigger asChild>
-                        <button className="relative block overflow-hidden rounded-md border border-border transition-transform hover:scale-105">
+                        <button className="relative block overflow-hidden rounded-md border border-border transition-transform hover:scale-105 select-none">
                           <img
                             src={photo}
                             alt={`Review photo by ${review.author}`}
                             loading="lazy"
                             className="h-24 w-24 object-cover"
+                            onContextMenu={(e) => e.preventDefault()}
+                            draggable={false}
                           />
-                          <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-foreground/60 px-1 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wide text-background">
+                          <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                          <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-foreground/60 px-1 py-0.5 text-center text-[8px] font-semibold uppercase tracking-wide text-background">
                             @youtumundial
                           </span>
                         </button>
@@ -124,13 +127,16 @@ export function ProductReviews({ slug }: { slug: string }) {
                         <VisuallyHidden>
                           <DialogTitle>Review photo by {review.author}</DialogTitle>
                         </VisuallyHidden>
-                        <div className="relative flex items-center justify-center p-4">
+                        <div className="relative flex items-center justify-center p-4 select-none">
                           <img
                             src={photo}
                             alt={`Review photo by ${review.author}`}
                             className="max-h-[85vh] w-auto rounded-lg object-contain shadow-2xl"
+                            onContextMenu={(e) => e.preventDefault()}
+                            draggable={false}
                           />
-                          <span className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 rounded bg-black/40 px-3 py-1 text-sm font-semibold tracking-wider text-white backdrop-blur-sm">
+                          <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                          <span className="pointer-events-none absolute bottom-8 left-1/2 z-10 -translate-x-1/2 rounded bg-black/40 px-3 py-1 text-sm font-semibold tracking-wider text-white backdrop-blur-sm">
                             @youtumundial
                           </span>
                         </div>
