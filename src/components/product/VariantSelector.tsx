@@ -21,13 +21,18 @@ const CLEAN_LABELS: Record<string, string> = {
   'bags': 'Bags',
 };
 
-function cleanVariantLabel(value: string): string {
+function cleanVariantLabel(value: string, isHeader = false): string {
   const lower = value.toLowerCase();
   
   // Custom mapping for sizes to be more user friendly
   if (lower.includes('catty')) {
-    if (lower.includes('1-6')) return 'M (Recommended for 0.5-3kg dogs / 0-4kg cats)';
-    if (lower.includes('7-15')) return 'L (Recommended for dogs under 6kg / cats under 8kg)';
+    if (isHeader) {
+      if (lower.includes('1-6')) return 'M';
+      if (lower.includes('7-15')) return 'L';
+    }
+    
+    if (lower.includes('1-6')) return 'M - Small Pets';
+    if (lower.includes('7-15')) return 'L - Large Pets';
     return value.replace(/16catty/i, '').replace(/catty/i, ' lbs capacity');
   }
 
@@ -42,6 +47,15 @@ function cleanVariantLabel(value: string): string {
                    .trim();
                    
   return clean || value;
+}
+
+function getSizeSubtitle(value: string): string {
+  const lower = value.toLowerCase();
+  if (lower.includes('catty')) {
+    if (lower.includes('1-6')) return '0.5–3kg dogs / 0–4kg cats';
+    if (lower.includes('7-15')) return 'Dogs under 6kg / cats under 8kg';
+  }
+  return '';
 }
 
 export function VariantSelector({
@@ -98,11 +112,11 @@ export function VariantSelector({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {uniqueOptions.map((option) => (
         <div key={option.name}>
           <label className="block text-sm font-bold uppercase tracking-wider text-foreground/80 mb-3">
-            {option.name === 'Color' ? 'COLORS' : option.name}: <span className="text-primary font-bold">{cleanVariantLabel(selectedValues[option.name] || '')}</span>
+            {option.name === 'Color' ? 'COLORS' : option.name}: <span className="text-primary font-bold">{cleanVariantLabel(selectedValues[option.name] || '', true)}</span>
           </label>
           <div className="flex flex-wrap gap-2 justify-start max-w-full overflow-hidden">
             {option.values.map((value) => {
@@ -118,7 +132,7 @@ export function VariantSelector({
                   disabled={!isAvailable}
                   className={cn(
                     'group relative border rounded-full transition-all flex items-center justify-center overflow-hidden shrink-0',
-                    !isSize ? 'w-[44px] h-[44px] p-0.5' : 'px-6 py-3 min-w-[45px]',
+                    !isSize ? 'w-[44px] h-[44px] p-0.5' : 'px-4 py-2.5 flex-1 min-w-[140px]',
                     isSelected
                       ? isSize 
                         ? 'border-[#1B4D3E] bg-[#FBF9F5] ring-1 ring-[#1B4D3E] z-10' 
@@ -150,12 +164,17 @@ export function VariantSelector({
                       <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
                     </div>
                   ) : (
-                    <span className={cn(
-                      "text-[12px] px-2 text-center leading-tight transition-colors",
-                      isSelected ? "font-bold text-[#1B4D3E]" : "font-medium"
-                    )}>
-                      {cleanVariantLabel(value)}
-                    </span>
+                    <div className="flex flex-col items-center">
+                      <span className={cn(
+                        "text-[12px] px-2 text-center leading-tight transition-colors",
+                        isSelected ? "font-bold text-[#1B4D3E]" : "font-medium"
+                      )}>
+                        {cleanVariantLabel(value)}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground/80 mt-0.5 px-2 text-center">
+                        {getSizeSubtitle(value)}
+                      </span>
+                    </div>
                   )}
                   
                   {isSelected && (
