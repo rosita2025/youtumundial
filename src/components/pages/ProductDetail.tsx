@@ -167,7 +167,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
         />
 
         <div className="grid md:grid-cols-2 gap-8 lg:gap-16 product-single">
-          <div className="space-y-4">
+          <div className="space-y-4 pt-3">
             <ProductGallery images={product.images} productTitle={product.title} />
           </div>
 
