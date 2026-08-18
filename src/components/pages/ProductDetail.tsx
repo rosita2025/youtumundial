@@ -20,6 +20,7 @@ import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
 import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift, ChevronDown, CheckCircle2, Sparkles } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
+import { ProductCareGuarantee } from '@/components/product/ProductCareGuarantee';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from '@/lib/utils';
 import benefitCatBag from '@/assets/benefit-cat-bag.jpg.asset.json';
