@@ -84,16 +84,17 @@ export function VariantSelector({
                   onClick={() => handleSelect(option.name, value)}
                   disabled={!isAvailable}
                   className={cn(
-                    'group relative border rounded-md transition-all flex flex-col items-center gap-1 overflow-hidden',
-                    variantImage ? 'p-1 min-w-[70px]' : 'px-4 py-2 min-w-[45px]',
+                    'group relative border rounded-full transition-all flex items-center justify-center overflow-hidden',
+                    variantImage ? 'w-14 h-14 p-0.5' : 'px-4 py-2 min-w-[45px]',
                     isSelected
-                      ? 'border-foreground ring-1 ring-foreground'
-                      : 'border-border bg-background hover:border-foreground/50',
+                      ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110 z-10'
+                      : 'border-border bg-background hover:border-foreground/30',
                     !isAvailable && 'opacity-30 cursor-not-allowed'
                   )}
+                  title={value}
                 >
-                  {variantImage && (
-                    <div className="w-14 h-14 overflow-hidden rounded-sm bg-muted mb-1">
+                  {variantImage ? (
+                    <div className="w-full h-full overflow-hidden rounded-full bg-muted">
                       <img 
                         src={variantImage} 
                         alt={value} 
@@ -101,13 +102,18 @@ export function VariantSelector({
                         referrerPolicy="no-referrer"
                       />
                     </div>
+                  ) : (
+                    <span className="text-xs font-medium px-1">
+                      {value}
+                    </span>
                   )}
-                  <span className={cn(
-                    "text-xs font-medium px-1",
-                    variantImage ? "pb-1" : ""
-                  )}>
-                    {value}
-                  </span>
+                  
+                  {isSelected && (
+                    <div className="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5 shadow-sm">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                  )}
+
                   {!isAvailable && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-full h-[1px] bg-muted-foreground/40 rotate-45" />
