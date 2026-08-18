@@ -275,8 +275,15 @@ export function ProductReviews({ slug }: { slug: string }) {
                         </DialogTrigger>
                         <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none sm:rounded-none">
                           <VisuallyHidden><DialogTitle>Review photo by {review.author}</DialogTitle></VisuallyHidden>
-                          <div className="relative flex items-center justify-center p-4">
-                            <img src={photo} alt="" className="max-h-[85vh] w-auto rounded-lg object-contain shadow-2xl" />
+                          <div className="relative flex items-center justify-center p-4 group">
+                            <img 
+                              src={photo} 
+                              alt="" 
+                              className="max-h-[85vh] w-auto rounded-lg object-contain shadow-2xl pointer-events-none" 
+                              onContextMenu={(e) => e.preventDefault()}
+                              draggable={false}
+                            />
+                            <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
                             <span className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-bold tracking-widest backdrop-blur-md uppercase">
                               @youtumundial
                             </span>
