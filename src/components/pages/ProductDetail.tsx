@@ -40,7 +40,11 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
       product.variants[0] ??
       null
     : null;
-  const setSelectedVariant = (variant: ProductVariant) => setVariantId(variant.id);
+  const setSelectedVariant = (variant: ProductVariant) => {
+    setVariantId(variant.id);
+    // Dispatch custom event for gallery sync
+    window.dispatchEvent(new CustomEvent('product-variant-changed', { detail: { variant } }));
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -112,8 +116,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           <ProductGallery images={product.images} productTitle={product.title} />
 
           {/* Product Info */}
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-4 md:space-y-6">
+            <div className="space-y-1">
               {(product.vendor || product.productType) && (
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
                   {[product.vendor, product.productType].filter(Boolean).join(' · ')}
@@ -187,11 +191,13 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             </div>
 
             {/* Variant Selector */}
-            <VariantSelector
-              variants={product.variants}
-              selectedVariant={selectedVariant}
-              onSelect={setSelectedVariant}
-            />
+            <div className="pt-2">
+              <VariantSelector
+                variants={product.variants}
+                selectedVariant={selectedVariant}
+                onSelect={setSelectedVariant}
+              />
+            </div>
 
             {/* Bundle & Save Section */}
             <div className="space-y-3 pt-2">

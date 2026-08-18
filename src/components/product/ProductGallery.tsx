@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ProductImage } from '@/lib/data/types';
+import { useState, useEffect } from 'react';
+import { ProductImage, ProductVariant } from '@/lib/data/types';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -10,6 +10,25 @@ interface ProductGalleryProps {
 
 export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    const handleVariantChange = (e: any) => {
+      const variant = e.detail.variant as ProductVariant;
+      if (variant?.image?.url) {
+        const index = images.findIndex(img => img.url === variant.image?.url);
+        if (index !== -1) {
+          setSelectedIndex(index);
+          // Scroll to top of gallery on mobile to show the change
+          if (window.innerWidth < 768) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+      }
+    };
+
+    window.addEventListener('product-variant-changed', handleVariantChange);
+    return () => window.removeEventListener('product-variant-changed', handleVariantChange);
+  }, [images]);
 
   const goToPrevious = () => {
     setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
