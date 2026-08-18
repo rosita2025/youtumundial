@@ -1,7 +1,7 @@
 import { countryFlags, Review } from "@/lib/reviews/reviews";
 import { useReviewSummary } from "@/lib/reviews/use-reviews";
 import { StarRating } from "@/components/product/StarRating";
-import { BadgeCheck, CheckCircle2, Camera, Plus, ChevronRight, X } from "lucide-react";
+import { BadgeCheck, CheckCircle2, Camera, Plus, X, ShoppingCart, Info } from "lucide-react";
 import { ReviewForm } from "@/components/product/ReviewForm";
 import {
   Dialog,
@@ -13,6 +13,8 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ProductVariant } from "@/lib/data/types";
+import { formatPrice } from "@/lib/utils/format";
 
 // Hydration-safe date formatter
 const formatDate = (date: string) => {
@@ -21,15 +23,16 @@ const formatDate = (date: string) => {
   return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 };
 
-export function ProductReviews({ slug }: { slug: string }) {
+interface ProductReviewsProps {
+  slug: string;
+  selectedVariant?: ProductVariant | null;
+  onAddToCart?: () => void;
+}
+
+export function ProductReviews({ slug, selectedVariant, onAddToCart }: ProductReviewsProps) {
   const { reviews, total, average, distribution } = useReviewSummary(slug);
   const [activeFilter, setActiveFilter] = useState<'all' | 'photos' | '5stars'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const photoReviews = useMemo(() => 
-    reviews.filter(r => r.photos && r.photos.length > 0),
-    [reviews]
-  );
 
   const filteredReviews = useMemo(() => {
     let filtered = [...reviews];
@@ -68,84 +71,8 @@ export function ProductReviews({ slug }: { slug: string }) {
   }
 
   return (
-    <section className="mt-24 border-t border-border pt-16 max-w-6xl mx-auto px-4" id="reviews">
-      {/* 1. TOP UGC PHOTO GRID (Carousel-style) */}
-      {photoReviews.length > 0 && (
-        <div className="mb-16">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <Camera size={20} className="text-primary" />
-              Customer Gallery
-            </h3>
-            <span className="text-sm font-medium text-muted-foreground">{photoReviews.length} Photos</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {photoReviews.slice(0, 4).map((review, i) => (
-              <Dialog key={`${review.author}-${i}`}>
-                <DialogTrigger asChild>
-                  <button className="group relative aspect-[4/5] overflow-hidden rounded-[12px] shadow-md transition-all hover:shadow-xl hover:-translate-y-1 select-none">
-                    <img
-                      src={review.photos![0]}
-                      alt={`Review by ${review.author}`}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-110 pointer-events-none"
-                      onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                    />
-                    <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-20" />
-                    <div className="absolute bottom-3 left-3 right-3 text-white text-left opacity-0 group-hover:opacity-100 transition-opacity z-30">
-                      <div className="flex items-center gap-1 mb-1">
-                        <StarRating rating={5} size={10} className="text-yellow-400" />
-                      </div>
-                      <p className="text-[10px] font-medium leading-tight line-clamp-2 italic">
-                        "{review.body.slice(0, 60)}..."
-                      </p>
-                      <div className="flex items-center gap-1 mt-1 text-[8px] font-bold uppercase tracking-wider">
-                        {review.author} <CheckCircle2 size={8} className="text-green-400" />
-                      </div>
-                    </div>
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl bg-white p-0 overflow-hidden rounded-2xl">
-                  <VisuallyHidden><DialogTitle>Review by {review.author}</DialogTitle></VisuallyHidden>
-                  <div className="flex flex-col md:flex-row h-full">
-                    <div className="w-full md:w-1/2 bg-black flex items-center justify-center p-0 relative group">
-                      <img 
-                        src={review.photos![0]} 
-                        alt="" 
-                        className="max-h-[70vh] w-auto object-contain pointer-events-none" 
-                        onContextMenu={(e) => e.preventDefault()}
-                        draggable={false}
-                      />
-                      <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
-                    </div>
-                    <div className="w-full md:w-1/2 p-6 flex flex-col">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <p className="font-bold flex items-center gap-2">
-                            {review.author}
-                            <BadgeCheck size={16} className="text-primary" />
-                          </p>
-                          <StarRating rating={review.rating} size={14} />
-                        </div>
-                        <span className="text-xs text-muted-foreground">{formatDate(review.date)}</span>
-                      </div>
-                      <p className="text-sm leading-relaxed text-muted-foreground italic mb-6">"{review.body}"</p>
-                      <div className="mt-auto pt-6 border-t">
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-tighter text-green-600">
-                          <CheckCircle2 size={14} /> Verified Buyer
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 2. SUMMARY HEADER */}
+    <section className="mt-24 border-t border-border pt-16 max-w-6xl mx-auto px-4 pb-32" id="reviews">
+      {/* SUMMARY HEADER */}
       <div className="bg-white rounded-[20px] p-8 shadow-sm border border-border/50 mb-12 flex flex-col md:flex-row items-center gap-10">
         <div className="text-center md:text-left md:border-r border-border md:pr-10 min-w-[200px]">
           <div className="text-6xl font-black text-foreground mb-1">{average.toFixed(1)}</div>
@@ -159,8 +86,8 @@ export function ProductReviews({ slug }: { slug: string }) {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex gap-2">
               {[
-                { id: 'all', label: 'All Reviews', count: total },
-                { id: 'photos', label: 'With Photos', count: photoReviews.length },
+                { id: 'all', label: 'All', count: total },
+                { id: 'photos', label: 'Photos', count: reviews.filter(r => r.photos?.length).length },
                 { id: '5stars', label: '5 Stars', count: distribution.find(d => d.star === 5)?.count ?? 0 },
               ].map(filter => (
                 <button
@@ -211,90 +138,159 @@ export function ProductReviews({ slug }: { slug: string }) {
         </div>
       )}
 
-      {/* 3. INDIVIDUAL REVIEW LIST */}
-      <div className="space-y-6">
+      {/* UGC PHOTO GRID (LOOX STYLE) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[12px]">
         {filteredReviews.length === 0 ? (
-          <div className="py-20 text-center text-muted-foreground italic">
+          <div className="col-span-full py-20 text-center text-muted-foreground italic">
             No reviews match your filter.
           </div>
         ) : (
           filteredReviews.map((review, i) => (
-            <div key={`${review.author}-${i}`} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-border/60 hover:shadow-md transition-shadow">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-xl">
-                    {review.author.charAt(0)}
+            <Dialog key={`${review.author}-${i}`}>
+              <DialogTrigger asChild>
+                <button className="group relative w-full aspect-[4/5] bg-white rounded-xl overflow-hidden shadow-sm border border-border/40 hover:shadow-lg transition-all text-left flex flex-col select-none">
+                  {/* Photo Section (70% Height) */}
+                  <div className="h-[70%] w-full relative overflow-hidden bg-muted">
+                    {review.photos && review.photos.length > 0 ? (
+                      <>
+                        <img
+                          src={review.photos[0]}
+                          alt={`Review by ${review.author}`}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105 pointer-events-none"
+                          onContextMenu={(e) => e.preventDefault()}
+                          draggable={false}
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
+                        {/* Star Rating Overlay */}
+                        <div className="absolute bottom-2 left-2 z-20 drop-shadow-md">
+                          <StarRating rating={review.rating} size={10} className="text-yellow-400" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-muted-foreground/30">
+                        <Camera size={32} strokeWidth={1} />
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-foreground">{review.author}</span>
-                      {review.verified && (
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                          <CheckCircle2 size={10} /> Verified
+
+                  {/* Info Section (30% Height) */}
+                  <div className="h-[30%] p-2.5 flex flex-col justify-between overflow-hidden">
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-[12px] font-bold text-foreground truncate">
+                          {review.author}
+                        </span>
+                        {review.verified && (
+                          <div className="flex items-center gap-0.5 text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full uppercase tracking-tighter shrink-0">
+                            <CheckCircle2 size={8} /> Verified
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-tight line-clamp-2 italic">
+                        "{review.body}"
+                      </p>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground/70 font-medium">
+                      {formatDate(review.date)}
+                    </div>
+                  </div>
+                </button>
+              </DialogTrigger>
+
+              {/* LIGHTBOX MODAL */}
+              <DialogContent className="max-w-[95vw] md:max-w-4xl bg-white p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
+                <VisuallyHidden><DialogTitle>Review by {review.author}</DialogTitle></VisuallyHidden>
+                <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
+                  {/* Large Image View */}
+                  <div className="w-full md:w-[60%] bg-black flex items-center justify-center relative min-h-[300px]">
+                    {review.photos && review.photos.length > 0 ? (
+                      <img 
+                        src={review.photos[0]} 
+                        alt="" 
+                        className="max-h-[85vh] w-full object-contain pointer-events-none" 
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                      />
+                    ) : (
+                      <div className="text-white/20 flex flex-col items-center gap-2">
+                        <Camera size={48} strokeWidth={1} />
+                        <span className="text-xs uppercase tracking-widest font-bold">No Photo</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
+                    <span className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/40 text-white/90 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest backdrop-blur-md uppercase">
+                      @youtumundial
+                    </span>
+                  </div>
+
+                  {/* Review Detail Info */}
+                  <div className="w-full md:w-[40%] p-6 md:p-8 flex flex-col overflow-y-auto">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black">
+                          {review.author.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-bold flex items-center gap-1.5">
+                            {review.author}
+                            <BadgeCheck size={16} className="text-primary" />
+                          </p>
+                          <StarRating rating={review.rating} size={14} />
+                        </div>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{formatDate(review.date)}</span>
+                    </div>
+
+                    <div className="space-y-4 mb-8">
+                      <h4 className="text-lg font-bold leading-tight">{review.title}</h4>
+                      <p className="text-sm leading-relaxed text-muted-foreground italic">"{review.body}"</p>
+                    </div>
+
+                    <div className="mt-auto space-y-6">
+                      <div className="flex flex-wrap gap-4 items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <div className="flex items-center gap-1.5 text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                          <CheckCircle2 size={12} /> Verified Buyer
+                        </div>
+                        {review.country && (
+                          <div className="flex items-center gap-1">
+                            {countryFlags[review.country]} {review.country}
+                          </div>
+                        )}
+                        {review.size && (
+                          <div className="bg-muted px-2 py-1 rounded-full">
+                            Size: {review.size}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Modal Add to Cart CTA */}
+                      {selectedVariant && (
+                        <div className="pt-6 border-t border-border/60">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-lg overflow-hidden border border-border shrink-0">
+                              <img src={selectedVariant.image?.url} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase truncate">Currently Viewing</p>
+                              <p className="text-sm font-bold truncate leading-tight">{selectedVariant.title || 'Cozy Pet Carrier'}</p>
+                              <p className="text-sm font-black text-primary">{formatPrice(43.99)}</p>
+                            </div>
+                          </div>
+                          <Button 
+                            className="w-full h-12 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black font-black shadow-lg"
+                            onClick={onAddToCart}
+                          >
+                            <ShoppingCart size={16} className="mr-2" />
+                            ADD TO CART
+                          </Button>
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                      <span>{countryFlags[review.country] ?? ""} {review.country}</span>
-                      <span>•</span>
-                      <span>{formatDate(review.date)}</span>
-                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <StarRating rating={review.rating} size={16} />
-                  {review.size && (
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded">Size: {review.size}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="text-lg font-bold text-foreground leading-tight">{review.title}</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">{review.body}</p>
-                
-                {review.photos && review.photos.length > 0 && (
-                  <div className="flex gap-3 pt-4">
-                    {review.photos.map((photo, idx) => (
-                      <Dialog key={idx}>
-                        <DialogTrigger asChild>
-                          <button className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-border/40 hover:border-primary transition-colors select-none group">
-                            <img 
-                              src={photo} 
-                              alt="" 
-                              className="w-full h-full object-cover transition-transform group-hover:scale-110 pointer-events-none" 
-                              onContextMenu={(e) => e.preventDefault()}
-                              draggable={false}
-                            />
-                            <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-                            <div className="absolute bottom-1 right-1 bg-black/40 p-1 rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Camera size={12} className="text-white" />
-                            </div>
-                          </button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none sm:rounded-none">
-                          <VisuallyHidden><DialogTitle>Review photo by {review.author}</DialogTitle></VisuallyHidden>
-                          <div className="relative flex items-center justify-center p-4 group">
-                            <img 
-                              src={photo} 
-                              alt="" 
-                              className="max-h-[85vh] w-auto rounded-lg object-contain shadow-2xl pointer-events-none" 
-                              onContextMenu={(e) => e.preventDefault()}
-                              draggable={false}
-                            />
-                            <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
-                            <span className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-bold tracking-widest backdrop-blur-md uppercase">
-                              @youtumundial
-                            </span>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+              </DialogContent>
+            </Dialog>
           ))
         )}
       </div>
