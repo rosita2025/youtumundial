@@ -55,7 +55,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           quantity,
           product,
           variant,
-        };
+          metadata,
+        } as any;
         newItems = [...state.cart.items, newItem];
       }
 
