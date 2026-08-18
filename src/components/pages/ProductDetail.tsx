@@ -22,6 +22,9 @@ import { StickyAddToCart } from '@/components/product/StickyAddToCart';
 import { UpsellSection } from '@/components/product/UpsellSection';
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from '@/lib/utils';
+import benefitCatBag from '@/assets/benefit-cat-bag.jpg.asset.json';
+import benefitDogBag from '@/assets/benefit-dog-bag.webp.asset.json';
+
 
 interface ProductDetailProps {
   catalog?: Product[];
@@ -390,10 +393,11 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               {/* Product Photos / Highlights */}
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="aspect-square rounded-2xl overflow-hidden border border-border shadow-sm">
-                  <img src="https://i.postimg.cc/mD7tDMT5/WtzcmR3M.jpg" alt="Pet Highlight 1" className="w-full h-full object-cover" />
+                  <img src={benefitCatBag.url} alt="Cat riding safely in the canvas shoulder bag" loading="lazy" className="w-full h-full object-cover" />
                 </div>
                 <div className="aspect-square rounded-2xl overflow-hidden border border-border shadow-sm">
-                  <img src="https://i.postimg.cc/85z1X890/K4RCknpb.jpg" alt="Pet Highlight 2" className="w-full h-full object-cover" />
+                  <img src={benefitDogBag.url} alt="Small dog wearing plush costume inside the tote bag" loading="lazy" className="w-full h-full object-cover" />
+
                 </div>
               </div>
 
