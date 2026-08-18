@@ -84,6 +84,7 @@ export async function priceOrder(params: {
   items: CartLineRequest[];
   countryCode: string;
   couponCode?: string;
+  isUpsellIncluded?: boolean; // New flag for upsell logic
 }): Promise<PricedOrder> {
   if (!params.items.length) throw new Error('El carrito está vacío');
 
@@ -123,6 +124,18 @@ export async function priceOrder(params: {
 
   subtotal = Math.round(subtotal * 100) / 100;
 
+  // Lógica de Upsell Automático: Si hay más de un producto diferente o cantidad > 1,
+  // y no hay un cupón manual aplicado, aplicamos un 10% de descuento automáticamente
+  // como incentivo de "Completa tu kit".
+  let automaticDiscount = 0;
+  const totalQuantity = params.items.reduce((sum, item) => sum + item.quantity, 0);
+  const differentProducts = new Set(params.items.map(i => i.variantId.split(':')[0])).size;
+
+  if (!params.couponCode && (totalQuantity >= 2 || differentProducts >= 2)) {
+    // 10% de descuento en el total de productos si llevan más de uno (estrategia de Upsell)
+    automaticDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+  }
+
   let coupon: Coupon | null = null;
   if (params.couponCode) {
     const { getSecretTestCoupon } = await import('./secret-coupon.server');
@@ -132,7 +145,20 @@ export async function priceOrder(params: {
     coupon = result.coupon;
   }
 
-  const discount = couponDiscount(coupon, subtotal);
+  let discount = couponDiscount(coupon, subtotal);
+  
+  // Si no hay cupón, aplicamos el descuento automático de upsell
+  if (!discount && automaticDiscount > 0) {
+    discount = automaticDiscount;
+    // Creamos un cupón virtual para que el cliente vea el motivo del descuento
+    coupon = {
+      code: 'UPSELL10',
+      percentOff: 10,
+      label: '¡Oferta de Pack! 10% de descuento por llevar más de un producto',
+      active: true
+    };
+  }
+
   const discounted = Math.max(0, subtotal - discount);
   const country = shippingCountryFor(params.countryCode);
 

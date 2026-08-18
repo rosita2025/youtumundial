@@ -15,8 +15,9 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
-import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem } from 'lucide-react';
+import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem, Gift } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
+import { UpsellSection } from '@/components/product/UpsellSection';
 
 interface ProductDetailProps {
   catalog?: Product[];
@@ -207,6 +208,9 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             >
               {selectedVariant?.available ? 'Add to Cart' : 'Out of Stock'}
             </Button>
+
+            {/* Upsell Section */}
+            <UpsellSection product={product} relatedProducts={relatedProducts} />
             
             {/* Payment Trust Badges for Conversion */}
             <div className="pt-4 flex flex-col items-center gap-2">

@@ -20,7 +20,30 @@ const HTML_ENTITIES: Record<string, string> = {
   '&nbsp;': ' ',
 };
 
-export function cleanDescription(raw: string | null | undefined, maxLength = 1200): string {
+const DESCRIPTION_OVERRIDES: Record<string, string> = {
+  "lion-shaped-pet-canvas-shoulder-bag": `¡Lleva a tu mascota con estilo y comodidad absoluta!
+
+Nuestro Bolso de Lona con Forma de León es la combinación perfecta de diseño divertido y funcionalidad premium. Inspirado en la estética minimalista y juguetona, este transportador permite que tu gato o perro pequeño te acompañe a todas partes mientras luce adorable.
+
+Beneficios Destacados:
+• Diseño Ergonómico: Correa ancha y ajustable que distribuye el peso equitativamente sobre tu hombro, evitando fatiga.
+• Máxima Ventilación: Fabricado con lona de algodón 100% transpirable, manteniendo a tu mascota fresca en todo momento.
+• Seguridad Garantizada: Incluye un cierre de seguridad interno para enganchar al collar y evitar saltos accidentales.
+• Interacción Constante: El diseño con apertura frontal permite que tu mascota asome la cabeza para disfrutar del paisaje contigo.
+
+Especificaciones:
+- Material: Lona de alta densidad lavable.
+- Capacidad: Ideal para mascotas de hasta 5kg.
+- Uso: Perfecto para paseos diarios, visitas al veterinario o viajes cortos.
+
+Dale a tu mejor amigo el confort que se merece con el bolso más viral de la temporada.`
+};
+
+export function cleanDescription(raw: string | null | undefined, slug?: string, maxLength = 1200): string {
+  if (slug && DESCRIPTION_OVERRIDES[slug]) {
+    return DESCRIPTION_OVERRIDES[slug];
+  }
+
   let text = String(raw ?? '');
   if (!text) return '';
 

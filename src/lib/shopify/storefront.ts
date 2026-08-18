@@ -153,7 +153,7 @@ export function mapShopifyProduct(raw: RawProduct): Product {
     id: raw.id,
     slug: raw.handle,
     title: raw.title,
-    description: cleanDescription(raw.description),
+    description: cleanDescription(raw.description, raw.handle),
     price,
     compareAtPrice: compare > price ? compare : undefined,
     images: raw.images.edges.map((e, i) => ({
