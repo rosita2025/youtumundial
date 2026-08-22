@@ -1,5 +1,6 @@
 import { ProductVariant } from '@/lib/data/types';
 import { cn } from '@/lib/utils';
+import { lowStockMessage } from '@/lib/utils/product-trust';
 
 interface VariantSelectorProps {
   variants: ProductVariant[];
@@ -71,6 +72,8 @@ export function VariantSelector({
             {option.values.map((value) => {
               const isSelected = selectedValues[option.name] === value;
               const isAvailable = isValueAvailable(option.name, value);
+              const previewVariant = findVariant({ ...selectedValues, [option.name]: value });
+              const lowStock = previewVariant && isAvailable ? lowStockMessage(previewVariant) : null;
 
               return (
                 <button
@@ -78,7 +81,7 @@ export function VariantSelector({
                   onClick={() => handleSelect(option.name, value)}
                   disabled={!isAvailable}
                   className={cn(
-                    'px-4 py-2 border rounded-md text-sm font-medium transition-all',
+                    'relative px-4 py-2 border rounded-md text-sm font-medium transition-all',
                     isSelected
                       ? 'border-foreground bg-foreground text-background'
                       : 'border-border bg-background hover:border-foreground',
@@ -86,6 +89,11 @@ export function VariantSelector({
                   )}
                 >
                   {value}
+                  {lowStock && isSelected && (
+                    <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-[9px] px-1.5 py-0.5 rounded-full">
+                      Low stock
+                    </span>
+                  )}
                 </button>
               );
             })}

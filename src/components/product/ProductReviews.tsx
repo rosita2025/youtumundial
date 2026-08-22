@@ -1,7 +1,7 @@
 import { countryFlags } from "@/lib/reviews/reviews";
 import { useReviewSummary } from "@/lib/reviews/use-reviews";
 import { StarRating } from "@/components/product/StarRating";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, ThumbsUp } from "lucide-react";
 import { ReviewForm } from "@/components/product/ReviewForm";
 import { useState, useEffect } from "react";
 
@@ -25,6 +25,13 @@ function ReviewDate({ date }: { date: string }) {
   return <>{formatted}</>;
 }
 
+const highlightTags = [
+  { key: 'fit', label: 'True to size', emoji: '👗' },
+  { key: 'quality', label: 'Great quality', emoji: '✨' },
+  { key: 'shipping', label: 'Fast shipping', emoji: '🚚' },
+  { key: 'comfort', label: 'Comfortable', emoji: '☁️' },
+];
+
 export function ProductReviews({ slug }: { slug: string }) {
   const { reviews, total, average, distribution } = useReviewSummary(slug);
 
@@ -39,6 +46,22 @@ export function ProductReviews({ slug }: { slug: string }) {
       </section>
     );
   }
+
+  // Simple heuristic: count reviews that mention keywords
+  const tagCounts = highlightTags.map((tag) => {
+    const count = reviews.filter((r) => {
+      const text = `${r.title} ${r.body}`.toLowerCase();
+      const keywords: Record<string, string[]> = {
+        fit: ['fit', 'size', 'true to size', 'talla', 'justo'],
+        quality: ['quality', 'calidad', 'fabric', 'tela', 'material', 'well made'],
+        shipping: ['shipping', 'envío', 'delivery', 'entrega', 'fast', 'quick'],
+        comfort: ['comfort', 'comfortable', 'comfy', 'suave', 'soft', 'light'],
+      };
+      return keywords[tag.key].some((k) => text.includes(k));
+    }).length;
+    return { ...tag, count };
+  });
+  const topTags = tagCounts.filter((t) => t.count > 0).sort((a, b) => b.count - a.count).slice(0, 3);
 
   return (
     <section className="mt-20 border-t border-border pt-12" id="reviews">
@@ -66,6 +89,24 @@ export function ProductReviews({ slug }: { slug: string }) {
               </div>
             ))}
           </div>
+
+          {topTags.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs font-medium mb-2 flex items-center gap-1.5">
+                <ThumbsUp size={13} className="text-primary" /> What buyers love
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {topTags.map((tag) => (
+                  <span
+                    key={tag.key}
+                    className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-secondary text-secondary-foreground"
+                  >
+                    {tag.emoji} {tag.label} ({tag.count})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <ul className="space-y-6">

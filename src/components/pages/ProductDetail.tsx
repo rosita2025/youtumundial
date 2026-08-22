@@ -15,8 +15,14 @@ import { ProductReviews } from '@/components/product/ProductReviews';
 import { StarRating } from '@/components/product/StarRating';
 import { useReviewSummary } from '@/lib/reviews/use-reviews';
 import { ReviewDiagnostics } from '@/components/product/ReviewDiagnostics';
-import { Minus, Plus, Truck, RotateCcw, Shield, ShoppingCart, Heart, Gem } from 'lucide-react';
+import { Minus, Plus, Truck, RotateCcw, Heart, Gem, ShoppingCart, Lock, Users, Calendar } from 'lucide-react';
 import { StickyAddToCart } from '@/components/product/StickyAddToCart';
+import { ProductTrustStrip, PaymentTrustBlock } from '@/components/product/ProductTrustStrip';
+import { ProductFaq } from '@/components/product/ProductFaq';
+import { deliveryEstimatePhrase, socialProofSoldCount, inStockLabel } from '@/lib/utils/product-trust';
+import { detectVisitorGeo } from '@/lib/checkout/geo.functions';
+import { useServerFn } from '@tanstack/react-start';
+import { FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
 
 interface ProductDetailProps {
   catalog?: Product[];
@@ -31,6 +37,8 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
   const [quantity, setQuantity] = useState(1);
   const reviewSummary = useReviewSummary(product?.slug ?? slug ?? '');
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [countryCode, setCountryCode] = useState<string | undefined>(undefined);
+  const getVisitorGeo = useServerFn(detectVisitorGeo);
 
   const selectedVariant: ProductVariant | null = product
     ? product.variants.find((v) => v.id === variantId) ??
@@ -62,6 +70,16 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
       });
     }
   }, [product?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getVisitorGeo().then((geo) => {
+      if (!cancelled && geo.countryCode) {
+        setCountryCode(geo.countryCode);
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [getVisitorGeo]);
 
   const handleAddToCart = () => {
     if (!product || !selectedVariant) return;
@@ -95,6 +113,13 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
     ? calculateDiscount(product.price, product.compareAtPrice)
     : 0;
 
+  const deliveryEstimate = deliveryEstimatePhrase(countryCode);
+  const soldToday = socialProofSoldCount(product.slug);
+  const stockLabel = selectedVariant ? inStockLabel(selectedVariant) : '';
+  const isLowStock = stockLabel.startsWith('Only');
+  const progressToFreeShipping = Math.min(100, (product.price / FREE_SHIPPING_THRESHOLD) * 100);
+  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - product.price);
+
   return (
     <Layout>
       <div className="container-wide py-8 md:py-12">
@@ -110,7 +135,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           <ProductGallery images={product.images} productTitle={product.title} />
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
               {(product.vendor || product.productType) && (
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -142,8 +167,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                   </span>
                 </a>
               )}
-              <div className="flex items-center gap-3 mt-2">
-
+              <div className="flex items-center gap-3 mt-3">
                 <span className="text-2xl font-medium">
                   {formatPrice(product.price)}
                 </span>
@@ -157,6 +181,27 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
                     </span>
                   </>
                 )}
+              </div>
+
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <p className="text-sm text-primary mt-1">
+                  You save {formatPrice(product.compareAtPrice - product.price)} today
+                </p>
+              )}
+
+              <div className="mt-3">
+                <ProductTrustStrip />
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={13} className="text-primary" />
+                  {deliveryEstimate}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Users size={13} className="text-primary" />
+                  {soldToday} people bought this in the last 24 hours
+                </span>
               </div>
             </div>
 
@@ -172,6 +217,15 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
               selectedVariant={selectedVariant}
               onSelect={setSelectedVariant}
             />
+
+            {selectedVariant && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className={`inline-block w-2 h-2 rounded-full ${selectedVariant.available ? 'bg-green-500' : 'bg-muted-foreground'}`} />
+                <span className={isLowStock ? 'text-destructive font-medium' : 'text-muted-foreground'}>
+                  {stockLabel}
+                </span>
+              </div>
+            )}
 
             {/* Quantity */}
             <div>
@@ -196,35 +250,33 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
             </div>
 
             {/* Add to Cart */}
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={handleAddToCart}
-              disabled={!selectedVariant?.available}
-            >
-              {selectedVariant?.available ? 'Add to Cart' : 'Out of Stock'}
-            </Button>
-            
-            {/* Payment Trust Badges for Conversion */}
-            <div className="pt-4 flex flex-col items-center gap-2">
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Guaranteed Safe Checkout</span>
-              <div className="flex items-center justify-center gap-4 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
-                <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-6 w-auto" />
-                <img src="https://img.icons8.com/color/48/google-pay.png" alt="Google Pay" className="h-6 w-auto" />
-              </div>
+            <div className="space-y-2">
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={handleAddToCart}
+                disabled={!selectedVariant?.available}
+              >
+                <ShoppingCart size={18} className="mr-2" />
+                {selectedVariant?.available ? 'Add to Bag — Secure Checkout' : 'Out of Stock'}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                {remainingForFreeShipping > 0
+                  ? `Add ${formatPrice(remainingForFreeShipping)} more for free shipping`
+                  : 'Free shipping applied'}
+              </p>
             </div>
-
+            
+            {/* Payment Trust Block */}
+            <PaymentTrustBlock />
 
             {/* Features & Trust Markers */}
             <div className="pt-6 border-t border-border space-y-4">
               <div className="flex items-center gap-3 text-sm">
                 <Truck size={18} className="text-primary" />
                 <div>
-                  <span className="font-medium block">Free Singapore delivery</span>
-                  <span className="text-muted-foreground text-xs">No minimum spend required</span>
+                  <span className="font-medium block">Free delivery over {formatPrice(FREE_SHIPPING_THRESHOLD)}</span>
+                  <span className="text-muted-foreground text-xs">Singapore always ships free; other countries reach the threshold</span>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-sm">
@@ -252,11 +304,15 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           </div>
         </div>
 
+        {/* Product FAQ */}
+        <div className="mt-16">
+          <ProductFaq />
+        </div>
+
         {/* Reseñas */}
         <ProductReviews slug={product.slug} />
 
         {showDiagnostics && <ReviewDiagnostics slug={product.slug} />}
-
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
@@ -272,6 +328,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           selectedVariant={selectedVariant}
           quantity={quantity}
           onAdd={handleAddToCart}
+          countryCode={countryCode}
         />
       </div>
     </Layout>
