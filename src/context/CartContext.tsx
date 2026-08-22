@@ -2,7 +2,6 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { Cart, CartItem, Product, ProductVariant } from '@/lib/data/types';
 import { generateId } from '@/lib/utils/format';
 import { toast } from 'sonner';
-import { calculateCartTotals } from '@/lib/cart/bundle-pricing';
 
 interface CartState {
   cart: Cart;
@@ -10,7 +9,7 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; payload: { product: Product; variant: ProductVariant; quantity: number; metadata?: any } }
+  | { type: 'ADD_ITEM'; payload: { product: Product; variant: ProductVariant; quantity: number } }
   | { type: 'UPDATE_QUANTITY'; payload: { itemId: string; quantity: number } }
   | { type: 'REMOVE_ITEM'; payload: { itemId: string } }
   | { type: 'CLEAR_CART' }
@@ -28,16 +27,22 @@ const createEmptyCart = (): Cart => ({
   itemCount: 0,
 });
 
-const calculateTotals = calculateCartTotals;
+const calculateTotals = (items: CartItem[]): { subtotal: number; itemCount: number } => {
+  return items.reduce(
+    (acc, item) => ({
+      subtotal: acc.subtotal + item.variant.price * item.quantity,
+      itemCount: acc.itemCount + item.quantity,
+    }),
+    { subtotal: 0, itemCount: 0 }
+  );
+};
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const { product, variant, quantity, metadata } = action.payload;
+      const { product, variant, quantity } = action.payload;
       const existingIndex = state.cart.items.findIndex(
-        item => item.productId === product.id && 
-                item.variantId === variant.id && 
-                JSON.stringify((item as any).metadata) === JSON.stringify(metadata)
+        item => item.productId === product.id && item.variantId === variant.id
       );
 
       let newItems: CartItem[];
@@ -55,8 +60,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           quantity,
           product,
           variant,
-          metadata,
-        } as any;
+        };
         newItems = [...state.cart.items, newItem];
       }
 
@@ -132,7 +136,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 interface CartContextValue {
   cart: Cart;
   isOpen: boolean;
-  addToCart: (product: Product, variant: ProductVariant, quantity?: number, metadata?: any) => void;
+  addToCart: (product: Product, variant: ProductVariant, quantity?: number) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   removeItem: (itemId: string) => void;
   clearCart: () => void;
@@ -167,8 +171,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.cart));
   }, [state.cart]);
 
-  const addToCart = (product: Product, variant: ProductVariant, quantity = 1, metadata?: any) => {
-    dispatch({ type: 'ADD_ITEM', payload: { product, variant, quantity, metadata } });
+  const addToCart = (product: Product, variant: ProductVariant, quantity = 1) => {
+    dispatch({ type: 'ADD_ITEM', payload: { product, variant, quantity } });
     toast.success(`${product.title} added to cart`);
   };
 

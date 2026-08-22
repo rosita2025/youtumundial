@@ -2,7 +2,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Hero } from '@/components/home/Hero';
 import { FeaturedCollections } from '@/components/home/FeaturedCollections';
 import { TrendingProducts } from '@/components/home/TrendingProducts';
-
+import { Newsletter } from '@/components/home/Newsletter';
 import { selectCollections, selectProducts } from '@/lib/data/data-provider';
 import { Product } from '@/lib/data/types';
 
@@ -37,7 +37,7 @@ const Index = ({ catalog = [] }: IndexProps) => {
           subtitle="Our most popular picks this season"
         />
       )}
-      
+      <Newsletter />
     </Layout>
   );
 };

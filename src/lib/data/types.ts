@@ -20,7 +20,6 @@ export interface ProductVariant {
     name: string;
     value: string;
   }[];
-  image?: ProductImage;
 }
 
 /** Origen auditable de un producto importado. */

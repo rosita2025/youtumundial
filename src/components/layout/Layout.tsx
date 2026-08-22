@@ -10,10 +10,10 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden page-container">
+    <div className="min-h-screen flex flex-col">
       <AnnouncementBar />
       <Header />
-      <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
       <CartDrawer />
     </div>

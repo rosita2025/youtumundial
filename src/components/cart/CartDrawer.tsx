@@ -1,36 +1,13 @@
 import { Link } from '@/lib/router-compat';
 import { fbEvent } from '@/lib/facebook-pixel';
-import { X, Plus, Minus, ShoppingBag, Sparkles, Lock, ShieldCheck, Zap } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
-import { getCatalog } from '@/lib/data/data-provider';
-import { Product } from '@/lib/data/types';
-import { calculateItemTotal } from '@/lib/cart/bundle-pricing';
 
 export function CartDrawer() {
-  const { cart, isOpen, closeCart, updateQuantity, removeItem, addToCart } = useCart();
-  const [upsellProduct, setUpsellProduct] = useState<Product | null>(null);
-  
-  const FREE_SHIPPING_THRESHOLD = 50;
-  const progress = Math.min((cart.subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
-  const remaining = FREE_SHIPPING_THRESHOLD - cart.subtotal;
-
-
-  useEffect(() => {
-    if (isOpen) {
-      // Find a low cost accessory or related product for upsell
-      getCatalog().then(products => {
-        const accessory = products.find(p => 
-          p.price < 20 && 
-          !cart.items.some(item => item.productId === p.id)
-        );
-        if (accessory) setUpsellProduct(accessory);
-      });
-    }
-  }, [isOpen, cart.items]);
+  const { cart, isOpen, closeCart, updateQuantity, removeItem } = useCart();
 
   return (
     <>
@@ -52,47 +29,17 @@ export function CartDrawer() {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-6 border-b border-border bg-muted/30">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-xl font-bold flex items-center gap-2">
-                <ShoppingBag size={20} className="text-primary" />
-                Your Cart ({cart.itemCount})
-              </h2>
-              <button
-                onClick={closeCart}
-                className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Close cart"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Free Shipping Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
-                {cart.subtotal >= FREE_SHIPPING_THRESHOLD ? (
-                  <span className="text-green-600 flex items-center gap-1.5">
-                    <Sparkles size={12} className="animate-pulse" />
-                    🎉 CONGRATS! You unlocked FREE International Shipping!
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    🚚 Add <span className="text-primary">{formatPrice(remaining)}</span> more to unlock FREE International Shipping!
-                  </span>
-                )}
-
-                <span className="text-muted-foreground">{Math.round(progress)}%</span>
-              </div>
-              <div className="h-2 w-full bg-border rounded-full overflow-hidden">
-                <div 
-                  className={cn(
-                    "h-full transition-all duration-700 ease-out rounded-full",
-                    cart.subtotal >= FREE_SHIPPING_THRESHOLD ? "bg-green-500" : "bg-primary"
-                  )}
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
+          <div className="flex items-center justify-between p-6 border-b border-border">
+            <h2 className="font-heading text-xl font-medium">
+              Your Cart ({cart.itemCount})
+            </h2>
+            <button
+              onClick={closeCart}
+              className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Close cart"
+            >
+              <X size={24} />
+            </button>
           </div>
 
           {/* Cart Items */}
@@ -135,13 +82,8 @@ export function CartDrawer() {
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {item.variant.title}
                       </p>
-                      <p className="font-bold mt-1 text-primary">
-                        {formatPrice(calculateItemTotal(item))}
-                        {item.quantity > 1 && item.product.slug.includes('lion') && (
-                          <span className="text-[10px] text-green-600 ml-2 font-black uppercase tracking-tighter bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
-                            Bundle applied
-                          </span>
-                        )}
+                      <p className="font-medium mt-1">
+                        {formatPrice(item.variant.price)}
                       </p>
 
                       {/* Quantity controls */}
@@ -177,37 +119,6 @@ export function CartDrawer() {
                 ))}
               </div>
 
-              {/* In-Cart Upsell */}
-              {upsellProduct && cart.items.length > 0 && (
-                <div className="p-4 mx-6 mb-6 bg-primary/5 border-2 border-primary/20 rounded-2xl animate-fade-in">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Zap size={14} className="text-primary fill-primary" />
-                    <h4 className="text-[10px] font-black uppercase tracking-widest italic">Frequently Bought Together</h4>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={upsellProduct.images[0]?.url} 
-                      className="w-12 h-12 rounded-lg object-cover" 
-                      alt={upsellProduct.title}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate">{upsellProduct.title}</p>
-                      <p className="text-sm font-black text-primary">{formatPrice(upsellProduct.price)}</p>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      className="h-8 px-4 text-[10px] font-bold rounded-full shadow-sm"
-                      onClick={() => {
-                        const variant = upsellProduct.variants.find(v => v.available) || upsellProduct.variants[0];
-                        if (variant) addToCart(upsellProduct, variant, 1);
-                      }}
-                    >
-                      ADD
-                    </Button>
-                  </div>
-                </div>
-              )}
-
               {/* Footer */}
               <div className="border-t border-border p-6 space-y-4">
                 <div className="flex items-center justify-between">
@@ -219,31 +130,13 @@ export function CartDrawer() {
                 <p className="text-sm text-muted-foreground">
                   Shipping and taxes calculated at checkout
                 </p>
-                <Button 
-                  className="w-full h-14 text-lg font-black shadow-xl active:scale-95 bg-[#FFB800] hover:bg-[#FFB800]/90 text-black border-none" 
-                  size="lg" 
-                  asChild
-                >
+                <Button className="w-full" size="lg" asChild>
                   <Link to="/checkout" onClick={() => {
                     closeCart();
                   }}>
-                    PROCEED TO CHECKOUT
+                    Proceed to Checkout
                   </Link>
                 </Button>
-
-                {/* Trust Badges */}
-                <div className="flex flex-col items-center gap-3 pt-2">
-                  <div className="flex items-center justify-center gap-4 opacity-70 grayscale hover:grayscale-0 transition-all duration-300">
-                    <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-5 w-auto" />
-                    <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-5 w-auto" />
-                    <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="h-5 w-auto" />
-                    <img src="https://img.icons8.com/color/48/apple-pay.png" alt="Apple Pay" className="h-5 w-auto" />
-                  </div>
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    <Lock size={10} className="text-green-600" />
-                    256-Bit Encrypted Checkout
-                  </p>
-                </div>
 
                 <button
                   onClick={closeCart}

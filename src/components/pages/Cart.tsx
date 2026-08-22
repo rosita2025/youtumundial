@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils/format';
 import { shippingCountries, shippingCountryFor, FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
-import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Calculator, Sparkles } from 'lucide-react';
+import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Calculator } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
 import { lookupPostalCode, type PostalPlace } from '@/lib/checkout/address.functions';
@@ -24,15 +24,9 @@ const Cart = () => {
   const countryInfo = shippingCountryFor(selectedCountry);
   const isFreeShipping = cart.subtotal >= FREE_SHIPPING_THRESHOLD;
   
-  // Upsell calculation for UI
-  const totalQuantity = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-  const differentProducts = new Set(cart.items.map(i => i.productId)).size;
-  const isUpsellEligible = totalQuantity >= 2 || differentProducts >= 2;
-  const upsellDiscount = isUpsellEligible ? Math.round(cart.subtotal * 0.1 * 100) / 100 : 0;
-
   const estimatedShipping = isFreeShipping ? 0 : countryInfo.shipping;
-  const estimatedTax = (cart.subtotal - upsellDiscount) * 0.08; // 8% tax estimate
-  const total = (cart.subtotal - upsellDiscount) + estimatedTax + estimatedShipping;
+  const estimatedTax = cart.subtotal * 0.08; // 8% tax estimate
+  const total = cart.subtotal + estimatedTax + estimatedShipping;
 
   useEffect(() => {
     const code = zipCode.trim();
@@ -168,17 +162,6 @@ const Cart = () => {
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-medium">{formatPrice(cart.subtotal)}</span>
                 </div>
-
-                {isUpsellEligible && (
-                  <div className="flex justify-between text-green-600 animate-in fade-in duration-500">
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <Sparkles size={14} />
-                      Oferta de Pack (10%)
-                    </span>
-                    <span className="font-bold">-{formatPrice(upsellDiscount)}</span>
-                  </div>
-                )}
-
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estimated Shipping</span>
                   <span className="font-medium">

@@ -39,16 +39,13 @@ const Collection = ({ catalog = [] }: CollectionProps) => {
   return (
     <Layout>
       {/* Collection Banner */}
-      <div className="relative h-64 md:h-80 overflow-hidden select-none">
+      <div className="relative h-64 md:h-80 overflow-hidden">
         <img
           src={collection.image.url}
           alt={collection.title}
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-          onContextMenu={(e) => e.preventDefault()}
-          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
-        <div className="absolute inset-0 bg-foreground/40 pointer-events-none" />
+        <div className="absolute inset-0 bg-foreground/40" />
         <div className="absolute inset-0 flex items-center justify-center text-center">
           <div className="text-primary-foreground">
             <h1 className="font-heading text-4xl md:text-5xl font-medium">

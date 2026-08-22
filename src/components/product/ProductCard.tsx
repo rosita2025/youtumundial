@@ -28,28 +28,23 @@ export const ProductCard = memo(function ProductCard({ product, className }: Pro
       )}
     >
       {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted select-none group/img">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
         <img
           src={product.images[0]?.url}
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
           referrerPolicy="no-referrer"
-          onContextMenu={(e) => e.preventDefault()}
-          draggable={false}
         />
-        <div className="absolute inset-0 bg-transparent z-10" onContextMenu={(e) => e.preventDefault()} />
         
         {/* Hover image */}
         {product.images[1] && (
           <img
             src={product.images[1].url}
             alt={`${product.title} - alternate view`}
-            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
             loading="lazy"
             referrerPolicy="no-referrer"
-            onContextMenu={(e) => e.preventDefault()}
-            draggable={false}
           />
         )}
 
@@ -79,11 +74,11 @@ export const ProductCard = memo(function ProductCard({ product, className }: Pro
             {product.vendor}
           </p>
         )}
-        <h3 className="font-medium text-foreground group-hover:underline transition-all line-clamp-2 min-h-[2.5rem] text-sm md:text-base">
+        <h3 className="font-medium text-foreground group-hover:underline transition-all">
           {product.title}
         </h3>
-        <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
-          <span className="font-bold text-sm md:text-base">{formatPrice(product.price)}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{formatPrice(product.price)}</span>
           {product.compareAtPrice && (
             <span className="text-muted-foreground line-through text-sm">
               {formatPrice(product.compareAtPrice)}

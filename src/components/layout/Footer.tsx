@@ -41,6 +41,24 @@ export function Footer() {
               the US and Europe. Made in China, shipped worldwide at factory-direct
               prices.
             </p>
+
+            {/* Newsletter */}
+            <div className="mt-8">
+              <h4 className="font-medium mb-3">Join our newsletter</h4>
+              <form className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 bg-background"
+                />
+                <Button type="submit" variant="default">
+                  Subscribe
+                </Button>
+              </form>
+              <p className="text-sm text-muted-foreground mt-2">
+                New drops, restocks and offers. No spam.
+              </p>
+            </div>
           </div>
 
           {/* Shop Links */}

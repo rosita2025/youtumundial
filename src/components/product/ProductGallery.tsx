@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { ProductImage, ProductVariant } from '@/lib/data/types';
+import { useState } from 'react';
+import { ProductImage } from '@/lib/data/types';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -10,25 +10,6 @@ interface ProductGalleryProps {
 
 export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  useEffect(() => {
-    const handleVariantChange = (e: any) => {
-      const variant = e.detail.variant as ProductVariant;
-      if (variant?.image?.url) {
-        const index = images.findIndex(img => img.url === variant.image?.url);
-        if (index !== -1) {
-          setSelectedIndex(index);
-          // Scroll to top of gallery on mobile to show the change
-          if (window.innerWidth < 768) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        }
-      }
-    };
-
-    window.addEventListener('product-variant-changed', handleVariantChange);
-    return () => window.removeEventListener('product-variant-changed', handleVariantChange);
-  }, [images]);
 
   const goToPrevious = () => {
     setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -49,16 +30,13 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative aspect-square md:aspect-square max-h-[420px] md:max-h-none overflow-hidden rounded-lg bg-muted group select-none flex items-center justify-center">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted group">
         <img
           src={images[selectedIndex].url}
           alt={images[selectedIndex].altText || productTitle}
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
-          onContextMenu={(e) => e.preventDefault()}
-          draggable={false}
         />
-        <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
 
         {/* Navigation Arrows */}
         {images.length > 1 && (
@@ -112,17 +90,12 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
                   : 'border-transparent hover:border-muted-foreground/50'
               )}
             >
-            <div className="relative w-full h-full">
               <img
                 src={image.url}
                 alt={image.altText || `${productTitle} thumbnail ${index + 1}`}
-                className="w-full h-full object-cover select-none"
+                className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
-                onContextMenu={(e) => e.preventDefault()}
-                draggable={false}
               />
-              <div className="absolute inset-0 bg-transparent" onContextMenu={(e) => e.preventDefault()} />
-            </div>
             </button>
           ))}
         </div>

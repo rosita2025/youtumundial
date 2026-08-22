@@ -84,7 +84,6 @@ export async function priceOrder(params: {
   items: CartLineRequest[];
   countryCode: string;
   couponCode?: string;
-  isUpsellIncluded?: boolean; // New flag for upsell logic
 }): Promise<PricedOrder> {
   if (!params.items.length) throw new Error('El carrito está vacío');
 
@@ -124,24 +123,6 @@ export async function priceOrder(params: {
 
   subtotal = Math.round(subtotal * 100) / 100;
 
-  // Lógica de Ofertas de Pack (Bundle & Save):
-  // Buy 1: $43.99 (Precio Base)
-  // Buy 2: $69.99 (Aprox 20% OFF)
-  // Buy 3: $89.99 (Aprox 30% OFF)
-  let automaticDiscount = 0;
-  const totalQuantity = params.items.reduce((sum, item) => sum + item.quantity, 0);
-
-  if (!params.couponCode) {
-    if (totalQuantity === 2) {
-      // Precio objetivo $69.99 -> Descuento = (43.99 * 2) - 69.99 = 17.99
-      automaticDiscount = 17.99;
-    } else if (totalQuantity >= 3) {
-      // Precio objetivo $89.99 (para 3) -> Descuento = (43.99 * 3) - 89.99 = 41.98
-      // Si son más de 3, mantenemos el descuento base del pack de 3
-      automaticDiscount = 41.98 + (Math.max(0, totalQuantity - 3) * 15);
-    }
-  }
-
   let coupon: Coupon | null = null;
   if (params.couponCode) {
     const { getSecretTestCoupon } = await import('./secret-coupon.server');
@@ -151,19 +132,7 @@ export async function priceOrder(params: {
     coupon = result.coupon;
   }
 
-  let discount = couponDiscount(coupon, subtotal);
-  
-  // Si no hay cupón, aplicamos el descuento automático de pack
-  if (!discount && automaticDiscount > 0) {
-    discount = automaticDiscount;
-    coupon = {
-      code: 'BUNDLE_SAVE',
-      percentOff: Math.round((automaticDiscount / subtotal) * 100),
-      label: '¡Oferta de Pack Aplicada!',
-      active: true
-    };
-  }
-
+  const discount = couponDiscount(coupon, subtotal);
   const discounted = Math.max(0, subtotal - discount);
   const country = shippingCountryFor(params.countryCode);
 
