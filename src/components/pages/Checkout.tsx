@@ -25,7 +25,7 @@ import { detectVisitorGeo } from '@/lib/checkout/geo.functions';
 import { lookupPostalCode, type PostalPlace } from '@/lib/checkout/address.functions';
 
 const Checkout = () => {
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, removeItem } = useCart();
   const navigate = useNavigate();
   const [method] = useState<PaymentMethod>('card');
   const [showStripe, setShowStripe] = useState(false);
