@@ -2,6 +2,9 @@ import { Instagram, Play, Heart, MessageCircle } from 'lucide-react';
 import { useMemo } from 'react';
 import { getCatalog } from '@/lib/data/data-provider';
 import { useQuery } from '@tanstack/react-query';
+import { Product } from '@/lib/data/types';
+import { Link } from '@/lib/router-compat';
+
 
 interface InstagramPost {
   id: string;
