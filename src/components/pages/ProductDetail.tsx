@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { fbEvent } from '@/lib/facebook-pixel';
+
 import { useParams, Link } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { ProductGallery } from '@/components/product/ProductGallery';
