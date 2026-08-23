@@ -255,16 +255,17 @@ export async function createCartSession(data: CartCheckoutInput) {
     ui_mode: 'embedded_page',
     return_url: data.returnUrl,
     payment_intent_data: { description: 'Pedido Ropa de Youtumundial' },
-    // Solicitamos la dirección real en Stripe (requerido para el fulfillment automático en SUP).
-    shipping_address_collection: { allowed_countries: SHIPPING_COUNTRIES },
+    // Autocompletado de dirección al estilo Shopify: Stripe usa su base de datos
+    // global para sugerir direcciones válidas y reducir errores.
+    shipping_address_collection: {
+      allowed_countries: worldCountries.map(c => c.code) as any
+    },
     phone_number_collection: { enabled: true },
-    // Pre-poblamos los datos de Stripe con lo que el cliente ya escribió en nuestro formulario.
-    // Esto evita que el cliente tenga que escribir sus datos dos veces (Checkout Sync Reliability).
+    // Sincronización automática de datos del formulario propio a Stripe.
     customer_email: data.customerEmail || undefined,
     payment_method_collection: 'always',
     metadata: {
       ...buildOrderMetadata(priced.lines),
-      // Datos del formulario propio como respaldo.
       ...(data.customerName && { buyer_name: data.customerName.slice(0, 120) }),
       ...(data.customerPhone && { buyer_phone: data.customerPhone.slice(0, 25) }),
       ...(data.abandonedReference && {
@@ -272,17 +273,13 @@ export async function createCartSession(data: CartCheckoutInput) {
       }),
       ...(priced.fixedTotal ? { test_order: '1' } : {}),
     },
-  } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
+  });
 
   return session.client_secret ?? '';
 }
 
-const SHIPPING_COUNTRIES =
-  [
-    'PE', 'US', 'CA', 'GB', 'MX', 'CL', 'CO', 'AR', 'EC', 'BO', 'BR', 'ES',
-    'FR', 'DE', 'IT', 'PT', 'NL', 'AU', 'NZ', 'JP', 'IE', 'SG', 'MY', 'ID',
-    'PH', 'TH', 'VN', 'ZA', 'NG', 'EG',
-  ];
+import { worldCountries } from './checkout/countries';
+// SHIPPING_COUNTRIES ya no es necesario aquí ya que usamos worldCountries.map en la sesión.
 
 export interface StripeOrderSnapshot {
   paid: boolean;
