@@ -7,6 +7,7 @@ export const Route = createFileRoute('/products/$sku')({
     const res = await getProductBySku(params.sku);
     
     if (res?.product) {
+      // Redirigir siempre al slug base del producto para evitar URLs largas o rotas
       throw redirect({
         href: `/products/${res.product.slug}`,
       });
