@@ -24,6 +24,8 @@ import { deliveryEstimatePhrase, socialProofSoldCount, inStockLabel } from '@/li
 import { detectVisitorGeo } from '@/lib/checkout/geo.functions';
 import { useServerFn } from '@tanstack/react-start';
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
+import { InstagramFeed } from '@/components/home/InstagramFeed';
+
 
 interface ProductDetailProps {
   catalog?: Product[];
