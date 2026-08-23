@@ -34,6 +34,7 @@ import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public
 import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
 import { Route as ApiPublicShopifyWebhookRouteImport } from './routes/api/public/shopify/webhook'
 import { Route as ApiPublicAuditConnectionsRouteImport } from './routes/api/public/audit/connections'
+import { Route as ApiPublicStripeWebhookEnvironmentRouteImport } from './routes/api/public/stripe/webhook.$environment'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -162,6 +163,12 @@ const ApiPublicAuditConnectionsRoute =
     path: '/api/public/audit/connections',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicStripeWebhookEnvironmentRoute =
+  ApiPublicStripeWebhookEnvironmentRouteImport.update({
+    id: '/api/public/stripe/webhook/$environment',
+    path: '/api/public/stripe/webhook/$environment',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
+  '/api/public/stripe/webhook/$environment': typeof ApiPublicStripeWebhookEnvironmentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -216,6 +224,7 @@ export interface FileRoutesByTo {
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
+  '/api/public/stripe/webhook/$environment': typeof ApiPublicStripeWebhookEnvironmentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -244,6 +253,7 @@ export interface FileRoutesById {
   '/api/public/sup/shipping': typeof ApiPublicSupShippingRoute
   '/api/public/sup/sync-catalog': typeof ApiPublicSupSyncCatalogRoute
   '/api/public/sup/sync-tracking': typeof ApiPublicSupSyncTrackingRoute
+  '/api/public/stripe/webhook/$environment': typeof ApiPublicStripeWebhookEnvironmentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
+    | '/api/public/stripe/webhook/$environment'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
+    | '/api/public/stripe/webhook/$environment'
   id:
     | '__root__'
     | '/'
@@ -327,6 +339,7 @@ export interface FileRouteTypes {
     | '/api/public/sup/shipping'
     | '/api/public/sup/sync-catalog'
     | '/api/public/sup/sync-tracking'
+    | '/api/public/stripe/webhook/$environment'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -355,6 +368,7 @@ export interface RootRouteChildren {
   ApiPublicSupShippingRoute: typeof ApiPublicSupShippingRoute
   ApiPublicSupSyncCatalogRoute: typeof ApiPublicSupSyncCatalogRoute
   ApiPublicSupSyncTrackingRoute: typeof ApiPublicSupSyncTrackingRoute
+  ApiPublicStripeWebhookEnvironmentRoute: typeof ApiPublicStripeWebhookEnvironmentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -534,6 +548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuditConnectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/stripe/webhook/$environment': {
+      id: '/api/public/stripe/webhook/$environment'
+      path: '/api/public/stripe/webhook/$environment'
+      fullPath: '/api/public/stripe/webhook/$environment'
+      preLoaderRoute: typeof ApiPublicStripeWebhookEnvironmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -563,6 +584,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSupShippingRoute: ApiPublicSupShippingRoute,
   ApiPublicSupSyncCatalogRoute: ApiPublicSupSyncCatalogRoute,
   ApiPublicSupSyncTrackingRoute: ApiPublicSupSyncTrackingRoute,
+  ApiPublicStripeWebhookEnvironmentRoute:
+    ApiPublicStripeWebhookEnvironmentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
