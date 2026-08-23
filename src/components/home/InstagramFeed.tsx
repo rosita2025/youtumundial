@@ -1,4 +1,7 @@
 import { Instagram, Play, Heart, MessageCircle } from 'lucide-react';
+import { useMemo } from 'react';
+import { getCatalog } from '@/lib/data/data-provider';
+import { useQuery } from '@tanstack/react-query';
 
 interface InstagramPost {
   id: string;
@@ -109,12 +112,25 @@ const INSTAGRAM_POSTS: InstagramPost[] = [
 ];
 
 export function InstagramFeed() {
+  const { data: catalog } = useQuery({
+    queryKey: ['catalog'],
+    queryFn: getCatalog,
+  });
+
+  const shopTheLook = useMemo(() => {
+    if (!catalog) return [];
+    // Filtramos productos que sean T-shirts o tengan black en el título
+    return catalog.filter(p => 
+      p.title.toLowerCase().includes('t-shirt') || 
+      p.title.toLowerCase().includes('black')
+    ).slice(0, 6);
+  }, [catalog]);
+
   return (
     <section className="container-wide py-16 md:py-24 border-t border-border">
       <div className="text-center mb-12">
         <a 
           href="https://www.instagram.com/youtumundial/" 
-
           target="_blank" 
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors group mb-4"
@@ -144,14 +160,12 @@ export function InstagramFeed() {
               loading="lazy"
             />
             
-            {/* Type Icon */}
             {post.type === 'reel' && (
               <div className="absolute top-3 right-3 z-10 text-white drop-shadow-md">
                 <Play className="h-5 w-5 fill-current" />
               </div>
             )}
 
-            {/* Hover Overlay */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6 text-white">
               <div className="flex items-center gap-1.5 font-medium">
                 <Heart className="h-5 w-5 fill-current" />
