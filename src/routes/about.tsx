@@ -33,6 +33,7 @@ function AboutPage() {
       title="About Youtumundial"
       intro="Youtumundial is your destination for independent fashion and sportswear, offering curated styles from global markets delivered directly to your door."
     >
+      <Section heading="Our story">
         <p>
           Youtumundial started as a small personal project: finding the same styles that big brands
           sell in shopping malls, but at the price they actually cost at the factory. After years of
