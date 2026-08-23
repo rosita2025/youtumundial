@@ -376,7 +376,7 @@ const Checkout = () => {
           <div className="max-w-xl ml-auto">
             {/* Express Checkout */}
             <section className="mb-10">
-              <h2 className="text-center text-sm font-medium text-gray-500 mb-4 uppercase tracking-wider">Express Checkout</h2>
+              <h2 className="text-center text-sm font-medium text-gray-500 mb-4 uppercase tracking-wider">Checkout Options</h2>
               <ExpressPayButtons
                 amount={totals.total}
                 countryCode={countryCode}
@@ -756,7 +756,7 @@ const Checkout = () => {
             {/* Payment Trust Badges */}
             <div className="mt-8 pt-6 border-t border-gray-200">
               <div className="flex flex-col items-center gap-3">
-                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Guaranteed Safe Checkout</span>
+                <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Trusted Global Payments</span>
                 <div className="flex flex-wrap items-center justify-center gap-4 opacity-80 grayscale hover:grayscale-0 transition-all duration-300">
                   <img src="https://img.icons8.com/color/48/visa.png" alt="Visa" className="h-6 w-auto" />
                   <img src="https://img.icons8.com/color/48/mastercard.png" alt="Mastercard" className="h-6 w-auto" />
