@@ -95,7 +95,7 @@ function CheckoutReturn() {
     ? `YTM-${sessionId.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase()}`
     : reference || undefined;
 
-  const orderNumber = shopifyNumber ? `#${shopifyNumber.replace('#', '')}` : fallbackNumber;
+  const orderNumber = shopifyNumber ? `#${String(shopifyNumber).replace('#', '')}` : fallbackNumber;
   const isFallbackNumber = !shopifyNumber && Boolean(fallbackNumber);
 
 

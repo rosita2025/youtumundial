@@ -270,6 +270,7 @@ export async function createShopifyOrder(
   if (!gate.ok) return { ok: false, message: gate.message };
 
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
+  const lastName = rest.join(' ') || 'Youtumundial';
   const phone = normalizePhone(input.phone);
 
   // Sincronización automática del comprador con Clientes de Shopify:
@@ -281,8 +282,8 @@ export async function createShopifyOrder(
       const { upsertShopifyCustomer } = await import('./customers.server');
       const customer = await upsertShopifyCustomer({
         email: input.email,
-        firstName: firstName || undefined,
-        lastName: rest.join(' ') || undefined,
+        firstName: firstName || 'Cliente',
+        lastName,
         phone: input.phone,
         address: input.address,
         extraTags: ['comprador'],
@@ -314,7 +315,7 @@ export async function createShopifyOrder(
       input.address && opts.withAddress
         ? {
             firstName: sanitizeShopifyText(firstName || 'Cliente'),
-            lastName: sanitizeShopifyText(rest.join(' ') || 'Youtumundial'),
+            lastName: sanitizeShopifyText(lastName),
             address1: sanitizeShopifyText(input.address.line1 ?? ''),
             address2: sanitizeShopifyText(input.address.line2 ?? ''),
             city: sanitizeShopifyText(input.address.city ?? ''),
