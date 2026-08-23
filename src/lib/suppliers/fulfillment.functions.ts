@@ -47,7 +47,7 @@ export async function fulfillSupOrderCore(
   }
 
   if (!snapshot.paid) {
-    return { ok: false, paid: false, message: 'El pago todavía no está confirmado.' };
+    return { ok: false, paid: false, message: 'Payment is not yet confirmed.' };
   }
 
   const { runPostPaymentTasks } = await import('@/lib/orders/post-payment.server');
@@ -67,7 +67,7 @@ export async function fulfillSupOrderCore(
       ok: true,
       paid: true,
       shopifyOrderNumber: post.shopifyOrderName || snapshot.shopifyOrderName,
-      message: 'Pago confirmado. Este pedido se prepara de forma manual (no tiene productos de SUP).',
+      message: 'Payment confirmed. This order is being prepared manually (it does not contain SUP products).',
     };
   }
 
@@ -114,7 +114,7 @@ export async function fulfillSupOrderCore(
   const created = await createPurchaseOrderIdempotent(sessionId, payload);
   if (!created.ok || !created.supOrderId) {
     return finishDelayed(
-      'Pago confirmado. Estamos terminando de confirmar el envío con el proveedor.',
+      'Payment confirmed. We are finishing the shipment confirmation with the supplier.',
     );
   }
   await markSessionFulfilled(sessionId, environment, created.supOrderId);
@@ -133,7 +133,7 @@ export async function fulfillSupOrderCore(
 export const fulfillSupOrder = createServerFn({ method: 'POST' })
   .inputValidator((input: { sessionId: string; environment: 'sandbox' | 'live' }) => {
     const sessionId = String(input?.sessionId ?? '').trim();
-    if (!/^cs_[a-zA-Z0-9_]+$/.test(sessionId)) throw new Error('Sesión de pago inválida');
+    if (!/^cs_[a-zA-Z0-9_]+$/.test(sessionId)) throw new Error('Invalid payment session');
     const environment = input?.environment === 'live' ? 'live' : 'sandbox';
     return { sessionId, environment } as const;
   })
@@ -158,6 +158,6 @@ async function readTracking(
       carrier: str(detail.shipping_method ?? detail.carrier ?? detail.logistics_name) || undefined,
     };
   } catch {
-    return { ok: true, paid: true, supOrderId, status: 'procesando' };
+    return { ok: true, paid: true, supOrderId, status: 'processing' };
   }
 }
