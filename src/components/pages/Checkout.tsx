@@ -321,16 +321,30 @@ const Checkout = () => {
           <div className="px-4 py-6 bg-[#FAFAFA] border-t border-gray-200 space-y-6 animate-in slide-in-from-top-4 duration-200">
             <div className="space-y-4">
               {cart.items.map((item) => (
-                <div key={item.id} className="flex gap-4">
+                <div key={item.id} className="flex gap-4 group">
                   <div className="relative h-16 w-16 bg-white border border-gray-200 rounded-md overflow-hidden shrink-0">
                     <img src={item.product.images[0]?.url} alt={item.product.title} className="h-full w-full object-cover" />
                     <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border border-white font-bold">{item.quantity}</span>
                   </div>
-                  <div className="flex-1 text-sm">
-                    <p className="font-medium text-gray-900">{item.product.title}</p>
-                    <p className="text-gray-500 text-xs">{item.variant.title}</p>
+                  <div className="flex-1 text-sm min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{item.product.title}</p>
+                        <p className="text-gray-500 text-xs truncate">{item.variant.title}</p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeItem(item.id);
+                        }}
+                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label="Remove item"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium">{formatPrice(item.variant.price * item.quantity)}</div>
+                  <div className="text-sm font-medium whitespace-nowrap">{formatPrice(item.variant.price * item.quantity)}</div>
                 </div>
               ))}
             </div>
@@ -678,16 +692,27 @@ const Checkout = () => {
           <div className="max-w-md">
             <div className="space-y-6">
               {cart.items.map((item) => (
-                <div key={item.id} className="flex gap-4 items-center">
+                <div key={item.id} className="flex gap-4 items-center group">
                   <div className="relative h-16 w-16 bg-white border border-gray-200 rounded-md overflow-hidden shrink-0">
                     <img src={item.product.images[0]?.url} alt={item.product.title} className="h-full w-full object-cover" />
                     <span className="absolute -top-2 -right-2 bg-gray-500 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border border-white font-bold">{item.quantity}</span>
                   </div>
-                  <div className="flex-1 text-sm">
-                    <p className="font-medium text-gray-900">{item.product.title}</p>
-                    <p className="text-gray-500 text-xs">{item.variant.title}</p>
+                  <div className="flex-1 text-sm min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{item.product.title}</p>
+                        <p className="text-gray-500 text-xs truncate">{item.variant.title}</p>
+                      </div>
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label="Remove item"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium text-gray-900">{formatPrice(item.variant.price * item.quantity)}</div>
+                  <div className="text-sm font-medium text-gray-900 whitespace-nowrap">{formatPrice(item.variant.price * item.quantity)}</div>
                 </div>
               ))}
             </div>
