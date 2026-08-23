@@ -31,6 +31,7 @@ const Index = ({ catalog = [] }: IndexProps) => {
         />
       )}
       {collections.length > 0 && <FeaturedCollections collections={collections} />}
+      <InstagramFeed />
       {featuredProducts.length > 0 && (
         <TrendingProducts
           products={featuredProducts}
