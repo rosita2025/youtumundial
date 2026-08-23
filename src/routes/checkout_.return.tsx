@@ -95,7 +95,7 @@ function CheckoutReturn() {
     ? `YTM-${sessionId.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase()}`
     : reference || undefined;
 
-  const orderNumber = shopifyNumber ?? fallbackNumber;
+  const orderNumber = shopifyNumber ? `#${shopifyNumber.replace('#', '')}` : fallbackNumber;
   const isFallbackNumber = !shopifyNumber && Boolean(fallbackNumber);
 
 
@@ -194,7 +194,7 @@ function CheckoutReturn() {
 
 
   return (
-    <Layout>
+    <CheckoutShell>
       <div className="container mx-auto px-4 py-24 text-center max-w-xl">
         <h1 className="font-display text-3xl md:text-4xl mb-4">
           {isManualOrder
@@ -219,7 +219,7 @@ function CheckoutReturn() {
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
               Order number
             </p>
-            <p className="font-display text-4xl font-bold break-all">{orderNumber}</p>
+            <p className="font-display text-4xl font-bold break-all">{orderNumber.startsWith('YTM-') ? orderNumber : `#${orderNumber.replace('#', '')}`}</p>
             {isFallbackNumber && (
               <p className="mt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 {resyncing || state === 'loading' ? (
@@ -263,7 +263,7 @@ function CheckoutReturn() {
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {syncState === 'synced'
-                    ? `Store order number ${shopifyNumber}`
+                    ? `Store order number #${shopifyNumber.replace('#', '')}`
                     : syncState === 'syncing'
                       ? 'Just a moment.'
                       : 'We will email you the store order number shortly.'}
@@ -422,7 +422,7 @@ function CheckoutReturn() {
         </div>
 
       </div>
-    </Layout>
+    </CheckoutShell>
 
   );
 }

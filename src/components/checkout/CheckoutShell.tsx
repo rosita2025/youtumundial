@@ -8,7 +8,7 @@ import { Lock } from 'lucide-react';
  */
 export function CheckoutShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-white lg:bg-[#F5F5F5]">
+    <div className="min-h-screen flex flex-col bg-white lg:bg-[#F5F5F5] standalone:pb-0">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Logo />
