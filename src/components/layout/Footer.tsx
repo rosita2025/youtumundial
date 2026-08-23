@@ -6,7 +6,6 @@ import { Instagram, Facebook } from 'lucide-react';
 const footerLinks = {
   shop: [
     { label: 'All products', href: '/products' },
-    { label: 'Men', href: '/collections/mens' },
     { label: 'Women', href: '/collections/womens' },
     { label: 'New arrivals', href: '/collections/new-arrivals' },
     { label: 'Sale', href: '/collections/sale' },
