@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useState, useRef } from 'react';
 import { fbEvent } from '@/lib/facebook-pixel';
-import { Layout } from '@/components/layout/Layout';
+import { CheckoutShell } from '@/components/checkout/CheckoutShell';
 import { Button } from '@/components/ui/button';
 import { fulfillSupOrder, type FulfillmentResult } from '@/lib/suppliers/fulfillment.functions';
 import { getOrderSummary, type OrderSummary } from '@/lib/checkout/order-summary.functions';
@@ -219,7 +219,7 @@ function CheckoutReturn() {
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
               Order number
             </p>
-            <p className="font-display text-4xl font-bold break-all">{orderNumber.startsWith('YTM-') ? orderNumber : `#${orderNumber.replace('#', '')}`}</p>
+            <p className="font-display text-4xl font-bold break-all">{(orderNumber || '').startsWith('YTM-') ? orderNumber : `#${(orderNumber || '').replace('#', '')}`}</p>
             {isFallbackNumber && (
               <p className="mt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 {resyncing || state === 'loading' ? (
@@ -263,7 +263,7 @@ function CheckoutReturn() {
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {syncState === 'synced'
-                    ? `Store order number #${shopifyNumber.replace('#', '')}`
+                    ? `Store order number #${(shopifyNumber || '').replace('#', '')}`
                     : syncState === 'syncing'
                       ? 'Just a moment.'
                       : 'We will email you the store order number shortly.'}
