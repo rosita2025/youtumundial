@@ -185,11 +185,23 @@ async function upsertShopifyCustomerNow(
         const cause =
           (data?.customerUpdate?.userErrors ?? []).map((e) => e.message).join(', ') ||
           'Shopify rechazó la actualización del cliente.';
-        // Shopify rechazó la actualización: se audita y se alerta al admin.
+        // Shopify rechazó la actualización: se audita pero no bloqueamos.
+        // Reintentamos sin dirección si el error parece de validación postal/provincia.
+        const needsAddressRetry = (data?.customerUpdate?.userErrors ?? []).some(
+          (e) => (e.field ?? []).some(f => ['zip', 'province', 'country', 'city'].includes(f.toLowerCase()))
+        );
+
         await recordSync({
-          entity: 'customer', action: 'update', status: 'rejected',
+          entity: 'customer', action: 'update', status: needsAddressRetry ? 'skipped' : 'rejected',
           email, ids: { customerId }, cause, durationMs: Date.now() - startedAt,
         });
+
+        if (needsAddressRetry) {
+          const retryPayload = { ...payload, addresses: undefined };
+          await adminRequest(CUSTOMER_UPDATE, { input: { ...retryPayload, id: customerId } }).catch(e => {
+            console.warn('upsertShopifyCustomer(retry-update)', e.message);
+          });
+        }
         // El cliente existe aunque la actualización falle: lo devolvemos igual.
         customerCache.set(email, customerId);
         return { ok: true, customerId, created: false };

@@ -331,7 +331,7 @@ export async function createShopifyOrder(
       email: input.email || undefined,
       // Enlaza el pedido con la ficha del cliente en Shopify.
       ...(customerId && opts.withCustomer !== false
-        ? { customer: { toAssociate: { id: customerId } } }
+        ? { customerId }
         : {}),
       ...(opts.withPhone && phone ? { phone } : {}),
       tags: [
@@ -436,8 +436,14 @@ export async function createShopifyOrder(
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
 
-    if (!created && errors.length && attemptOpts.withVariant) {
-      attemptOpts = { ...attemptOpts, withVariant: false };
+    if (!created && errors.length && (attemptOpts.withVariant || attemptOpts.withAddress || attemptOpts.withPhone || attemptOpts.withCustomer)) {
+      // Intento final desesperado: solo datos mínimos para que el pedido entre sí o sí.
+      attemptOpts = {
+        withPhone: false,
+        withAddress: false,
+        withVariant: false,
+        withCustomer: false,
+      };
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
 
