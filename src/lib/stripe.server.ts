@@ -66,7 +66,7 @@ const DATA_MESSAGE =
 const CONFIG_MESSAGE =
   'We apologize: payment is not available right now. Please contact us and we will complete your order.';
 const GENERIC_MESSAGE =
-  'We could not initiate the payment. Please try again or try another payment method.';
+  'Payment is not available at this moment. Please wait a few seconds and try again.';
 
 /** Traduce cualquier fallo de Stripe a un mensaje claro para el cliente. */
 export function getFriendlyStripeError(error: unknown): FriendlyStripeError {
@@ -136,7 +136,7 @@ export function getFriendlyStripeError(error: unknown): FriendlyStripeError {
   }
 
   if (error instanceof Stripe.errors.StripeError) {
-    return { message: GENERIC_MESSAGE, kind: 'temporary' };
+    return { message: TEMPORARY_MESSAGE, kind: 'temporary' };
   }
 
   // Errores propios del checkout (stock, cupón, carrito) ya vienen con un
