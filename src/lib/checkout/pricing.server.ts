@@ -85,7 +85,7 @@ export async function priceOrder(params: {
   countryCode: string;
   couponCode?: string;
 }): Promise<PricedOrder> {
-  if (!params.items.length) throw new Error('El carrito está vacío');
+  if (!params.items.length) throw new Error('Your cart is empty');
 
   const catalog = await loadCatalog();
   const lines: PricedLine[] = [];
@@ -95,10 +95,10 @@ export async function priceOrder(params: {
     const product = catalog.find((p) => p.variants.some((v) => v.id === item.variantId));
     const variant = product?.variants.find((v) => v.id === item.variantId);
     if (!product || !variant) {
-      throw new Error('Uno de los productos del carrito ya no está disponible.');
+      throw new Error('One of the products in your cart is no longer available.');
     }
     if (variant.available === false) {
-      throw new Error(`${product.title} (${variant.title}) está agotado.`);
+      throw new Error(`${product.title} (${variant.title}) is sold out.`);
     }
 
     subtotal += variant.price * item.quantity;
@@ -167,7 +167,7 @@ export async function priceOrder(params: {
   if (total < 0.5) {
     const { isFreeOrderAllowed } = await import('./secret-coupon.server');
     if (!isFreeOrderAllowed(coupon?.code)) {
-      throw new Error('Este cupón no está disponible en este momento.');
+      throw new Error('This coupon is not available at this moment.');
     }
   }
 
