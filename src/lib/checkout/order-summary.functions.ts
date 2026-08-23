@@ -30,7 +30,7 @@ export interface OrderSummary {
 export const getOrderSummary = createServerFn({ method: 'POST' })
   .inputValidator((input: { sessionId: string; environment: 'sandbox' | 'live' }) => {
     const sessionId = String(input?.sessionId ?? '').trim();
-    if (!/^cs_[a-zA-Z0-9_]+$/.test(sessionId)) throw new Error('Sesión de pago inválida');
+    if (!/^cs_[a-zA-Z0-9_]+$/.test(sessionId)) throw new Error('Invalid payment session');
     const environment = input?.environment === 'live' ? 'live' : 'sandbox';
     return { sessionId, environment } as const;
   })
