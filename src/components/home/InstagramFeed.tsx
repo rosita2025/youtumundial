@@ -114,7 +114,7 @@ const INSTAGRAM_POSTS: InstagramPost[] = [
   },
 ];
 
-export function InstagramFeed() {
+export function InstagramFeed({ sku }: { sku?: string }) {
   const { data: catalog } = useQuery({
     queryKey: ['catalog'],
     queryFn: getCatalog,
@@ -122,11 +122,25 @@ export function InstagramFeed() {
 
   const shopTheLook = useMemo(() => {
     if (!catalog) return [];
+    
+    // Si tenemos un SKU, priorizamos productos relacionados a ese SKU
+    if (sku) {
+      const currentProduct = catalog.find(p => p.variants.some(v => v.sku === sku) || p.slug === sku);
+      if (currentProduct) {
+        return catalog
+          .filter(p => 
+            p.id !== currentProduct.id && 
+            p.collections.some(c => currentProduct.collections.includes(c))
+          )
+          .slice(0, 6);
+      }
+    }
+
     return catalog.filter(p => 
       p.title.toLowerCase().includes('t-shirt') || 
       p.title.toLowerCase().includes('black')
     ).slice(0, 6);
-  }, [catalog]);
+  }, [catalog, sku]);
 
   return (
     <section className="container-wide py-16 md:py-24 border-t border-border">
