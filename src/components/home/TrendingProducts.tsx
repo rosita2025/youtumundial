@@ -36,7 +36,7 @@ export function TrendingProducts({
         {products.slice(0, 4).map((product, index) => (
           <div
             key={product.id}
-            className="animate-fade-up min-w-[280px] sm:min-w-0 snap-start"
+            className="animate-fade-up min-w-[280px] sm:min-w-0 snap-start relative z-10"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             <ProductCard product={product} />

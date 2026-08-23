@@ -24,7 +24,7 @@ export function FeaturedCollections({ collections }: FeaturedCollectionsProps) {
           <Link
             key={collection.id}
             to={`/collections/${collection.slug}`}
-            className="group relative aspect-[3/4] rounded-xl overflow-hidden animate-fade-up min-w-[240px] sm:min-w-0 snap-start"
+            className="group relative aspect-[3/4] rounded-xl overflow-hidden animate-fade-up min-w-[240px] sm:min-w-0 snap-start block z-10"
             style={{ animationDelay: `${index * 100}ms` }}
           >
             {/* Image */}

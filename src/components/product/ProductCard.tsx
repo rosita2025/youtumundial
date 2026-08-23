@@ -23,7 +23,7 @@ export const ProductCard = memo(function ProductCard({ product, className }: Pro
     <Link
       to={`/products/${product.slug}`}
       className={cn(
-        'group block',
+        'group block relative z-10',
         className
       )}
     >
