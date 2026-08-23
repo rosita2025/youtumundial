@@ -8,7 +8,7 @@ export const Route = createFileRoute('/products/$sku')({
     
     if (res?.product) {
       throw redirect({
-        href: `/products/${res.product.slug}${res.variantId ? `?variant=${res.variantId}` : ''}`,
+        href: `/products/${res.product.slug}`,
       });
     }
 
