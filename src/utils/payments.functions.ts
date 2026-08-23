@@ -9,20 +9,20 @@ import {
 export const createCartCheckout = createServerFn({ method: 'POST' })
   .inputValidator((data: CartCheckoutInput) => {
     if (!Array.isArray(data.items) || data.items.length === 0) {
-      throw new Error('El carrito está vacío');
+      throw new Error('Your cart is empty');
     }
-    // Revalidación en el servidor de los datos del formulario propio.
+    // Server-side revalidation of checkout form data.
     const email = String(data.customerEmail ?? '').trim().slice(0, 160);
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-      throw new Error('Escribí un correo válido para continuar.');
+      throw new Error('Please enter a valid email to continue.');
     }
     const name = String(data.customerName ?? '').trim().slice(0, 120);
     if (name.replace(/\s/g, '').length < 4) {
-      throw new Error('Escribí tu nombre y apellido para continuar.');
+      throw new Error('Please enter your first and last name to continue.');
     }
     const phone = String(data.customerPhone ?? '').trim().slice(0, 25);
     if (phone.replace(/\D/g, '').length < 8) {
-      throw new Error('Escribí un teléfono válido con código de país.');
+      throw new Error('Please enter a valid phone number with country code.');
     }
     return { ...data, customerEmail: email, customerName: name, customerPhone: phone };
   })
