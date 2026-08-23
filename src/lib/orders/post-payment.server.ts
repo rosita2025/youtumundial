@@ -57,9 +57,9 @@ async function runPostPaymentTasksNow(params: {
       phone: snapshot.phone,
       currency: snapshot.currency,
       address: snapshot.address,
-      ...(snapshot.testOrder && { extraTags: ['stripe', 'pedido-prueba'] }),
+      ...(snapshot.testOrder && { extraTags: ['stripe', 'test-order'] }),
       lines: snapshot.items.map((item) => ({
-        title: item.variantTitle || 'Producto Youtumundial',
+        title: item.variantTitle || 'Youtumundial Product',
         quantity: item.quantity,
         price: unit,
         sku: item.supVariantSku,
