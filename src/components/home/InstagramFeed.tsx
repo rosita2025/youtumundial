@@ -122,7 +122,6 @@ export function InstagramFeed() {
 
   const shopTheLook = useMemo(() => {
     if (!catalog) return [];
-    // Filtramos productos que sean T-shirts o tengan black en el título
     return catalog.filter(p => 
       p.title.toLowerCase().includes('t-shirt') || 
       p.title.toLowerCase().includes('black')
@@ -146,6 +145,38 @@ export function InstagramFeed() {
           Tag us @youtumundial to be featured
         </p>
       </div>
+
+      {/* Recommended Products Grid */}
+      {shopTheLook.length > 0 && (
+        <div className="mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {shopTheLook.map((product) => (
+              <Link
+                key={product.id}
+                to={`/products/${product.slug}`}
+                className="group block space-y-3"
+              >
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+                  <img
+                    src={product.images[0]?.url}
+                    alt={product.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                    {product.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ${product.price.toFixed(2)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
         {INSTAGRAM_POSTS.map((post) => (
