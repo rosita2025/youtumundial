@@ -3,6 +3,7 @@ import { Hero } from '@/components/home/Hero';
 import { FeaturedCollections } from '@/components/home/FeaturedCollections';
 import { TrendingProducts } from '@/components/home/TrendingProducts';
 import { Newsletter } from '@/components/home/Newsletter';
+import { InstagramFeed } from '@/components/home/InstagramFeed';
 import { selectCollections, selectProducts } from '@/lib/data/data-provider';
 import { Product } from '@/lib/data/types';
 
@@ -30,6 +31,7 @@ const Index = ({ catalog = [] }: IndexProps) => {
         />
       )}
       {collections.length > 0 && <FeaturedCollections collections={collections} />}
+      <InstagramFeed />
       {featuredProducts.length > 0 && (
         <TrendingProducts
           products={featuredProducts}
