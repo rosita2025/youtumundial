@@ -65,7 +65,8 @@ export function InstagramFeed() {
     <section className="container-wide py-16 md:py-24 border-t border-border">
       <div className="text-center mb-12">
         <a 
-          href="https://www.instagram.com/youtumundialshop/" 
+          href="https://www.instagram.com/youtumundial/" 
+
           target="_blank" 
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors group mb-4"
@@ -75,7 +76,7 @@ export function InstagramFeed() {
         </a>
         <h2 className="heading-section">Shop the Look</h2>
         <p className="text-muted-foreground mt-2">
-          Tag us @youtumundialshop to be featured
+          Tag us @youtumundial to be featured
         </p>
       </div>
 
@@ -119,7 +120,7 @@ export function InstagramFeed() {
       
       <div className="mt-12 text-center">
         <a
-          href="https://www.instagram.com/youtumundialshop/"
+          href="https://www.instagram.com/youtumundial/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b border-muted-foreground/30 pb-1"
