@@ -416,7 +416,7 @@ export async function createShopifyOrder(
           e.message.toLowerCase().includes(needle.toLowerCase()),
       );
 
-    if (!created && errors.length && attemptOpts.withCustomer && failedOn('customer')) {
+    if (!created && errors.length && attemptOpts.withCustomer) {
       attemptOpts = { ...attemptOpts, withCustomer: false };
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
