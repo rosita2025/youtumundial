@@ -310,6 +310,12 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
           <ProductFaq />
         </div>
 
+        {/* Instagram Feed / Shop the Look */}
+        <div className="mt-20">
+          <InstagramFeed />
+        </div>
+
+
         {/* Reseñas */}
         <ProductReviews slug={product.slug} />
 
