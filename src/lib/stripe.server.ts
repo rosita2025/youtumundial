@@ -50,23 +50,23 @@ export interface FriendlyStripeError {
 }
 
 const CARD_MESSAGES: Record<string, string> = {
-  card_declined: 'Tu banco rechazó la tarjeta. Probá con otra tarjeta o con otro método de pago.',
-  insufficient_funds: 'La tarjeta no tiene fondos suficientes. Probá con otra tarjeta.',
-  expired_card: 'La tarjeta está vencida. Usá una tarjeta vigente.',
-  incorrect_cvc: 'El código de seguridad no coincide. Revisalo e intentá de nuevo.',
-  incorrect_number: 'El número de tarjeta no es válido. Revisalo e intentá de nuevo.',
-  processing_error: 'Hubo un problema al procesar la tarjeta. Intentá de nuevo en un momento.',
-  authentication_required: 'Tu banco pidió una verificación extra. Intentá de nuevo y confirmá la operación.',
+  card_declined: 'Your bank declined the card. Please try another card or a different payment method.',
+  insufficient_funds: 'The card has insufficient funds. Please try another card.',
+  expired_card: 'The card is expired. Please use a valid card.',
+  incorrect_cvc: 'The security code does not match. Please check and try again.',
+  incorrect_number: 'The card number is not valid. Please check and try again.',
+  processing_error: 'There was a problem processing the card. Please try again in a moment.',
+  authentication_required: 'Your bank requested extra verification. Please try again and confirm the operation.',
 };
 
 const TEMPORARY_MESSAGE =
-  'El pago no está disponible en este momento. Esperá unos segundos e intentá de nuevo.';
+  'Payment is not available at this moment. Please wait a few seconds and try again.';
 const DATA_MESSAGE =
-  'Algunos datos del pedido no son válidos. Revisá tu correo, teléfono y dirección, y volvé a intentar.';
+  'Some order details are invalid. Please check your email, phone, and address and try again.';
 const CONFIG_MESSAGE =
-  'Disculpanos: el pago no está disponible ahora mismo. Escribinos y completamos tu pedido.';
+  'We apologize: payment is not available right now. Please contact us and we will complete your order.';
 const GENERIC_MESSAGE =
-  'No pudimos iniciar el pago. Intentá de nuevo o probá con otro método de pago.';
+  'We could not initiate the payment. Please try again or try another payment method.';
 
 /** Traduce cualquier fallo de Stripe a un mensaje claro para el cliente. */
 export function getFriendlyStripeError(error: unknown): FriendlyStripeError {
@@ -129,7 +129,7 @@ export function getFriendlyStripeError(error: unknown): FriendlyStripeError {
     // Un pedido inválido casi siempre viene del formulario, no de la cuenta.
     return {
       message: code === 'amount_too_small'
-        ? 'El monto del pedido es demasiado bajo para procesarlo. Agregá otro producto e intentá de nuevo.'
+        ? 'The order amount is too low to process. Please add another product and try again.'
         : DATA_MESSAGE,
       kind: 'data',
     };
@@ -254,7 +254,7 @@ export async function createCartSession(data: CartCheckoutInput) {
     mode: 'payment',
     ui_mode: 'embedded_page',
     return_url: data.returnUrl,
-    payment_intent_data: { description: 'Pedido Ropa de Youtumundial' },
+    payment_intent_data: { description: 'Youtumundial Clothing Order' },
     // Autocompletado de dirección al estilo Shopify: Stripe usa su base de datos
     // global para sugerir direcciones válidas y reducir errores.
     shipping_address_collection: {
