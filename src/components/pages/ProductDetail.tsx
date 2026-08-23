@@ -314,7 +314,7 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
 
         {/* Instagram Feed / Shop the Look */}
         <div className="mt-20">
-          <InstagramFeed />
+          <InstagramFeed sku={product.variants[0]?.sku} />
         </div>
 
 
