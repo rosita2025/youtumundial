@@ -223,13 +223,12 @@ async function upsertShopifyCustomerNow(
 
     const created = data?.customerCreate?.customer;
     if (!created) {
-      const errors = data?.customerCreate?.userErrors ?? [];
-      const errors = data?.customerCreate?.userErrors ?? [];
-      const cause = errors.map((e) => e.message).join(', ') || 'Error desconocido';
-      console.error('upsertShopifyCustomer(create)', errors);
+      const createErrors = data?.customerCreate?.userErrors ?? [];
+      const cause = createErrors.map((e) => e.message).join(', ') || 'Error desconocido';
+      console.error('upsertShopifyCustomer(create)', createErrors);
 
       // Si falló por dirección, reintentamos crear sin dirección antes de rendirnos.
-      const isAddressError = errors.some((e) =>
+      const isAddressError = createErrors.some((e) =>
         (e.field ?? []).some((f) => ['zip', 'province', 'country', 'city', 'addresses'].includes(f.toLowerCase()))
       );
 
