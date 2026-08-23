@@ -56,7 +56,7 @@ export const saveAbandonedCheckout = createServerFn({ method: 'POST' })
     // cliente completa nombre/dirección, el mismo borrador se actualiza.
     const emailCheck = z.string().trim().email().max(160).safeParse(data.email);
     if (!emailCheck.success || !data.reference) {
-      return { ok: false, message: 'Datos incompletos.' };
+      return { ok: false, message: 'Incomplete data.' };
     }
 
     const full = customerSchema.safeParse({
@@ -98,7 +98,7 @@ export const saveAbandonedCheckout = createServerFn({ method: 'POST' })
         couponCode: data.couponCode || undefined,
       });
     } catch {
-      return { ok: false, message: 'No se pudo calcular el carrito.' };
+      return { ok: false, message: 'Could not calculate the cart.' };
     }
 
     const { syncAbandonedCheckout } = await import('@/lib/shopify/abandoned.server');
