@@ -185,11 +185,23 @@ async function upsertShopifyCustomerNow(
         const cause =
           (data?.customerUpdate?.userErrors ?? []).map((e) => e.message).join(', ') ||
           'Shopify rechazó la actualización del cliente.';
-        // Shopify rechazó la actualización: se audita y se alerta al admin.
+        // Shopify rechazó la actualización: se audita pero no bloqueamos.
+        // Reintentamos sin dirección si el error parece de validación postal/provincia.
+        const needsAddressRetry = (data?.customerUpdate?.userErrors ?? []).some(
+          (e) => (e.field ?? []).some(f => ['zip', 'province', 'country', 'city'].includes(f.toLowerCase()))
+        );
+
         await recordSync({
-          entity: 'customer', action: 'update', status: 'rejected',
+          entity: 'customer', action: 'update', status: needsAddressRetry ? 'skipped' : 'rejected',
           email, ids: { customerId }, cause, durationMs: Date.now() - startedAt,
         });
+
+        if (needsAddressRetry) {
+          const retryPayload = { ...payload, addresses: undefined };
+          await adminRequest(CUSTOMER_UPDATE, { input: { ...retryPayload, id: customerId } }).catch(e => {
+            console.warn('upsertShopifyCustomer(retry-update)', e.message);
+          });
+        }
         // El cliente existe aunque la actualización falle: lo devolvemos igual.
         customerCache.set(email, customerId);
         return { ok: true, customerId, created: false };
@@ -211,8 +223,35 @@ async function upsertShopifyCustomerNow(
 
     const created = data?.customerCreate?.customer;
     if (!created) {
-      const errors = data?.customerCreate?.userErrors ?? [];
-      console.error('upsertShopifyCustomer(create)', errors);
+      const createErrors = data?.customerCreate?.userErrors ?? [];
+      const cause = createErrors.map((e) => e.message).join(', ') || 'Error desconocido';
+      console.error('upsertShopifyCustomer(create)', createErrors);
+
+      // Si falló por dirección, reintentamos crear sin dirección antes de rendirnos.
+      const isAddressError = createErrors.some((e) =>
+        (e.field ?? []).some((f) => ['zip', 'province', 'country', 'city', 'addresses'].includes(f.toLowerCase()))
+      );
+
+      if (isAddressError) {
+        const retryData = await adminRequest<{
+          customerCreate: {
+            customer: { id: string } | null;
+            userErrors: { field: string[] | null; message: string }[];
+          };
+        }>(CUSTOMER_CREATE, { input: { ...payload, addresses: undefined } }).catch(() => null);
+
+        if (retryData?.customerCreate?.customer) {
+          const id = retryData.customerCreate.customer.id;
+          customerCache.set(email, id);
+          await recordSync({
+            entity: 'customer', action: 'create', status: 'ok',
+            email, ids: { customerId: id }, cause: 'Creado tras reintento sin dirección.',
+            durationMs: Date.now() - startedAt,
+          });
+          return { ok: true, customerId: id, created: true };
+        }
+      }
+
       // Carrera: si otro proceso lo creó primero, lo buscamos de nuevo.
       const retry = await adminRequest<{
         customers: { edges: { node: { id: string } }[] };
@@ -227,10 +266,11 @@ async function upsertShopifyCustomerNow(
         });
         return { ok: true, customerId: existing, created: false };
       }
+
       await recordSync({
         entity: 'customer', action: 'create', status: 'rejected',
         email,
-        cause: errors.map((e) => e.message).join(', ') || 'Shopify rechazó la creación del cliente.',
+        cause: cause || 'Shopify rechazó la creación del cliente.',
         durationMs: Date.now() - startedAt,
       });
       return { ok: false, message: 'No se pudo registrar el cliente en Shopify.' };
