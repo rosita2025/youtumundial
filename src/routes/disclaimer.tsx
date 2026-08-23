@@ -26,7 +26,7 @@ function DisclaimerPage() {
   return (
     <StaticPage
       title="Legal Disclaimer"
-      intro="This page clarifies the scope and limits of the information published on Youtumundial. It is maintained by Youtumundial as editable content to answer our customers' frequently asked questions."
+      intro="Important legal information regarding the products and services offered by Youtumundial."
       updatedAt="July 29, 2026"
     >
       <Section heading="1. General Information">

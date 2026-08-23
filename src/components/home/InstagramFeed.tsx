@@ -152,7 +152,7 @@ export function InstagramFeed({ sku }: { sku?: string }) {
           className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors group mb-4"
         >
           <Instagram className="h-5 w-5" />
-          <span className="font-semibold tracking-wider uppercase text-sm">Follow us on Instagram</span>
+          <span className="font-semibold tracking-wider uppercase text-sm">Shop the Look</span>
         </a>
         <h2 className="heading-section">Shop the Look</h2>
         <p className="text-muted-foreground mt-2">

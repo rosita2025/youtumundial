@@ -7,10 +7,10 @@ interface ProductTrustStripProps {
 }
 
 const items = [
-  { icon: Truck, label: 'Free shipping over $45', short: 'Free shipping' },
-  { icon: Clock, label: 'Ships in 3-4 business days', short: 'Fast dispatch' },
-  { icon: RotateCcw, label: '30-day easy returns', short: 'Easy returns' },
-  { icon: ShieldCheck, label: 'Secure SSL checkout', short: 'SSL secure' },
+  { icon: Truck, label: 'Fast worldwide shipping', short: 'Worldwide shipping' },
+  { icon: Clock, label: 'Quick order processing', short: 'Fast dispatch' },
+  { icon: RotateCcw, label: '7-day returns policy', short: 'Easy returns' },
+  { icon: ShieldCheck, label: 'Secure encrypted checkout', short: 'Secure checkout' },
 ];
 
 export function ProductTrustStrip({ className, compact = false }: ProductTrustStripProps) {

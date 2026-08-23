@@ -31,7 +31,7 @@ function ContactPage() {
   return (
     <StaticPage
       title="Contact"
-      intro="Questions about a size, a brand, an order or a payment? We're on the other side."
+      intro="Our support team is here to help with any questions about your shopping experience."
     >
       <Section heading="Support channels">
         <div className="grid gap-4 sm:grid-cols-2">

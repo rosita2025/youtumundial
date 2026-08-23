@@ -27,7 +27,7 @@ function TermsPage() {
   return (
     <StaticPage
       title="Terms and Conditions"
-      intro="By making a purchase at Youtumundial you accept the conditions detailed below. This page is maintained by Youtumundial to answer frequently asked questions about our online store."
+      intro="Please review our terms of service to understand how we operate and your rights as a customer."
       updatedAt="July 29, 2026"
     >
       <Section heading="1. The Store">

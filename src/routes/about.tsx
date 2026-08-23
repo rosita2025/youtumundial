@@ -30,9 +30,7 @@ export const Route = createFileRoute("/about")({
 function AboutPage() {
   return (
     <StaticPage
-      title="About Youtumundial"
-      intro="Youtumundial is an independent, multi-brand online store for sportswear and women's fashion — great design at the most affordable price we can find, shipped worldwide."
-    >
+      intro="Youtumundial is your destination for independent fashion and sportswear, offering curated styles from global markets delivered directly to your door."
       <Section heading="Our story">
         <p>
           Youtumundial started as a small personal project: finding the same styles that big brands

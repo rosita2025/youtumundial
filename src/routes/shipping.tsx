@@ -27,7 +27,7 @@ function ShippingPage() {
   return (
     <StaticPage
       title="Shipping & Returns"
-      intro="Everything you need to know about getting your order and our guarantee."
+      intro="Reliable worldwide delivery and a simple returns process for your peace of mind."
     >
       <Section heading="Costs & Delivery Times">
         <p className="mb-4 text-primary font-medium">
