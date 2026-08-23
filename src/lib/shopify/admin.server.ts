@@ -464,8 +464,8 @@ export async function createShopifyOrder(
     return { ok: true, orderId: created.id, orderName: created.name };
   } catch (error) {
     // El detalle queda en los logs del servidor: no rompemos la compra.
-    console.error('createShopifyOrder', input.reference, (error as Error).message);
-    return { ok: false, message: 'No se pudo registrar el pedido en Shopify.' };
+    console.error('createShopifyOrder critical error', input.reference, (error as Error).message);
+    return { ok: false, message: 'Error crítico al registrar en Shopify.' };
   }
 }
 

@@ -163,9 +163,9 @@ function CheckoutReturn() {
     };
   }, [sessionId]);
 
-  // Un solo reintento rápido: si Shopify aún no devolvió el número de pedido,
-  // lo volvemos a pedir una sola vez tras 1 segundo (la creación es idempotente).
-  const MAX_AUTO_TRIES = 1;
+  // Reintento continuo rápido: si Shopify aún no devolvió el número de pedido,
+  // lo volvemos a pedir cada 2 segundos hasta tenerlo (la creación es idempotente).
+  const MAX_AUTO_TRIES = 15; // Hasta 30 segundos de espera activa
 
   useEffect(() => {
     if (!sessionId || state !== 'done' || resyncing) return;
@@ -178,7 +178,7 @@ function CheckoutReturn() {
         .then((res) => setResult(res))
         .catch(() => undefined)
         .finally(() => setResyncing(false));
-    }, 1000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [sessionId, state, result?.shopifyOrderNumber, autoTries, resyncing]);
 
@@ -219,16 +219,18 @@ function CheckoutReturn() {
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
               Order number
             </p>
-            <p className="font-display text-4xl font-bold break-all">{(orderNumber || '').startsWith('YTM-') ? orderNumber : `#${(orderNumber || '').replace('#', '')}`}</p>
+            <p className="font-display text-4xl font-bold break-all">
+              {shopifyNumber ? `#${String(shopifyNumber).replace('#', '')}` : (fallbackNumber || '')}
+            </p>
             {isFallbackNumber && (
               <p className="mt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 {resyncing || state === 'loading' ? (
                   <>
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    Confirming your store order number...
+                    Sincronizando con Shopify...
                   </>
                 ) : (
-                  'Keep this code. We will email you the final store order number shortly.'
+                  'Confirmando número de pedido oficial...'
                 )}
               </p>
             )}
