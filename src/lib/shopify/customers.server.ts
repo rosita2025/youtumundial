@@ -224,7 +224,35 @@ async function upsertShopifyCustomerNow(
     const created = data?.customerCreate?.customer;
     if (!created) {
       const errors = data?.customerCreate?.userErrors ?? [];
+      const errors = data?.customerCreate?.userErrors ?? [];
+      const cause = errors.map((e) => e.message).join(', ') || 'Error desconocido';
       console.error('upsertShopifyCustomer(create)', errors);
+
+      // Si falló por dirección, reintentamos crear sin dirección antes de rendirnos.
+      const isAddressError = errors.some((e) =>
+        (e.field ?? []).some((f) => ['zip', 'province', 'country', 'city', 'addresses'].includes(f.toLowerCase()))
+      );
+
+      if (isAddressError) {
+        const retryData = await adminRequest<{
+          customerCreate: {
+            customer: { id: string } | null;
+            userErrors: { field: string[] | null; message: string }[];
+          };
+        }>(CUSTOMER_CREATE, { input: { ...payload, addresses: undefined } }).catch(() => null);
+
+        if (retryData?.customerCreate?.customer) {
+          const id = retryData.customerCreate.customer.id;
+          customerCache.set(email, id);
+          await recordSync({
+            entity: 'customer', action: 'create', status: 'ok',
+            email, ids: { customerId: id }, cause: 'Creado tras reintento sin dirección.',
+            durationMs: Date.now() - startedAt,
+          });
+          return { ok: true, customerId: id, created: true };
+        }
+      }
+
       // Carrera: si otro proceso lo creó primero, lo buscamos de nuevo.
       const retry = await adminRequest<{
         customers: { edges: { node: { id: string } }[] };
@@ -239,10 +267,11 @@ async function upsertShopifyCustomerNow(
         });
         return { ok: true, customerId: existing, created: false };
       }
+
       await recordSync({
         entity: 'customer', action: 'create', status: 'rejected',
         email,
-        cause: errors.map((e) => e.message).join(', ') || 'Shopify rechazó la creación del cliente.',
+        cause: cause || 'Shopify rechazó la creación del cliente.',
         durationMs: Date.now() - startedAt,
       });
       return { ok: false, message: 'No se pudo registrar el cliente en Shopify.' };
