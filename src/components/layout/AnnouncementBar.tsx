@@ -13,7 +13,7 @@ const MESSAGES = [
     type: "shipping"
   },
   {
-    text: "New arrivals synced automatically from our store",
+    text: "Shop official Youtumundial clothing",
     type: "new"
   }
 ];

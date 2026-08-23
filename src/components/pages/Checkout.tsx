@@ -673,10 +673,10 @@ const Checkout = () => {
                         {paying ? (
                           <span className="flex items-center gap-2">
                             <Loader2 className="h-5 w-5 animate-spin" />
-                            Preparando pago seguro...
+                            Preparing secure payment...
                           </span>
                         ) : (
-                          'Confirmar y Pagar'
+                          'Confirm and Pay'
                         )}
                       </Button>
                     )}

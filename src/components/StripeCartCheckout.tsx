@@ -86,7 +86,7 @@ export function StripeCartCheckout({
         }
         if (!result.clientSecret) {
           throw new CheckoutFailure(
-            'El pago no está disponible en este momento. Esperá unos segundos e intentá de nuevo.',
+            'Payment is not available at this moment. Please wait a few seconds and try again.',
             'temporary',
           );
         }
@@ -97,7 +97,7 @@ export function StripeCartCheckout({
           setError({ message: e.message, kind: e.kind });
         } else {
           setError({
-            message: 'No pudimos iniciar el pago. Revisá tu conexión e intentá de nuevo.',
+            message: 'We could not initiate the payment. Please check your connection and try again.',
             kind: 'temporary',
           });
         }
@@ -137,7 +137,7 @@ export function StripeCartCheckout({
             }}
             className="text-xs text-blue-600 underline hover:text-blue-800 font-medium"
           >
-            Revisar mis datos
+            Review my details
           </button>
         )}
 
@@ -146,13 +146,13 @@ export function StripeCartCheckout({
             onClick={retry}
             className="text-xs text-blue-600 underline hover:text-blue-800 font-medium"
           >
-            Intentar de nuevo
+            Try again
           </button>
         )}
 
         {error.kind === 'config' && (
           <p className="text-xs text-muted-foreground">
-            Escribinos por WhatsApp y completamos tu pedido manualmente.
+            Contact us via WhatsApp and we will complete your order manually.
           </p>
         )}
       </div>
@@ -166,7 +166,7 @@ export function StripeCartCheckout({
       {!ready && (
         <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Cargando el pago seguro…
+          Loading secure payment...
         </div>
       )}
       <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>

@@ -227,10 +227,10 @@ function CheckoutReturn() {
                 {resyncing || state === 'loading' ? (
                   <>
                     <Loader2 className="h-3 w-3 animate-spin" />
-                    Sincronizando con Shopify...
+                    Syncing with Shopify...
                   </>
                 ) : (
-                  'Confirmando número de pedido oficial...'
+                  'Confirming official order number...'
                 )}
               </p>
             )}

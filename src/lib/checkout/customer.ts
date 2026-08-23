@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 /** Código postal por país: si no está en la lista, pedimos algo genérico. */
 const POSTAL_RULES: Record<string, { regex: RegExp; message: string }> = {
-  US: { regex: /^\d{5}(-\d{4})?$/, message: 'US ZIP must be 5 digits (e.g. 33101).' },
+  US: { regex: /^\d{5}(-\d{4})?$/, message: 'US ZIP must be 5 digits (e.g. 90210).' },
   CA: {
     regex: /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/,
     message: 'Canada Postal Code should be like M5V 3L9.',
@@ -40,7 +40,7 @@ const baseCustomerSchema = z.object({
   phone: z
     .string()
     .trim()
-    .min(8, { message: 'Enter your phone with country code (e.g. +51 987 654 321).' })
+    .min(8, { message: 'Enter your full phone number including country code (e.g., +1 555-0123).' })
     .max(25, { message: 'Phone number is too long.' })
     .regex(/^\+?[0-9\s().-]{8,25}$/, {
       message: 'Phone can only contain numbers, spaces, and the + sign.',
