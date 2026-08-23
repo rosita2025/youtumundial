@@ -330,7 +330,7 @@ export async function createShopifyOrder(
     return {
       email: input.email || undefined,
       // Enlaza el pedido con la ficha del cliente en Shopify.
-      ...(customerId && opts.withCustomer !== false ? { customer: { toAssociate: { id: customerId } } } : {}),
+      ...(customerId && opts.withCustomer !== false ? { customerId } : {}),
       ...(opts.withPhone && phone ? { phone } : {}),
       tags: [
         'youtumundial-checkout',
