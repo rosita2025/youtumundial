@@ -52,7 +52,7 @@ export async function adminRequest<T = any>(
   // inesperado nunca sale del servidor.
   if (!isValidShopifyAdminToken(token)) {
     resetShopifyAdminToken();
-    throw new Error('Credenciales de Shopify Admin inválidas o no configuradas');
+    throw new Error('Invalid or unconfigured Shopify Admin credentials');
   }
 
 
@@ -271,7 +271,7 @@ export async function createShopifyOrder(
   if (!gate.ok) return { ok: false, message: gate.message };
 
   const [firstName, ...rest] = String(input.name ?? '').trim().split(/\s+/);
-  const lastName = rest.join(' ') || 'Youtumundial';
+  const lastName = rest.join(' ') || 'Customer';
   const phone = normalizePhone(input.phone);
 
   // Sincronización automática del comprador con Clientes de Shopify:
@@ -283,11 +283,11 @@ export async function createShopifyOrder(
       const { upsertShopifyCustomer } = await import('./customers.server');
       const customer = await upsertShopifyCustomer({
         email: input.email,
-        firstName: firstName || 'Cliente',
+        firstName: firstName || 'Customer',
         lastName,
         phone: input.phone,
         address: input.address,
-        extraTags: ['comprador'],
+        extraTags: ['buyer'],
       });
       customerId = customer.customerId;
     } catch (error) {
@@ -315,7 +315,7 @@ export async function createShopifyOrder(
     const shippingAddress =
       input.address && opts.withAddress
         ? {
-            firstName: sanitizeShopifyText(firstName || 'Cliente'),
+            firstName: sanitizeShopifyText(firstName || 'Customer'),
             lastName: sanitizeShopifyText(lastName),
             address1: sanitizeShopifyText(input.address.line1 ?? ''),
             address2: sanitizeShopifyText(input.address.line2 ?? ''),
@@ -335,11 +335,11 @@ export async function createShopifyOrder(
         : {}),
       ...(opts.withPhone && phone ? { phone } : {}),
       tags: [
-        'youtumundial-checkout',
+        'youtumundial-custom-checkout',
         ...(input.extraTags?.length ? input.extraTags : ['stripe']),
         referenceTag(input.reference),
       ],
-      note: input.note ?? `Pedido del checkout propio · ${input.reference}`,
+      note: input.note ?? `Order from custom checkout · ${input.reference}`,
       financialStatus: input.financialStatus ?? 'PAID',
 
       ...(shippingAddress && { shippingAddress, billingAddress: shippingAddress }),
@@ -465,7 +465,7 @@ export async function createShopifyOrder(
   } catch (error) {
     // El detalle queda en los logs del servidor: no rompemos la compra.
     console.error('createShopifyOrder critical error', input.reference, (error as Error).message);
-    return { ok: false, message: 'Error crítico al registrar en Shopify.' };
+    return { ok: false, message: 'Critical error while registering in Shopify.' };
   }
 }
 
