@@ -121,7 +121,7 @@ export function Footer() {
           {/* Social Links */}
           <div className="flex items-center gap-4">
             <a
-              href="https://www.instagram.com/youtumundialshop/?hl=es"
+              href="https://www.instagram.com/youtumundial/"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
