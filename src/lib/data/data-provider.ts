@@ -23,7 +23,12 @@ let catalogCache: { at: number; products: Product[] } | null = null;
 /** Fuerza releer el catálogo de Shopify en la próxima consulta. */
 export function invalidateCatalogCache(): void {
   catalogCache = null;
+  // Si estamos en el navegador, intentamos avisar al worker o simplemente limpiar localmente
+  if (typeof window !== 'undefined') {
+    console.log('Catalog cache invalidated');
+  }
 }
+
 
 
 /**
