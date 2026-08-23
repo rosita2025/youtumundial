@@ -30,44 +30,44 @@ export const coupons: Coupon[] = [
     active: true,
   },
   {
-    code: 'BIENVENIDA10',
+    code: 'WELCOME10',
     percentOff: 10,
-    label: '10% de descuento de bienvenida',
+    label: '10% welcome discount',
     active: true,
   },
   {
     code: 'YOUTU20',
     percentOff: 20,
-    label: '20% de descuento',
+    label: '20% discount',
     minSubtotal: 30,
     active: true,
   },
   {
-    code: 'ENVIOGRATIS',
+    code: 'FREESHIPPING',
     freeShipping: true,
-    label: 'Envío gratis a cualquier país',
+    label: 'Free worldwide shipping',
     active: true,
   },
   {
-    // Cupón de prueba: deja el pedido en exactamente $1.00 con envío gratis
-    // para verificar el cobro real en Stripe. Desactivalo (active: false)
-    // cuando termines la prueba.
-    code: 'PRUEBA1DOLAR',
+    // Test coupon: sets the order to exactly $1.00 with free shipping
+    // to verify the real charge on Stripe. Deactivate it (active: false)
+    // when you finish testing.
+    code: 'TEST1DOLLAR',
     fixedTotal: 1,
     freeShipping: true,
-    label: 'Pedido de prueba: total $1.00 con envío gratis',
+    label: 'Test order: $1.00 total with free shipping',
     active: true,
   },
 
   {
-    // DESACTIVADO por seguridad: un cupón del 100% público permite que
-    // cualquiera que conozca el código pida mercadería física gratis
-    // (el pedido se crea automáticamente en SUP y lo pagás vos).
-    // Para una prueba puntual: activalo, hacé la compra y volvé a ponerlo en false.
-    code: 'PRUEBA100',
+    // DEACTIVATED for security: a public 100% coupon allows
+    // anyone who knows the code to order free physical goods
+    // (the order is automatically created in SUP and paid by you).
+    // For a specific test: activate it, make the purchase and set it back to false.
+    code: 'TEST100',
     percentOff: 100,
     freeShipping: true,
-    label: 'Pedido de prueba gratis (100% de descuento)',
+    label: 'Free test order (100% discount)',
     active: false,
   },
 ];
@@ -83,18 +83,18 @@ export function findCoupon(
 ): CouponResult {
   const norm = (s: string) => s.trim().toUpperCase().replace(/[\s-]+/g, '');
   const code = norm(input);
-  if (!code) return { ok: false, message: 'Escribí un código de cupón.' };
+  if (!code) return { ok: false, message: 'Please enter a coupon code.' };
 
   const coupon = [...extra, ...coupons].find((c) => norm(c.code) === code && c.active !== false);
   if (!coupon) {
-    // PRUEBA100 quedó desactivado a propósito: un 100% público deja que
-    // cualquiera pida mercadería física gratis. Se usa el código de prueba privado.
+    // TEST100 remained deactivated on purpose: a public 100% allows
+    // anyone to order free physical goods. The private test code is used.
     return {
       ok: false,
       message:
-        code === 'PRUEBA100'
-          ? 'PRUEBA100 fue desactivado por seguridad. Usá tu código de prueba privado.'
-          : 'Ese cupón no existe o ya venció.',
+        code === 'TEST100'
+          ? 'TEST100 was deactivated for security. Use your private test code.'
+          : 'That coupon does not exist or has expired.',
     };
   }
 
@@ -102,7 +102,7 @@ export function findCoupon(
   if (coupon.minSubtotal && subtotal < coupon.minSubtotal) {
     return {
       ok: false,
-      message: `Este cupón requiere una compra mínima de $${coupon.minSubtotal.toFixed(2)}.`,
+      message: `This coupon requires a minimum purchase of $${coupon.minSubtotal.toFixed(2)}.`,
     };
   }
 
