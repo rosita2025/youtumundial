@@ -6,11 +6,11 @@ export const Route = createFileRoute('/products/$sku')({
     const res = await getProductBySku(params.sku);
     if (res?.product) {
       throw redirect({
-        to: `/products/${res.product.slug}`,
-        search: res.variantId ? { variant: res.variantId } : undefined,
+        href: `/products/${res.product.slug}${res.variantId ? `?variant=${res.variantId}` : ''}`,
       });
     }
     // Si no se encuentra el SKU, redirigimos a la tienda completa
     throw redirect({ to: '/products' });
   },
 });
+

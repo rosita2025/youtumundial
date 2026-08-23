@@ -23,6 +23,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
+import { Route as ProductsSkuRouteImport } from './routes/products.$sku'
 import { Route as ProductosSkuRouteImport } from './routes/productos.$sku'
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout_.success'
@@ -104,6 +105,11 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
 const ProductsSlugRoute = ProductsSlugRouteImport.update({
   id: '/products/$slug',
   path: '/products/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsSkuRoute = ProductsSkuRouteImport.update({
+  id: '/products/$sku',
+  path: '/products/$sku',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductosSkuRoute = ProductosSkuRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/productos/$sku': typeof ProductosSkuRoute
+  '/products/$sku': typeof ProductsSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/productos/$sku': typeof ProductosSkuRoute
+  '/products/$sku': typeof ProductsSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/checkout_/success': typeof CheckoutSuccessRoute
   '/collections/$slug': typeof CollectionsSlugRoute
   '/productos/$sku': typeof ProductosSkuRoute
+  '/products/$sku': typeof ProductsSkuRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/audit/connections': typeof ApiPublicAuditConnectionsRoute
@@ -276,6 +285,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/collections/$slug'
     | '/productos/$sku'
+    | '/products/$sku'
     | '/products/$slug'
     | '/products/'
     | '/api/public/audit/connections'
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/collections/$slug'
     | '/productos/$sku'
+    | '/products/$sku'
     | '/products/$slug'
     | '/products'
     | '/api/public/audit/connections'
@@ -332,6 +343,7 @@ export interface FileRouteTypes {
     | '/checkout_/success'
     | '/collections/$slug'
     | '/productos/$sku'
+    | '/products/$sku'
     | '/products/$slug'
     | '/products/'
     | '/api/public/audit/connections'
@@ -361,6 +373,7 @@ export interface RootRouteChildren {
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
   ProductosSkuRoute: typeof ProductosSkuRoute
+  ProductsSkuRoute: typeof ProductsSkuRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicAuditConnectionsRoute: typeof ApiPublicAuditConnectionsRoute
@@ -471,6 +484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/products/$sku': {
+      id: '/products/$sku'
+      path: '/products/$sku'
+      fullPath: '/products/$sku'
+      preLoaderRoute: typeof ProductsSkuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/productos/$sku': {
       id: '/productos/$sku'
       path: '/productos/$sku'
@@ -577,6 +597,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutSuccessRoute: CheckoutSuccessRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,
   ProductosSkuRoute: ProductosSkuRoute,
+  ProductsSkuRoute: ProductsSkuRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicAuditConnectionsRoute: ApiPublicAuditConnectionsRoute,
