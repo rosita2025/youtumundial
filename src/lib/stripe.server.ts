@@ -223,7 +223,7 @@ export async function createCartSession(data: CartCheckoutInput) {
         {
           price_data: {
             currency: 'usd',
-            product_data: { name: 'Pedido de prueba — Youtumundial' },
+            product_data: { name: 'Test order — Youtumundial' },
             unit_amount: Math.round(priced.fixedTotal * 100),
           },
           quantity: 1,
@@ -242,7 +242,7 @@ export async function createCartSession(data: CartCheckoutInput) {
     line_items.push({
       price_data: {
         currency: 'usd',
-        product_data: { name: 'Envío internacional' },
+        product_data: { name: 'International shipping' },
         unit_amount: shippingInCents,
       },
       quantity: 1,
