@@ -46,9 +46,9 @@ export function StripeCartCheckout({
   const [error, setError] = useState<CheckoutError | null>(null);
   const [ready, setReady] = useState(false);
 
-  // Los datos se congelan en refs: el formulario de Stripe se monta una sola
+  // Los datos se pasan a Stripe: el formulario de Stripe se monta una sola
   // vez y no puede cambiar su clientSecret después de creado.
-  const payload = useRef({
+  const payload = {
     items,
     countryCode,
     couponCode,
@@ -57,17 +57,29 @@ export function StripeCartCheckout({
     customerPhone,
     abandonedReference,
     returnUrl,
-  });
+  };
+
+  // Referencia para detectar si los datos críticos cambiaron y necesitamos regenerar la sesión
+  const lastPayload = useRef(JSON.stringify(payload));
 
   // Una sola sesión por montaje: si Stripe reintenta, reutilizamos la promesa
   // en vez de crear otra sesión de pago (evita cobros/pedidos duplicados).
   const sessionRef = useRef<Promise<string> | null>(null);
 
   const fetchClientSecret = useCallback(async (): Promise<string> => {
+    const currentPayloadStr = JSON.stringify(payload);
+    
+    // Si los datos del formulario cambiaron (email, nombre, etc), forzamos una nueva sesión
+    // para que Stripe reciba la información actualizada.
+    if (sessionRef.current && currentPayloadStr !== lastPayload.current) {
+      sessionRef.current = null;
+      lastPayload.current = currentPayloadStr;
+    }
+
     if (!sessionRef.current) {
       sessionRef.current = (async () => {
         const result = await createCartCheckout({
-          data: { ...payload.current, environment: getStripeEnvironment() },
+          data: { ...payload, environment: getStripeEnvironment() },
         });
         if ('error' in result) {
           throw new CheckoutFailure(result.error, result.errorKind ?? 'temporary');
