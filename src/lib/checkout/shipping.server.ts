@@ -180,7 +180,7 @@ export async function quoteShipping(params: {
     return quote;
   } catch (error) {
     // No exponemos el detalle al cliente: queda en los logs del servidor.
-    console.error('Shopify shipping quote falló:', (error as Error).message);
+    console.error('Shopify shipping quote failed:', (error as Error).message);
     return fallbackQuote(countryCode);
   }
 }
