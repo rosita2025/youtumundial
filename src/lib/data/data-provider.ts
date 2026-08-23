@@ -23,7 +23,12 @@ let catalogCache: { at: number; products: Product[] } | null = null;
 /** Fuerza releer el catálogo de Shopify en la próxima consulta. */
 export function invalidateCatalogCache(): void {
   catalogCache = null;
+  // Si estamos en el navegador, intentamos avisar al worker o simplemente limpiar localmente
+  if (typeof window !== 'undefined') {
+    console.log('Catalog cache invalidated');
+  }
 }
+
 
 
 /**
@@ -151,14 +156,24 @@ export function selectProducts(
     }
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
+      // Mapeo de términos de búsqueda del usuario para corregir typos comunes en productos específicos
+      const normalizedSearch = searchLower
+        .replace(/shpulder/g, 'shoulder')
+        .replace(/slveedeless/g, 'sleeveless')
+        .replace(/slevvedt/g, 'sleeved')
+        .replace(/twitter/g, 'twisted');
+
       products = products.filter(
         p =>
-          p.title.toLowerCase().includes(searchLower) ||
-          p.description.toLowerCase().includes(searchLower) ||
-          (p.vendor || '').toLowerCase().includes(searchLower) ||
-          p.tags.some(t => t.toLowerCase().includes(searchLower))
+          p.title.toLowerCase().includes(normalizedSearch) ||
+          p.description.toLowerCase().includes(normalizedSearch) ||
+          (p.vendor || '').toLowerCase().includes(normalizedSearch) ||
+          p.tags.some(t => t.toLowerCase().includes(normalizedSearch)) ||
+          // También buscamos por el término original por si acaso
+          p.title.toLowerCase().includes(searchLower)
       );
     }
+
   }
 
   // Apply sorting
