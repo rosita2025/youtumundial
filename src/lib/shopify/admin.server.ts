@@ -447,7 +447,6 @@ export async function createShopifyOrder(
       ({ created, errors } = await send(buildOrder(attemptOpts)));
     }
 
-
     if (!created) {
       console.error('createShopifyOrder failure', {
         reference: input.reference,
