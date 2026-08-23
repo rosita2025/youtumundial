@@ -258,7 +258,7 @@ export async function createCartSession(data: CartCheckoutInput) {
     // Autocompletado de dirección al estilo Shopify: Stripe usa su base de datos
     // global para sugerir direcciones válidas y reducir errores.
     shipping_address_collection: {
-      allowed_countries: worldCountries.map(c => c.code as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry)
+      allowed_countries: worldCountries.map(c => c.code) as any
     },
     phone_number_collection: { enabled: true },
     // Sincronización automática de datos del formulario propio a Stripe.
@@ -273,7 +273,7 @@ export async function createCartSession(data: CartCheckoutInput) {
       }),
       ...(priced.fixedTotal ? { test_order: '1' } : {}),
     },
-  } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
+  });
 
   return session.client_secret ?? '';
 }
