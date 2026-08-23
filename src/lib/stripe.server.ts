@@ -255,12 +255,16 @@ export async function createCartSession(data: CartCheckoutInput) {
     ui_mode: 'embedded_page',
     return_url: data.returnUrl,
     payment_intent_data: { description: 'Pedido Ropa de Youtumundial' },
-    // Necesitamos la dirección real para despachar el pedido en SUP.
+    // Solicitamos la dirección real en Stripe (requerido para el fulfillment automático en SUP).
     shipping_address_collection: { allowed_countries: SHIPPING_COUNTRIES },
     phone_number_collection: { enabled: true },
+    // Pre-poblamos los datos de Stripe con lo que el cliente ya escribió en nuestro formulario.
+    // Esto evita que el cliente tenga que escribir sus datos dos veces (Checkout Sync Reliability).
+    customer_email: data.customerEmail || undefined,
+    payment_method_collection: 'always',
     metadata: {
       ...buildOrderMetadata(priced.lines),
-      // Datos del formulario propio: respaldo si Stripe no los devuelve.
+      // Datos del formulario propio como respaldo.
       ...(data.customerName && { buyer_name: data.customerName.slice(0, 120) }),
       ...(data.customerPhone && { buyer_phone: data.customerPhone.slice(0, 25) }),
       ...(data.abandonedReference && {
@@ -268,7 +272,6 @@ export async function createCartSession(data: CartCheckoutInput) {
       }),
       ...(priced.fixedTotal ? { test_order: '1' } : {}),
     },
-    ...(data.customerEmail && { customer_email: data.customerEmail }),
   } as Parameters<Stripe['checkout']['sessions']['create']>[0]);
 
   return session.client_secret ?? '';

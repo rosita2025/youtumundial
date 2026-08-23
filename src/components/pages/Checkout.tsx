@@ -284,12 +284,18 @@ const Checkout = () => {
     setPaying(true);
     payingRef.current = true;
     
-    // Simular un pequeño delay para feedback visual
+    // Feedback visual y scroll suave al área de pago
     setTimeout(() => {
       setShowStripe(true);
       setPaying(false);
       payingRef.current = false;
-    }, 800);
+      
+      // Scroll automático al widget de Stripe para que el cliente vea el pago de inmediato
+      const stripeWidget = document.getElementById('checkout');
+      if (stripeWidget) {
+        stripeWidget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 400);
   };
 
   const cartLines = cart.items.map((item) => ({ variantId: String(item.variant.id), quantity: item.quantity }));
