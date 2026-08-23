@@ -36,9 +36,8 @@ export function Footer() {
               Youtumundial
             </Link>
             <p className="mt-4 text-muted-foreground max-w-sm">
-              Multi-brand sportswear and women's fashion from China, South Korea,
-              the US and Europe. Made in China, shipped worldwide at factory-direct
-              prices.
+              Your gateway to global fashion. Multi-brand sportswear and women's fashion
+              from China, South Korea, the US and Europe. Made in China, shipped worldwide.
             </p>
 
             {/* Newsletter */}

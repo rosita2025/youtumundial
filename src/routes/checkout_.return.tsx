@@ -200,7 +200,7 @@ function CheckoutReturn() {
           {isManualOrder
             ? 'Order Registered!'
             : confirmed
-              ? 'Purchase successful!'
+              ? 'Payment Confirmed!'
               : 'Payment not found'}
         </h1>
         <p className="text-muted-foreground mb-8">

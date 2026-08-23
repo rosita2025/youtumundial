@@ -26,7 +26,7 @@ function PrivacyPage() {
   return (
     <StaticPage
       title="Privacy Policy"
-      intro="This page explains what data we request, what we use it for, and what you can do with it. It is maintained by Youtumundial as editable information for our customers."
+      intro="This policy outlines how Youtumundial handles your personal information with care and transparency."
       updatedAt="July 29, 2026"
     >
       <Section heading="What data we collect">
