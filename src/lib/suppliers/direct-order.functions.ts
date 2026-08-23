@@ -93,9 +93,9 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       phone: data.phone,
       currency: 'USD',
       address: { line1: data.address, country: data.countryCode },
-      note: `Pedido con cupón ${data.couponCode || 'promocional'} · ${data.reference}`,
+      note: `Coupon order ${data.couponCode || 'promotional'} · ${data.reference}`,
       lines: priced.lines.map((line) => ({
-        title: line.variantTitle || 'Producto Youtumundial',
+        title: line.variantTitle || 'Youtumundial Product',
         quantity: line.quantity,
         price: 0,
         sku: line.supVariantSku,
@@ -117,7 +117,7 @@ export const createDirectSupOrder = createServerFn({ method: 'POST' })
       remark: `Youtumundial · ${data.reference}`,
       out_trade_no: data.reference,
       consignee: {
-        name: data.name || 'Cliente Youtumundial',
+        name: data.name || 'Youtumundial Customer',
         phone: data.phone,
         email: data.email,
         country: country?.name ?? data.countryCode,

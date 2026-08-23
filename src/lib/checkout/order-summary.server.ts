@@ -27,7 +27,7 @@ export async function buildOrderSummary(
     });
 
     const lines: OrderSummaryLine[] = (session.line_items?.data ?? []).map((item) => ({
-      description: item.description ?? 'Producto',
+      description: item.description ?? 'Product',
       quantity: item.quantity ?? 1,
       amount: cents(item.amount_total),
     }));
@@ -68,7 +68,7 @@ export async function buildOrderSummary(
       address,
     };
   } catch (error) {
-    console.error('[OrderSummary] no se pudo leer la sesión', error);
-    return { ...empty, message: 'No pudimos cargar el detalle del pedido.' };
+    console.error('[OrderSummary] could not read session', error);
+    return { ...empty, message: 'We could not load the order details.' };
   }
 }

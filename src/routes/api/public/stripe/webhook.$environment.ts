@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/public/stripe/webhook/$environment")(
         const secretEnvKey = environment === "live" ? "STRIPE_WEBHOOK_SECRET_LIVE" : "STRIPE_WEBHOOK_SECRET_SANDBOX";
         const webhookSecret = process.env[secretEnvKey];
         if (!webhookSecret) {
-          console.error(`Stripe webhook (${environment}): falta la variable ${secretEnvKey}`);
+          console.error(`Stripe webhook (${environment}): missing ${secretEnvKey} variable`);
           return new Response("Not configured", { status: 500 });
         }
 
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/public/stripe/webhook/$environment")(
           const stripe = createStripeClient(environment);
           event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
         } catch (error) {
-          console.warn(`Stripe webhook (${environment}) firma inválida:`, (error as Error).message);
+          console.warn(`Stripe webhook (${environment}) invalid signature:`, (error as Error).message);
           return new Response("Invalid signature", { status: 400 });
         }
 
@@ -66,12 +66,12 @@ export const Route = createFileRoute("/api/public/stripe/webhook/$environment")(
           const { fulfillSupOrderCore } = await import("@/lib/suppliers/fulfillment.functions");
           const result = await fulfillSupOrderCore(session.id, environment);
           if (!result.ok) {
-            console.error(`Stripe webhook (${environment}): fulfillment falló para ${session.id}:`, result.message);
+            console.error(`Stripe webhook (${environment}): fulfillment failed for ${session.id}:`, result.message);
           } else {
-            console.log(`Stripe webhook (${environment}): pedido ${session.id} procesado, Shopify: ${result.shopifyOrderNumber ?? "pendiente"}`);
+            console.log(`Stripe webhook (${environment}): order ${session.id} processed, Shopify: ${result.shopifyOrderNumber ?? "pending"}`);
           }
         } catch (error) {
-          console.error(`Stripe webhook (${environment}) error procesando ${session.id}:`, (error as Error).message);
+          console.error(`Stripe webhook (${environment}) error processing ${session.id}:`, (error as Error).message);
           return new Response("Processing error", { status: 500 });
         }
 
