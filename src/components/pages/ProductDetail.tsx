@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { fbEvent } from '@/lib/facebook-pixel';
+
 import { useParams, Link } from '@/lib/router-compat';
 import { Layout } from '@/components/layout/Layout';
 import { ProductGallery } from '@/components/product/ProductGallery';
@@ -23,6 +24,8 @@ import { deliveryEstimatePhrase, socialProofSoldCount, inStockLabel } from '@/li
 import { detectVisitorGeo } from '@/lib/checkout/geo.functions';
 import { useServerFn } from '@tanstack/react-start';
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/checkout/config';
+import { InstagramFeed } from '@/components/home/InstagramFeed';
+
 
 interface ProductDetailProps {
   catalog?: Product[];
@@ -308,6 +311,12 @@ const ProductDetail = ({ catalog = [] }: ProductDetailProps) => {
         <div className="mt-16">
           <ProductFaq />
         </div>
+
+        {/* Instagram Feed / Shop the Look */}
+        <div className="mt-20">
+          <InstagramFeed />
+        </div>
+
 
         {/* Reseñas */}
         <ProductReviews slug={product.slug} />

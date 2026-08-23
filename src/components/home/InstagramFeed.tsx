@@ -1,4 +1,10 @@
 import { Instagram, Play, Heart, MessageCircle } from 'lucide-react';
+import { useMemo } from 'react';
+import { getCatalog } from '@/lib/data/data-provider';
+import { useQuery } from '@tanstack/react-query';
+import { Product } from '@/lib/data/types';
+import { Link } from '@/lib/router-compat';
+
 
 interface InstagramPost {
   id: string;
@@ -109,12 +115,24 @@ const INSTAGRAM_POSTS: InstagramPost[] = [
 ];
 
 export function InstagramFeed() {
+  const { data: catalog } = useQuery({
+    queryKey: ['catalog'],
+    queryFn: getCatalog,
+  });
+
+  const shopTheLook = useMemo(() => {
+    if (!catalog) return [];
+    return catalog.filter(p => 
+      p.title.toLowerCase().includes('t-shirt') || 
+      p.title.toLowerCase().includes('black')
+    ).slice(0, 6);
+  }, [catalog]);
+
   return (
     <section className="container-wide py-16 md:py-24 border-t border-border">
       <div className="text-center mb-12">
         <a 
           href="https://www.instagram.com/youtumundial/" 
-
           target="_blank" 
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors group mb-4"
@@ -127,6 +145,38 @@ export function InstagramFeed() {
           Tag us @youtumundial to be featured
         </p>
       </div>
+
+      {/* Recommended Products Grid */}
+      {shopTheLook.length > 0 && (
+        <div className="mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {shopTheLook.map((product) => (
+              <Link
+                key={product.id}
+                to={`/products/${product.slug}`}
+                className="group block space-y-3"
+              >
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+                  <img
+                    src={product.images[0]?.url}
+                    alt={product.title}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-medium line-clamp-2 group-hover:text-primary transition-colors">
+                    {product.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ${product.price.toFixed(2)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
         {INSTAGRAM_POSTS.map((post) => (
@@ -144,14 +194,12 @@ export function InstagramFeed() {
               loading="lazy"
             />
             
-            {/* Type Icon */}
             {post.type === 'reel' && (
               <div className="absolute top-3 right-3 z-10 text-white drop-shadow-md">
                 <Play className="h-5 w-5 fill-current" />
               </div>
             )}
 
-            {/* Hover Overlay */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6 text-white">
               <div className="flex items-center gap-1.5 font-medium">
                 <Heart className="h-5 w-5 fill-current" />
