@@ -17,7 +17,7 @@ import { fetchShopifyProducts } from '../shopify/storefront';
 
 // Cache corta: los cambios de título/descripción hechos en Shopify se ven casi
 // al instante en la tienda.
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 60 * 1000;
 let catalogCache: { at: number; products: Product[] } | null = null;
 
 /** Fuerza releer el catálogo de Shopify en la próxima consulta. */
@@ -57,30 +57,25 @@ export async function getCatalog(): Promise<Product[]> {
     return catalogCache.products;
   }
 
-  // 1) Shopify: catálogo publicado (los productos de SUP se importan acá).
-  try {
-    const shopifyProducts = filterInStock(await fetchShopifyProducts(100));
-    if (shopifyProducts.length > 0) {
-      catalogCache = { at: Date.now(), products: shopifyProducts };
-      return shopifyProducts;
-    }
-  } catch {
-    // seguimos con el catálogo del Admin API
-  }
-
-  // 2) Shopify Admin: productos activos que todavía no están publicados en el
-  // canal de venta (la Storefront API no los devuelve). Así los productos
-  // recién importados aparecen igual en la tienda.
-  try {
-    const { fetchShopifyCatalogAdmin } = await import('../shopify/catalog.functions');
-    const res = await fetchShopifyCatalogAdmin();
-    const products = filterInStock(res.products as Product[]);
+  // 1) Shopify: Storefront (publicados) + Admin (todos los activos, incluidos
+  // los recién creados o editados que aún no están en el canal de venta).
+  // El Admin es la fuente más fresca, así que sus datos tienen prioridad.
+  const [storefront, admin] = await Promise.all([
+    fetchShopifyProducts(100).catch(() => [] as Product[]),
+    import('../shopify/catalog.functions')
+      .then((m) => m.fetchShopifyCatalogAdmin())
+      .then((r) => r.products as Product[])
+      .catch(() => [] as Product[]),
+  ]);
+  if (storefront.length > 0 || admin.length > 0) {
+    const byHandle = new Map<string, Product>();
+    for (const p of admin) byHandle.set(p.slug, p);
+    for (const p of storefront) if (!byHandle.has(p.slug)) byHandle.set(p.slug, p);
+    const products = filterInStock([...byHandle.values()]);
     if (products.length > 0) {
       catalogCache = { at: Date.now(), products };
       return products;
     }
-  } catch {
-    // seguimos con SUP en vivo
   }
 
 
