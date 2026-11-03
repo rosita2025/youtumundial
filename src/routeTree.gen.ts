@@ -9,81 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ShippingRouteImport } from './routes/shipping'
-import { Route as SeguimientoRouteImport } from './routes/seguimiento'
-import { Route as SearchRouteImport } from './routes/search'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as DisclaimerRouteImport } from './routes/disclaimer'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as CartRouteImport } from './routes/cart'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as CartRouteImport } from './routes/cart'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SeguimientoRouteImport } from './routes/seguimiento'
+import { Route as ShippingRouteImport } from './routes/shipping'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
+import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout_.return'
+import { Route as CheckoutSuccessRouteImport } from './routes/checkout_.success'
+import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
+import { Route as ProductosSkuRouteImport } from './routes/productos.$sku'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
-import { Route as ProductosSkuRouteImport } from './routes/productos.$sku'
-import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
-import { Route as CheckoutSuccessRouteImport } from './routes/checkout_.success'
-import { Route as CheckoutReturnRouteImport } from './routes/checkout_.return'
-import { Route as AdminDiagnosticoRouteImport } from './routes/admin.diagnostico'
-import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
-import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
-import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
-import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
-import { Route as ApiPublicShopifyWebhookRouteImport } from './routes/api/public/shopify/webhook'
 import { Route as ApiPublicAuditConnectionsRouteImport } from './routes/api/public/audit/connections'
+import { Route as ApiPublicShopifyWebhookRouteImport } from './routes/api/public/shopify/webhook'
+import { Route as ApiPublicSupShippingRouteImport } from './routes/api/public/sup/shipping'
+import { Route as ApiPublicSupSyncCatalogRouteImport } from './routes/api/public/sup/sync-catalog'
+import { Route as ApiPublicSupSyncTrackingRouteImport } from './routes/api/public/sup/sync-tracking'
 import { Route as ApiPublicStripeWebhookEnvironmentRouteImport } from './routes/api/public/stripe/webhook.$environment'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShippingRoute = ShippingRouteImport.update({
-  id: '/shipping',
-  path: '/shipping',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SeguimientoRoute = SeguimientoRouteImport.update({
-  id: '/seguimiento',
-  path: '/seguimiento',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SearchRoute = SearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DisclaimerRoute = DisclaimerRouteImport.update({
-  id: '/disclaimer',
-  path: '/disclaimer',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CartRoute = CartRouteImport.update({
-  id: '/cart',
-  path: '/cart',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -91,9 +46,84 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeguimientoRoute = SeguimientoRouteImport.update({
+  id: '/seguimiento',
+  path: '/seguimiento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShippingRoute = ShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminClientesRoute = AdminClientesRouteImport.update({
+  id: '/admin/clientes',
+  path: '/admin/clientes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
+  id: '/admin/diagnostico',
+  path: '/admin/diagnostico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout_/return',
+  path: '/checkout/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/checkout_/success',
+  path: '/checkout/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
+  id: '/collections/$slug',
+  path: '/collections/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductosSkuRoute = ProductosSkuRouteImport.update({
+  id: '/productos/$sku',
+  path: '/productos/$sku',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsIndexRoute = ProductsIndexRouteImport.update({
@@ -106,45 +136,15 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProductosSkuRoute = ProductosSkuRouteImport.update({
-  id: '/productos/$sku',
-  path: '/productos/$sku',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CollectionsSlugRoute = CollectionsSlugRouteImport.update({
-  id: '/collections/$slug',
-  path: '/collections/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
-  id: '/checkout_/success',
-  path: '/checkout/success',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
-  id: '/checkout_/return',
-  path: '/checkout/return',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminDiagnosticoRoute = AdminDiagnosticoRouteImport.update({
-  id: '/admin/diagnostico',
-  path: '/admin/diagnostico',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminClientesRoute = AdminClientesRouteImport.update({
-  id: '/admin/clientes',
-  path: '/admin/clientes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicSupSyncTrackingRoute =
-  ApiPublicSupSyncTrackingRouteImport.update({
-    id: '/api/public/sup/sync-tracking',
-    path: '/api/public/sup/sync-tracking',
+const ApiPublicAuditConnectionsRoute =
+  ApiPublicAuditConnectionsRouteImport.update({
+    id: '/api/public/audit/connections',
+    path: '/api/public/audit/connections',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicSupSyncCatalogRoute = ApiPublicSupSyncCatalogRouteImport.update({
-  id: '/api/public/sup/sync-catalog',
-  path: '/api/public/sup/sync-catalog',
+const ApiPublicShopifyWebhookRoute = ApiPublicShopifyWebhookRouteImport.update({
+  id: '/api/public/shopify/webhook',
+  path: '/api/public/shopify/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSupShippingRoute = ApiPublicSupShippingRouteImport.update({
@@ -152,15 +152,15 @@ const ApiPublicSupShippingRoute = ApiPublicSupShippingRouteImport.update({
   path: '/api/public/sup/shipping',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicShopifyWebhookRoute = ApiPublicShopifyWebhookRouteImport.update({
-  id: '/api/public/shopify/webhook',
-  path: '/api/public/shopify/webhook',
+const ApiPublicSupSyncCatalogRoute = ApiPublicSupSyncCatalogRouteImport.update({
+  id: '/api/public/sup/sync-catalog',
+  path: '/api/public/sup/sync-catalog',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicAuditConnectionsRoute =
-  ApiPublicAuditConnectionsRouteImport.update({
-    id: '/api/public/audit/connections',
-    path: '/api/public/audit/connections',
+const ApiPublicSupSyncTrackingRoute =
+  ApiPublicSupSyncTrackingRouteImport.update({
+    id: '/api/public/sup/sync-tracking',
+    path: '/api/public/sup/sync-tracking',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicStripeWebhookEnvironmentRoute =
@@ -373,74 +373,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shipping': {
-      id: '/shipping'
-      path: '/shipping'
-      fullPath: '/shipping'
-      preLoaderRoute: typeof ShippingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/seguimiento': {
-      id: '/seguimiento'
-      path: '/seguimiento'
-      fullPath: '/seguimiento'
-      preLoaderRoute: typeof SeguimientoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/disclaimer': {
-      id: '/disclaimer'
-      path: '/disclaimer'
-      fullPath: '/disclaimer'
-      preLoaderRoute: typeof DisclaimerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cart': {
-      id: '/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof CartRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -450,11 +387,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguimiento': {
+      id: '/seguimiento'
+      path: '/seguimiento'
+      fullPath: '/seguimiento'
+      preLoaderRoute: typeof SeguimientoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shipping': {
+      id: '/shipping'
+      path: '/shipping'
+      fullPath: '/shipping'
+      preLoaderRoute: typeof ShippingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/clientes': {
+      id: '/admin/clientes'
+      path: '/admin/clientes'
+      fullPath: '/admin/clientes'
+      preLoaderRoute: typeof AdminClientesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/diagnostico': {
+      id: '/admin/diagnostico'
+      path: '/admin/diagnostico'
+      fullPath: '/admin/diagnostico'
+      preLoaderRoute: typeof AdminDiagnosticoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout_/return': {
+      id: '/checkout_/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout_/success': {
+      id: '/checkout_/success'
+      path: '/checkout/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections/$slug': {
+      id: '/collections/$slug'
+      path: '/collections/$slug'
+      fullPath: '/collections/$slug'
+      preLoaderRoute: typeof CollectionsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/productos/$sku': {
+      id: '/productos/$sku'
+      path: '/productos/$sku'
+      fullPath: '/productos/$sku'
+      preLoaderRoute: typeof ProductosSkuRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products/': {
@@ -471,67 +513,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/productos/$sku': {
-      id: '/productos/$sku'
-      path: '/productos/$sku'
-      fullPath: '/productos/$sku'
-      preLoaderRoute: typeof ProductosSkuRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/collections/$slug': {
-      id: '/collections/$slug'
-      path: '/collections/$slug'
-      fullPath: '/collections/$slug'
-      preLoaderRoute: typeof CollectionsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout_/success': {
-      id: '/checkout_/success'
-      path: '/checkout/success'
-      fullPath: '/checkout/success'
-      preLoaderRoute: typeof CheckoutSuccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout_/return': {
-      id: '/checkout_/return'
-      path: '/checkout/return'
-      fullPath: '/checkout/return'
-      preLoaderRoute: typeof CheckoutReturnRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/diagnostico': {
-      id: '/admin/diagnostico'
-      path: '/admin/diagnostico'
-      fullPath: '/admin/diagnostico'
-      preLoaderRoute: typeof AdminDiagnosticoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/clientes': {
-      id: '/admin/clientes'
-      path: '/admin/clientes'
-      fullPath: '/admin/clientes'
-      preLoaderRoute: typeof AdminClientesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/sup/sync-tracking': {
-      id: '/api/public/sup/sync-tracking'
-      path: '/api/public/sup/sync-tracking'
-      fullPath: '/api/public/sup/sync-tracking'
-      preLoaderRoute: typeof ApiPublicSupSyncTrackingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/sup/sync-catalog': {
-      id: '/api/public/sup/sync-catalog'
-      path: '/api/public/sup/sync-catalog'
-      fullPath: '/api/public/sup/sync-catalog'
-      preLoaderRoute: typeof ApiPublicSupSyncCatalogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/sup/shipping': {
-      id: '/api/public/sup/shipping'
-      path: '/api/public/sup/shipping'
-      fullPath: '/api/public/sup/shipping'
-      preLoaderRoute: typeof ApiPublicSupShippingRouteImport
+    '/api/public/audit/connections': {
+      id: '/api/public/audit/connections'
+      path: '/api/public/audit/connections'
+      fullPath: '/api/public/audit/connections'
+      preLoaderRoute: typeof ApiPublicAuditConnectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/shopify/webhook': {
@@ -541,11 +527,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicShopifyWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/audit/connections': {
-      id: '/api/public/audit/connections'
-      path: '/api/public/audit/connections'
-      fullPath: '/api/public/audit/connections'
-      preLoaderRoute: typeof ApiPublicAuditConnectionsRouteImport
+    '/api/public/sup/shipping': {
+      id: '/api/public/sup/shipping'
+      path: '/api/public/sup/shipping'
+      fullPath: '/api/public/sup/shipping'
+      preLoaderRoute: typeof ApiPublicSupShippingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/sup/sync-catalog': {
+      id: '/api/public/sup/sync-catalog'
+      path: '/api/public/sup/sync-catalog'
+      fullPath: '/api/public/sup/sync-catalog'
+      preLoaderRoute: typeof ApiPublicSupSyncCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/sup/sync-tracking': {
+      id: '/api/public/sup/sync-tracking'
+      path: '/api/public/sup/sync-tracking'
+      fullPath: '/api/public/sup/sync-tracking'
+      preLoaderRoute: typeof ApiPublicSupSyncTrackingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/stripe/webhook/$environment': {
